@@ -1,0 +1,52 @@
+﻿@import "_variables.scss";
+
+#hero {
+    -webkit-filter: brightness(.7) saturate(1.2) hue-rotate(44deg);
+    filter: brightness(.7) saturate(1.2) hue-rotate(44deg);
+}
+
+#heroText {
+    .nxs-icon {
+        display: inline-block;
+        width: 25px;
+        height: 25px;
+        margin-left: 5px;
+        margin-right: 5px;
+        margin-top: -2px;
+    }    
+}
+
+#bittrexSummary {
+    hr {
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    .summary-up {
+        color: #3d9400;
+    }
+
+    .summary-down {
+        color: #a11b0a;
+    }
+}
+
+@media(min-width: 768px) {
+
+}
+
+@media(min-width: $container-max-width) {
+    #heroText {
+        .slider {
+            margin: 20px auto 0 auto;
+        }
+    }
+}
+
+@media(max-width: 330px) {
+    #heroText {
+        .nxs-icon {
+            display: none;
+        }
+    }
+}

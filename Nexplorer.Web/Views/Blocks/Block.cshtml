@@ -1,0 +1,171 @@
+﻿@using System.Globalization
+@model BlockViewModel
+
+@{
+    ViewBag.Title = $"Block #{Model.Height}";
+    Layout = "_Layout";
+}
+
+@section Head {
+    <link rel="stylesheet" href="@ViewBag.ControllerCss" />
+}
+
+@section Header {
+    <div id="hero" class="jumbotron jumbotron-fluid"></div>
+    <div id="heroText" class="jumbotron jumbotron-fluid">
+        <div class="container-fluid max-width">
+            <div id="heroHeader">
+                <h1>BLOCK <span class="block-number">#@Model.Height</span></h1>
+                <a href="/blocks/@(Model.Height - 1)">PREVIOUS</a>
+                <span v-if="showNext">
+                    <span class="toggle-seperator fa fa-ellipsis-v"></span> <a href="/blocks/@(Model.Height + 1)">NEXT</a>
+                    <span class="toggle-seperator fa fa-ellipsis-v"></span> <a href="/blocks/latest"> LAST</a>
+                </span>
+			</div>
+        </div>
+    </div>
+}
+
+<div class="panel full-length">
+    <div class="row visible-xs">
+        <div class="col-xs-9">
+            <h2>CONTENTS</h2>
+        </div>
+        <div class="col-xs-3 text-right">
+            <span class="fa fa-cube"></span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2 hidden-xs">
+            <h2>CONTENTS</h2>
+        </div>
+        <div class="col-sm-2">
+            <h3>Confirmations</h3>
+            <p class="val">{{ confirmationText }}</p>
+        </div>
+        <div class="col-sm-2">
+            <h3>Size</h3>
+            <p class="val">@Model.Size.ToString("N0", CultureInfo.InvariantCulture) <span style="font-size: 10px;">kB</span></p>
+        </div>
+        <div class="col-sm-2">
+            <h3>Transactions</h3>
+            <p class="val">@Model.Transactions.Count.ToString("N0", CultureInfo.InvariantCulture)</p>
+        </div>
+        <div class="col-sm-3">
+            <h3>Sent Amount</h3>
+            <p class="val">@Model.TransactionsTotal.ToString("N6", CultureInfo.InvariantCulture) <span style="font-size: 10px;">NXS</span></p>
+        </div>
+        <div class="col-sm-1 text-right hidden-xs">
+            <span class="fa fa-cube"></span>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-4">
+        <div class="panel">
+            <div class="row">
+                <div class="col-xs-9">
+                    <h2>CHAIN</h2>
+                </div>
+                <div class="col-xs-3 text-right">
+                    <span class="fa fa-link"></span>
+                </div>
+            </div>
+            <h3>Height</h3>
+            <p class="val">@Model.Height.ToString("N0", CultureInfo.InvariantCulture)</p>
+            <h3>Channel Height</h3>
+            <p class="val">@Model.ChannelHeight.ToString("N0", CultureInfo.InvariantCulture)</p>
+            <h3>UTC Time</h3>
+            <p class="val">@Model.TimeUtc</p>
+        </div>
+    </div>
+    
+    <div class="col-sm-4">
+        <div class="panel">
+            <div class="row">
+                <div class="col-xs-9">
+                    <h2>MINING</h2>
+                </div>
+                <div class="col-xs-3 text-right">
+                    <span class="fa fa-cogs"></span>
+                </div>
+            </div>
+            <h3>Channel</h3>
+            <p class="val">@Model.Channel</p>
+            <h3>Difficulty</h3>
+            <p class="val">@Model.Difficulty.ToString("N6", CultureInfo.InvariantCulture)</p>
+            <h3>Mint</h3>
+            <p class="val">@Model.Mint.ToString("N6", CultureInfo.InvariantCulture) <span style="font-size: 10px;">NXS</span></p>
+        </div>
+    </div>
+    
+    <div class="col-sm-4">
+        <div class="panel">
+            <div class="row">
+                <div class="col-xs-9">
+                    <h2>DATA</h2>
+                </div>
+                <div class="col-xs-3 text-right">
+                    <span class="fa fa-database"></span>
+                </div>
+            </div>
+            <h3>Version</h3>
+            <p class="val">@Model.Version</p>
+            <h3>Bits</h3>
+            <p class="val">@Model.Bits</p>
+            <h3>Nonce</h3>
+            <p class="val">@Model.Nonce</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="panel">
+            <div class="row">
+                <div class="col-xs-9">
+                    <h2>HASHES</h2>
+                </div>
+                <div class="col-xs-3 text-right">
+                    <span class="fa fa-hashtag"></span>
+                </div>
+            </div>
+            <h3>Block</h3>
+            <p class="val" style="word-wrap: break-word; font-size: 14px; margin: 3px 0 8px 0">@Model.Hash</p>
+            <h3>Merkle Root</h3>
+            <p class="val" style="word-wrap: break-word; font-size: 14px; margin-top: 3px;">@Model.MerkleRoot</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="panel">
+            <div class="row">
+                <div class="col-xs-9">
+                    <h2>TRANSACTIONS</h2>
+                </div>
+                <div class="col-xs-3 text-right">
+                    <span class="fa fa-exchange"></span>
+                </div>
+            </div>
+            <h3>Transactions</h3>
+            @foreach (var tx in Model.Transactions)
+            {
+                Html.RenderPartial("_TransactionItem", new TransactionItemViewModel { Transaction = tx, ShowHash = true });
+                <hr />
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script language="javascript" src="@ViewBag.ControllerJs"></script>
+    <script language="javascript">
+        var vm = new nexplorer.BlockViewModel({
+			confirmations: @Model.Confirmations,
+			showNext: @Json.Serialize(Model.HasNextBlock)
+        });
+    </script>
+}

@@ -1,0 +1,21 @@
+﻿<Properties StartupConfiguration="{983B1FD0-8CF5-42A6-951A-B2B51F21EE7F}|Default">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Nexplorer.Domain/Helpers.cs">
+    <Files>
+      <File FileName="Nexplorer.Sync/BlockSync.cs" Line="67" Column="10" />
+      <File FileName="Nexplorer.Web/Views/Home/Index.cshtml" Line="60" Column="67" />
+      <File FileName="Nexplorer.Web/Scripts/home.index.js" Line="17" Column="57" />
+      <File FileName="Nexplorer.Web/Controllers/BlockController.cs" Line="19" Column="32" />
+      <File FileName="Nexplorer.Web/Repo/BlockRepo.cs" Line="32" Column="16" />
+      <File FileName="Nexplorer.Domain/Helpers.cs" Line="1" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.ItemProperties.Nexplorer.Web PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.ItemProperties.Nexplorer.Cmd PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.ItemProperties.Nexplorer.Sync PreferredExecutionTarget="MonoDevelop.Default" />
+</Properties>

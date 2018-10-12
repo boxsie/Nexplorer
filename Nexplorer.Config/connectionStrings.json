@@ -1,0 +1,8 @@
+﻿{
+  "ConnectionStrings": {
+    "Redis": "192.168.1.117:6379,password=DJEv3Qb1XMW7FJ0UekbM,allowAdmin=true",
+    "NexusDb": "Server=192.168.1.117;Port=3306;Database=nexusdb;Uid=nexusdb;Pwd=OpLrhydhScZQ8SRsTTibLYtR06E05PQMkBOxHVjq;default command timeout=0",
+    "NexplorerDb": "Server=192.168.1.117;Port=3306;Database=nexplorerdb;Uid=nexplorerdb;Pwd=vQWF4OpymW5QFUh32eCjgaQ5SMTSe9uswgddqmSA;default command timeout=0",
+    "Nexus": "192.168.1.117:9336;Username=admin;Password=hL675FnCjgWNSJKfORyN"
+  }
+}

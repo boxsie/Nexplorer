@@ -1,0 +1,34 @@
+﻿<div id="addressTable">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Hash</th>
+                <th class="text-right">Balance</th>
+                <th class="hidden-xs text-right">First seen</th>
+                <th class="hidden-xs text-right">Last seen</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="(address, i) in currentPageItems">
+                <td><b>{{ ++i + ((currentPage - 1) * currentPageItems.length) }}</b></td>
+                <td class="hash-cell">
+                    <a v-bind:href="'/addresses/' + address.hash">
+                        <span class="visible-xs">{{ truncateHash(address.hash, 5) }}</span>
+                        <span class="visible-sm">{{ truncateHash(address.hash, 20) }}</span>
+                        <span class="hidden-xs hidden-sm">{{ address.hash }}</span>
+                    </a>
+                </td>
+                <td class="text-right">{{ Math.round(address.balance).toLocaleString() }} <span style="font-size: 10px;">NXS</span></td>
+                <td class="hidden-xs text-right"><a v-bind:href="'/blocks/' + address.firstBlockHeight">{{ address.firstBlockHeight.toLocaleString() }}</a></td>
+                <td class="hidden-xs text-right"><a v-bind:href="'/blocks/' + address.lastBlockHeight">{{ address.lastBlockHeight.toLocaleString() }}</a></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <bootstrap-pager v-if="!pagingDisabled" 
+                     v-on:page-change="changePage" 
+                     v-bind:page-count="5" 
+                     v-bind:current-page="currentPage" 
+                     v-bind:disabled="currentPageItems.length === 0"></bootstrap-pager>
+</div>

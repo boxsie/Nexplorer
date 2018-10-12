@@ -1,0 +1,91 @@
+﻿@using System.Globalization
+@model TransactionViewModel
+
+@{
+    ViewBag.Title = "Transaction";
+    Layout = "_Layout";
+}
+
+<div class="card border">
+    <h1>Transaction</h1>
+
+    <div class="row" style="margin-bottom: 30px;">
+        <div class="col-sm-6">
+            <h3>Summary</h3>
+            <div class="row">
+                <div class="col-xs-3">
+                    <h5>Confirmations</h5>
+                </div>
+                <div class="col-xs-9">
+                    <div class="h5 text-right">
+                        @(Model.Transaction.Confirmations <= Model.MaxConfirmations ? Model.Transaction.Confirmations.ToString("N0", CultureInfo.InvariantCulture) : $"{Model.MaxConfirmations:N0}+")
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-3">
+                    <h5>Block Height</h5>
+                </div>
+                <div class="col-xs-9">
+                    <div class="h5 text-right">
+                        <a href="/blocks/@Model.Transaction.BlockHeight">@Model.Transaction.BlockHeight.ToString("N0", CultureInfo.InvariantCulture)</a>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-3">
+                    <h5>Time</h5>
+                </div>
+                <div class="col-xs-9">
+                    <div class="h5 text-right">@Model.Transaction.TimeUtc</div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-3">
+                    <h5>Input Count</h5>
+                </div>
+                <div class="col-xs-9">
+                    <div class="h5 text-right">@Model.Transaction.TransactionInputs.Count</div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-3">
+                    <h5>Output Count</h5>
+                </div>
+                <div class="col-xs-9">
+                    <div class="h5 text-right">@Model.Transaction.TransactionOutputs.Count</div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-3">
+                    <h5>Amount</h5>
+                </div>
+                <div class="col-xs-9">
+                    <div class="h5 text-right">@Model.Transaction.Amount.ToString("N6", CultureInfo.InvariantCulture) NXS</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <h3>Hashes</h3>
+            <div class="row">
+                <div class="col-sm-2">
+                    <h5>Transaction Hash</h5>
+                </div>
+                <div class="col-sm-10">
+                    <div class="h5" style="word-wrap: break-word;">@Model.Transaction.TransactionHash</div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2">
+                    <h5>Block Hash</h5>
+                </div>
+                <div class="col-sm-10">
+                    <div class="h5" style="word-wrap: break-word;">@Model.BlockHash</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @{ Html.RenderPartial("_TransactionItem", new TransactionItemViewModel {Transaction = Model.Transaction, ShowHash = false}); }
+</div>

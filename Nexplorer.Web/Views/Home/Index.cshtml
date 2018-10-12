@@ -1,0 +1,160 @@
+﻿@using Nexplorer.Domain.Enums
+@model HomeViewModel
+
+@{
+    ViewBag.Title = "Home";
+    Layout = "_Layout";
+}
+
+@section Head {
+    <link rel="stylesheet" href="@ViewBag.ControllerCss" />
+}
+
+@section Header {
+    <div id="hero" class="jumbotron jumbotron-fluid"></div>
+    <div id="heroText" class="jumbotron jumbotron-fluid">
+        <div class="container-fluid max-width">
+            <div id="heroHeader">
+                <h1>NEXPLORER</h1>
+                <p class="lead">
+                    A block explorer for <a href="https://nexusearth.com/" target="_blank">Nexus (NXS)<img class="nxs-icon" src="img/nxs-icon.png" alt="Nexus (NXS)" /></a><br />
+                    <em>nex·usˈneksəs' : a connection or series of connections linking two or more things.</em>
+                </p>
+            </div>
+
+            <div id="headerSwiper">
+                <swiper>
+                    <swiper-slide :slide-title="'Chain Height'" :slide-val="chainHeight" :slide-icon="'fa-link'"></swiper-slide>
+                    <swiper-slide :slide-title="'Bittrex Price'" :slide-val="bittrexSummary.last" :slide-icon="'fa-btc'"></swiper-slide>
+                    <swiper-slide :slide-title="'Bittrex Volume'" :slide-val="bittrexSummary.volume" :slide-icon="'fa-btc'"></swiper-slide>
+                    <swiper-slide :slide-title="'nPoS Difficulty'" :slide-val="posDiff" :slide-icon="'fa-bolt'"></swiper-slide>
+                    <swiper-slide :slide-title="'Prime Difficulty'" :slide-val="primeDiff" :slide-icon="'fa-microchip'"></swiper-slide>
+                    <swiper-slide :slide-title="'Hash Difficulty'" :slide-val="hashDiff" :slide-icon="'fa-hashtag'"></swiper-slide>
+                    <swiper-slide :slide-title="'UTC'" :slide-val="timestampUtc" :slide-icon="'fa-clock-o'"></swiper-slide>
+                </swiper>
+            </div>
+        </div>
+    </div>
+}
+
+
+<div class="card border">
+    <h3>Nexus Latest</h3>
+    <div id="bittrexSummary">
+        <hr />
+        <div class="row">
+            <div class="col-xs-4 col-sm-3">
+                <h5><strong>Last</strong></h5>
+            </div>
+            <div class="col-xs-8 col-sm-3 text-right">
+                <h4 id="summaryLast" class="animated-single">
+                    <span class="fa fa-btc"></span> {{ bittrexSummary.last }}
+                </h4>
+            </div>
+            <div class="col-xs-4 col-sm-3">
+                <h5><strong>Volume</strong></h5>
+            </div>
+            <div class="col-xs-8 col-sm-3 text-right">
+                <h4 id="summaryVolume" class="animated-single">
+                    <span class="fa fa-btc"></span> {{ bittrexSummary.volume }}
+                </h4>
+            </div>
+        </div>
+        <hr class="hidden-xs" />
+        <div class="row">
+            <div class="col-xs-4 col-sm-3">
+                <h5><strong>Bid</strong></h5>
+            </div>
+            <div class="col-xs-8 col-sm-3 text-right">
+                <h4 id="summaryBid" class="animated-single">
+                    <span class="fa fa-btc"></span> {{ bittrexSummary.bid }}
+                </h4>
+            </div>
+            <div class="col-xs-4 col-sm-3">
+                <h5><strong>Ask</strong></h5>
+            </div>
+            <div class="col-xs-8 col-sm-3 text-right">
+                <h4 id="summaryAsk" class="animated-single">
+                    <span class="fa fa-btc"></span> {{ bittrexSummary.ask }}
+                </h4>
+            </div>
+        </div>
+        <hr class="hidden-xs" />
+        <div class="row">
+            <div class="col-xs-8 col-sm-3">
+                <h5><strong>Buy orders</strong></h5>
+            </div>
+            <div class="col-xs-4 col-sm-3 text-right">
+                <h4>{{ bittrexSummary.openBuyOrders }}</h4>
+            </div>
+            <div class="col-xs-8 col-sm-3">
+                <h5><strong>Sell orders</strong></h5>
+            </div>
+            <div class="col-xs-4 col-sm-3 text-right">
+                <h4>{{ bittrexSummary.openSellOrders }}</h4>
+            </div>
+        </div>
+        <hr class="hidden-xs" />
+        <div class="row">
+            <div class="col-xs-6">
+                <h6>{{ bittrexSummary.timeStamp }}</h6>
+            </div>
+            <div class="col-xs-6 text-right">
+                <h6>powered by <a href="https://bittrex.com/">Bittrex</a></h6>
+            </div>
+        </div>
+        <hr />
+    </div>
+</div>
+    
+<div class="card border">
+    <div class="row">
+        <div class="col-sm-6">
+            <h3>Most Recent Blocks</h3>
+            <p>
+                <i>This page live updates the blocks as they arrive.</i>
+            </p>
+        </div>
+        <div class="col-sm-6">
+            <h3 class="text-right-sm">{{ blockCountLastDay.toLocaleString() }}</h3>
+            <p class="text-right-sm">
+                <i>Blocks in the last 24 hours.</i>
+            </p>
+        </div>
+    </div>
+
+    <block-table ref="blockTable" v-bind:items-per-page="5" v-bind:paging-disabled="true"></block-table>
+    <h5 class="text-right">@Html.ActionLink("More info", "index", "blocks")</h5>
+</div>
+
+<div class="card border">
+    <div class="row">
+        <div class="col-sm-6">
+            <h3>Most Recent Transactions</h3>
+            <p>
+                <i>This page live updates the transactions as they arrive.</i>
+            </p>
+        </div>
+        <div class="col-sm-6">
+            <h3 class="text-right-sm">{{ txCountLastDay.toLocaleString() }}</h3>
+            <p class="text-right-sm">
+                <i>Transactions in the last 24 hours.</i>
+            </p>
+        </div>
+    </div>
+
+    <tx-table ref="txTable" v-bind:items-per-page="5" v-bind:paging-disabled="true"></tx-table>
+    <h5 class="text-right">@Html.ActionLink("More info", "index", "transactions")</h5>
+</div>
+
+@section Scripts {
+    <script language="javascript" src="@ViewBag.ControllerJs"></script>
+    <script language="javascript">
+        var vm = new nexplorer.HomeViewModel({
+            latestBlock: @Json.Serialize(Model.LastBlock),
+            primeDiff: @Model.LastPrimeDifficulty,
+            posDiff: @Model.LastPosDifficulty,
+            hashDiff: @Model.LastHashDifficulty
+        });
+    </script>
+}

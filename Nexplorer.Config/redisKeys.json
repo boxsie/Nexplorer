@@ -1,0 +1,28 @@
+﻿{
+  "RedisKeys": {
+    "BlockCache": "blocks:cache",
+    "BlockLiteCache": "blocks:litecache",
+    "TransactionLiteCache": "transactions:litecache",
+    "AddressCache": "addresses:cache",
+    "TrustKeyCache": "addresses:trustkeycache",
+    "NexusAddressCache": "addresses:nexusaddresscache",
+    "TrustKeyAddressCache": "addresses:trustkeyaddresscache",
+    "BlockCount24Hours": "blocks:count24hours",
+    "TransactionCount24Hours": "transactions:count24hours",
+    "NewBlockPubSub": "blocks:new",
+    "NewTransactionPubSub": "transactions:new",
+    "BittrexSummaryPubSub": "bittrex:summary",
+    "MiningStatPubSub": "stats:mining",
+    "AddressStatPubSub": "stats:addresses",
+    "AddressDistributionStats": "stats:addresses:distribution",
+    "BittrexLastUsdBtcPrice": "bittrex:usdbtcprice",
+    "BittrexLastBtcNxsPrice": "bittrex:btcnxsprice",
+    "TimestampUtcLatest": "nexus:timestamputc:latest",
+    "PeerInfoLatest": "nexus:peerinfo:latest",
+    "MiningInfoLatest": "nexus:mininginfo:latest",
+    "MiningInfo10Mins": "nexus:mininginfo:last10mins",
+    "SupplyRatesLatest": "nexus:supplyrates:latest",
+    "ChannelStatsLatest": "nexus:channels:latest",
+    "NodeVersion": "nexus:stats:nodeversion"
+  }
+}

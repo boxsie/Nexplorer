@@ -1,0 +1,35 @@
+﻿<div id="transactionTable">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Hash</th>
+                <th class="hidden-xs">Block</th>
+                <th>Amount</th>
+                <th class="hidden-xs">In</th>
+                <th class="hidden-xs">Out</th>
+                <th>Age</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="tx in currentPageItems">
+                <td class="hash-cell">
+                    <a v-bind:href="'/transactions/' + tx.transactionHash">
+                        <span class="visible-xs">{{ truncateHash(tx.transactionHash, 4) }}</span>
+                        <span class="visible-sm">{{ truncateHash(tx.transactionHash, 14) }}</span>
+                        <span class="hidden-xs hidden-sm">{{ tx.transactionHash }}</span>
+                    </a>
+                </td>
+                <td class="hidden-xs"><a v-bind:href="'/blocks/' + tx.blockHeight">{{ tx.blockHeight.toLocaleString() }}</a></td>
+                <td>{{ tx.amount.toLocaleString() }} <span style="font-size: 10px;">NXS</span></td>
+                <td class="hidden-xs">{{ tx.transactionInputCount.toLocaleString() }}</td>
+                <td class="hidden-xs">{{ tx.transactionOutputCount.toLocaleString() }}</td>
+                <td><date-age :fromDate="tx.timeUtc" :precise="true"></date-age></td>
+            </tr>
+        </tbody>
+    </table>
+    <bootstrap-pager v-if="!pagingDisabled" 
+                     v-on:page-change="changePage" 
+                     v-bind:page-count="5" 
+                     v-bind:current-page="currentPage" 
+                     v-bind:disabled="currentPageItems.length === 0"></bootstrap-pager>
+</div>

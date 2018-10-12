@@ -1,0 +1,12 @@
+﻿{
+  "EmailConfig": {
+    "SmtpServer": "",
+    "SmtpPort": 465,
+    "SmtpUsername": "",
+    "SmtpPassword": "",
+    "PopServer": "",
+    "PopPort": 995,
+    "PopUsername": "",
+    "PopPassword": ""
+  }
+}

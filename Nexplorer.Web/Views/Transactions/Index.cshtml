@@ -1,0 +1,23 @@
+﻿@model object
+
+@{
+    ViewBag.Title = "Transactions";
+    Layout = "_Layout";
+}
+
+<div id="transactionPages" class="panel clearfix">
+    <h1>Transactions</h1>
+    <h3>Last 50 Transactions</h3>
+    <p><i>This page live updates the transactions as they arrive.</i>
+    </p>
+    <blockchain-table ref="txTable" v-bind:items-per-page="10"></blockchain-table>
+</div>
+
+@section Scripts {
+    <script language="javascript" src="@ViewBag.ControllerJs"></script>
+    <script language="javascript">
+        var vm = new nexplorer.TransactionViewModel({
+            txsPerPage: 10
+        });
+    </script>
+}

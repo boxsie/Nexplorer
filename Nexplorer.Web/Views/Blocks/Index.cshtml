@@ -1,0 +1,21 @@
+﻿@model BlockViewModel
+
+@{
+    ViewBag.Title = "Blocks";
+    Layout = "_Layout";
+}
+
+<div id="blockPages" class="panel clearfix">
+    <h1>Blocks</h1>
+    <h3>Last 50 Blocks</h3>
+    <p><i>This page live updates the blocks as they arrive.</i></p>
+    <blockchain-table ref="blockTable" v-bind:items-per-page="10"></blockchain-table>
+</div>
+
+@section Scripts {
+    <script language="javascript" src="@ViewBag.ControllerJs"></script>
+    <script language="javascript">
+        var vm = new nexplorer.BlockViewModel({
+        });
+    </script>
+}

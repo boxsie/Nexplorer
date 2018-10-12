@@ -1,0 +1,65 @@
+﻿@import "_variables.scss";
+
+#hero {
+    -webkit-filter: brightness(.8) saturate(1.2) hue-rotate(204deg);
+    filter: brightness(.8) saturate(1.2) hue-rotate(204deg);
+}
+
+.text-toggle {
+    margin-top: 20px;
+}
+
+#customFilter {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: lighten($primary, 40%);
+    border-radius: 4px;
+
+    #customFilterForm {
+        .big-checkbox {
+            width: 15px;
+            height: 15px;
+        }
+
+        label {
+            font-weight: 200;
+            font-size: 16px;
+        }
+
+        .btn {
+            width: 100%;
+            height: 35px;
+            float: right;
+            padding: 0;
+            margin-bottom: 10px;
+        }
+    }
+}
+
+.address-table {
+    margin-top: 20px;
+    overflow-y: hidden;
+    overflow-x: auto;
+
+    #addressTable {
+        th:not(:nth-child(2)) {
+            text-align: center;
+        }
+
+        td:not(:nth-child(2)) {
+            text-align: center;
+        }
+    }
+
+    .pagination {
+        .active {
+            a {
+                background-color: $primary;
+            }
+        }
+    }
+}
+
+
+@media(min-width: 768px) {
+}

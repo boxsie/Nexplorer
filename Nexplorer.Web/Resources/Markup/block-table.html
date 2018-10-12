@@ -1,0 +1,30 @@
+﻿<div id="blockTable">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Height</th>
+                <th class="hidden-xs">Size</th>
+                <th>Channel</th>
+                <th class="hidden-xs">Difficulty</th>
+                <th><span class="hidden-xs">Transactions</span><span class="visible-xs">TXs</span></th>
+                <th>Age</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="block in currentPageItems">
+                <td><a v-bind:href="'/blocks/' + block.height">{{ block.height.toLocaleString() }}</a></td>
+                <td class="hidden-xs">{{ block.size.toLocaleString() }}</td>
+                <td>{{ block.channel }}</td>
+                <td class="hidden-xs">{{ block.difficulty.toLocaleString() }}</td>
+                <td>{{ block.transactionCount }}</td>
+                <td><date-age :fromDate="block.timeUtc" :precise="true"></date-age></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <bootstrap-pager v-if="!pagingDisabled" 
+                     v-on:page-change="changePage" 
+                     v-bind:page-count="5" 
+                     v-bind:current-page="currentPage" 
+                     v-bind:disabled="currentPageItems.length === 0"></bootstrap-pager>
+</div>

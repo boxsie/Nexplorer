@@ -1,0 +1,11 @@
+﻿<div id="addressActivityChart">
+    <div class="text-toggle">
+        <a href="#" v-on:click.prevent.stop="changeDays(7)" v-bind:class="currentDays == 7 ? 'active-link' : ''">7 days</a>
+        <span class="toggle-seperator fa fa-ellipsis-v"></span>
+        <a href="#" v-on:click.prevent.stop="changeDays(14)" v-bind:class="currentDays == 14 ? 'active-link' : ''">14 days</a>
+        <span class="toggle-seperator fa fa-ellipsis-v"></span>
+        <a href="#" v-on:click.prevent.stop="changeDays(28)" v-bind:class="currentDays == 28 ? 'active-link' : ''">28 days</a>
+    </div>
+    <br/>
+    <line-chart :chart-data="datacollection" :options="chartOptions" :width="width" :height="height"></line-chart>
+</div>

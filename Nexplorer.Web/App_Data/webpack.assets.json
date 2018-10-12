@@ -1,0 +1,48 @@
+{
+  "addresses.address": {
+    "js": "../js/addresses.address.js",
+    "css": "../css/addresses.address.css"
+  },
+  "addresses.index": {
+    "js": "../js/addresses.index.js",
+    "css": "../css/addresses.index.css"
+  },
+  "mining.index": {
+    "js": "../js/mining.index.js",
+    "css": "../css/mining.index.css"
+  },
+  "home.index": {
+    "js": "../js/home.index.js",
+    "css": "../css/home.index.css"
+  },
+  "transactions.index": {
+    "js": "../js/transactions.index.js"
+  },
+  "blocks.index": {
+    "js": "../js/blocks.index.js"
+  },
+  "layout": {
+    "js": "../js/layout.js",
+    "css": "../css/layout.css"
+  },
+  "favourites.index": {
+    "js": "../js/favourites.index.js"
+  },
+  "validate": {
+    "js": "../js/validate.js"
+  },
+  "network.index": {
+    "js": "../js/network.index.js",
+    "css": "../css/network.index.css"
+  },
+  "manage.enableauthenticator": {
+    "js": "../js/manage.enableauthenticator.js"
+  },
+  "blocks.block": {
+    "js": "../js/blocks.block.js",
+    "css": "../css/blocks.block.css"
+  },
+  "vendor": {
+    "js": "../js/vendor.js"
+  }
+}
