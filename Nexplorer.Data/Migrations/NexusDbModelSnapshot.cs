@@ -32,9 +32,6 @@ namespace Nexplorer.Data.Migrations
 
                     b.HasIndex("FirstBlockHeight");
 
-                    b.HasIndex("Hash")
-                        .IsUnique();
-
                     b.ToTable("Address");
                 });
 
@@ -57,8 +54,6 @@ namespace Nexplorer.Data.Migrations
                     b.Property<DateTime>("UpdatedOn");
 
                     b.HasKey("AddressId");
-
-                    b.HasIndex("Balance");
 
                     b.HasIndex("LastBlockHeight");
 
@@ -93,12 +88,6 @@ namespace Nexplorer.Data.Migrations
 
                     b.HasKey("Height");
 
-                    b.HasIndex("Channel");
-
-                    b.HasIndex("Hash");
-
-                    b.HasIndex("TimeUtc");
-
                     b.ToTable("Block");
                 });
 
@@ -123,12 +112,6 @@ namespace Nexplorer.Data.Migrations
 
                     b.HasIndex("BlockHeight");
 
-                    b.HasIndex("Confirmations");
-
-                    b.HasIndex("Hash");
-
-                    b.HasIndex("TimeUtc");
-
                     b.ToTable("Transaction");
                 });
 
@@ -146,8 +129,6 @@ namespace Nexplorer.Data.Migrations
                     b.HasKey("TransactionInputId");
 
                     b.HasIndex("AddressId");
-
-                    b.HasIndex("Amount");
 
                     b.HasIndex("TransactionId");
 
@@ -168,8 +149,6 @@ namespace Nexplorer.Data.Migrations
                     b.HasKey("TransactionOutputId");
 
                     b.HasIndex("AddressId");
-
-                    b.HasIndex("Amount");
 
                     b.HasIndex("TransactionId");
 
@@ -253,8 +232,6 @@ namespace Nexplorer.Data.Migrations
 
                     b.HasKey("BlockId");
 
-                    b.HasIndex("Hash");
-
                     b.ToTable("OrphanBlock");
                 });
 
@@ -272,8 +249,6 @@ namespace Nexplorer.Data.Migrations
                     b.Property<int?>("OrphanBlockBlockId");
 
                     b.HasKey("TransactionId");
-
-                    b.HasIndex("Hash");
 
                     b.HasIndex("OrphanBlockBlockId");
 

@@ -24,23 +24,23 @@ namespace Nexplorer.Data.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Block>()
-                .HasIndex(x => x.Hash);
-            modelBuilder.Entity<Block>()
-                .HasIndex(x => x.TimeUtc);
-            modelBuilder.Entity<Block>()
-                .HasIndex(x => x.Channel);
+            modelBuilder.Entity<Block>();
+                //.HasIndex(x => x.Hash);
+            modelBuilder.Entity<Block>();
+                //.HasIndex(x => x.TimeUtc);
+            modelBuilder.Entity<Block>();
+                //.HasIndex(x => x.Channel);
             modelBuilder.Entity<Block>()
                 .HasMany(x => x.Transactions)
                 .WithOne(x => x.Block)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Transaction>()
-                .HasIndex(x => x.Hash);
-            modelBuilder.Entity<Transaction>()
-                .HasIndex(x => x.TimeUtc);
-            modelBuilder.Entity<Transaction>()
-                .HasIndex(x => x.Confirmations);
+            modelBuilder.Entity<Transaction>();
+                //.HasIndex(x => x.Hash);
+            modelBuilder.Entity<Transaction>();
+                //.HasIndex(x => x.TimeUtc);
+            modelBuilder.Entity<Transaction>();
+                //.HasIndex(x => x.Confirmations);
             modelBuilder.Entity<Transaction>()
                 .HasMany(x => x.Inputs)
                 .WithOne(x => x.Transaction)
@@ -50,38 +50,38 @@ namespace Nexplorer.Data.Context
                 .WithOne(x => x.Transaction)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<TransactionInput>()
-                .HasIndex(x => x.Amount);
+            modelBuilder.Entity<TransactionInput>();
+                //.HasIndex(x => x.Amount);
             modelBuilder.Entity<TransactionInput>()
                 .HasOne(x => x.Address)
                 .WithMany();
 
-            modelBuilder.Entity<TransactionOutput>()
-                .HasIndex(x => x.Amount);
+            modelBuilder.Entity<TransactionOutput>();
+                //.HasIndex(x => x.Amount);
             modelBuilder.Entity<TransactionOutput>()
                 .HasOne(x => x.Address)
                 .WithMany();
 
-            modelBuilder.Entity<Address>()
-                .HasIndex(x => x.Hash)
-                .IsUnique();
+            modelBuilder.Entity<Address>();
+                //.HasIndex(x => x.Hash)
+                //.IsUnique();
             modelBuilder.Entity<Address>()
                 .HasOne(x => x.FirstBlock)
                 .WithMany();
 
-            modelBuilder.Entity<AddressAggregate>()
-                .HasIndex(x => x.Balance);
+            modelBuilder.Entity<AddressAggregate>();
+                //.HasIndex(x => x.Balance);
             modelBuilder.Entity<AddressAggregate>()
                 .HasOne(x => x.LastBlock)
                 .WithMany();
 
-            modelBuilder.Entity<OrphanBlock>()
-                .HasIndex(x => x.Hash);
+            modelBuilder.Entity<OrphanBlock>();
+                //.HasIndex(x => x.Hash);
             modelBuilder.Entity<OrphanBlock>()
                 .HasMany(x => x.Transactions);
 
-            modelBuilder.Entity<OrphanTransaction>()
-                .HasIndex(x => x.Hash);
+            modelBuilder.Entity<OrphanTransaction>();
+                //.HasIndex(x => x.Hash);
 
             modelBuilder.Entity<TrustKey>()
                 .HasOne(x => x.Address)

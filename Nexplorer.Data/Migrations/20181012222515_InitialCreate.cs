@@ -256,45 +256,9 @@ namespace Nexplorer.Data.Migrations
                 column: "FirstBlockHeight");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Address_Hash",
-                table: "Address",
-                column: "Hash",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AddressAggregate_Balance",
-                table: "AddressAggregate",
-                column: "Balance");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_AddressAggregate_LastBlockHeight",
                 table: "AddressAggregate",
                 column: "LastBlockHeight");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Block_Channel",
-                table: "Block",
-                column: "Channel");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Block_Hash",
-                table: "Block",
-                column: "Hash");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Block_TimeUtc",
-                table: "Block",
-                column: "TimeUtc");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OrphanBlock_Hash",
-                table: "OrphanBlock",
-                column: "Hash");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OrphanTransaction_Hash",
-                table: "OrphanTransaction",
-                column: "Hash");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrphanTransaction_OrphanBlockBlockId",
@@ -307,29 +271,9 @@ namespace Nexplorer.Data.Migrations
                 column: "BlockHeight");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transaction_Confirmations",
-                table: "Transaction",
-                column: "Confirmations");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Transaction_Hash",
-                table: "Transaction",
-                column: "Hash");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Transaction_TimeUtc",
-                table: "Transaction",
-                column: "TimeUtc");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_TransactionInput_AddressId",
                 table: "TransactionInput",
                 column: "AddressId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TransactionInput_Amount",
-                table: "TransactionInput",
-                column: "Amount");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TransactionInput_TransactionId",
@@ -340,11 +284,6 @@ namespace Nexplorer.Data.Migrations
                 name: "IX_TransactionOutput_AddressId",
                 table: "TransactionOutput",
                 column: "AddressId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TransactionOutput_Amount",
-                table: "TransactionOutput",
-                column: "Amount");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TransactionOutput_TransactionId",
