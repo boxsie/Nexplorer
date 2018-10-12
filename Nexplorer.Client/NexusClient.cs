@@ -24,8 +24,8 @@ namespace Nexplorer.Client
             var connSplit = connectionString.Split(';');
 
             var url = $"http://{connSplit[0]}";
-            var username = connSplit[1].Split("=")[1];
-            var password = connSplit[2].Split("=")[1];
+            var username = connSplit[1].Split('=')[1];
+            var password = connSplit[2].Split('=')[1];
 
             var auth64 = ToBase64($"{username}:{password}");
 

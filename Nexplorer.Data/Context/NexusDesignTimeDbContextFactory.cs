@@ -10,21 +10,13 @@ namespace Nexplorer.Data.Context
     {
         public NexusDb CreateDbContext(string[] args)
         {
-
-#if DEBUG
-            const string appSettingsFile = "config.debug.json";
-#else
-            const string appSettingsFile = "config.json";
-#endif
-
-            IConfigurationRoot configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory() + @"\bin\Debug\netcoreapp2.0\")
-                .AddJsonFile(appSettingsFile)
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("connectionStrings.json", false)
                 .Build();
 
             var builder = new DbContextOptionsBuilder<NexusDb>();
 
-            var connectionString = configuration.GetConnectionString("NexusDb");
+            var connectionString = config.GetConnectionString("NexusDb");
 
             builder.UseMySql(connectionString, x => x.MigrationsAssembly("Nexplorer.Data"));
 

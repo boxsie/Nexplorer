@@ -1,7 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
 namespace Nexplorer.Data.Migrations
 {
@@ -15,16 +14,16 @@ namespace Nexplorer.Data.Migrations
                 {
                     BittrexSummaryId = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Ask = table.Column<double>(nullable: false),
-                    BaseVolume = table.Column<double>(nullable: false),
-                    Bid = table.Column<double>(nullable: false),
-                    Last = table.Column<double>(nullable: false),
                     MarketName = table.Column<string>(maxLength: 10, nullable: false),
+                    Volume = table.Column<double>(nullable: false),
+                    BaseVolume = table.Column<double>(nullable: false),
+                    Last = table.Column<double>(nullable: false),
+                    Bid = table.Column<double>(nullable: false),
+                    Ask = table.Column<double>(nullable: false),
                     OpenBuyOrders = table.Column<int>(nullable: false),
                     OpenSellOrders = table.Column<int>(nullable: false),
                     TimeStamp = table.Column<DateTime>(nullable: false),
-                    UpdatedOn = table.Column<DateTime>(nullable: false),
-                    Volume = table.Column<double>(nullable: false)
+                    UpdatedOn = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -36,16 +35,16 @@ namespace Nexplorer.Data.Migrations
                 columns: table => new
                 {
                     Height = table.Column<int>(nullable: false),
-                    Bits = table.Column<string>(nullable: true),
-                    Channel = table.Column<int>(nullable: false),
-                    Difficulty = table.Column<double>(nullable: false),
                     Hash = table.Column<string>(maxLength: 256, nullable: false),
-                    MerkleRoot = table.Column<string>(nullable: true),
-                    Mint = table.Column<double>(nullable: false),
-                    Nonce = table.Column<double>(nullable: false),
                     Size = table.Column<int>(nullable: false),
+                    Channel = table.Column<int>(nullable: false),
+                    Version = table.Column<int>(nullable: false),
+                    MerkleRoot = table.Column<string>(nullable: true),
                     TimeUtc = table.Column<DateTime>(nullable: false),
-                    Version = table.Column<int>(nullable: false)
+                    Nonce = table.Column<double>(nullable: false),
+                    Bits = table.Column<string>(nullable: true),
+                    Difficulty = table.Column<double>(nullable: false),
+                    Mint = table.Column<double>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -58,8 +57,8 @@ namespace Nexplorer.Data.Migrations
                 {
                     BlockId = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Hash = table.Column<string>(maxLength: 256, nullable: false),
                     Height = table.Column<int>(nullable: false),
+                    Hash = table.Column<string>(maxLength: 256, nullable: false),
                     TimeUtc = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
@@ -73,8 +72,8 @@ namespace Nexplorer.Data.Migrations
                 {
                     AddressId = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    FirstBlockHeight = table.Column<int>(nullable: false),
-                    Hash = table.Column<string>(maxLength: 256, nullable: false)
+                    Hash = table.Column<string>(maxLength: 256, nullable: false),
+                    FirstBlockHeight = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -93,11 +92,11 @@ namespace Nexplorer.Data.Migrations
                 {
                     TransactionId = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Amount = table.Column<double>(nullable: false),
                     BlockHeight = table.Column<int>(nullable: false),
-                    Confirmations = table.Column<int>(nullable: false),
                     Hash = table.Column<string>(maxLength: 256, nullable: false),
-                    TimeUtc = table.Column<DateTime>(nullable: false)
+                    Confirmations = table.Column<int>(nullable: false),
+                    TimeUtc = table.Column<DateTime>(nullable: false),
+                    Amount = table.Column<double>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -132,14 +131,44 @@ namespace Nexplorer.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AddressAggregate",
+                columns: table => new
+                {
+                    AddressId = table.Column<int>(nullable: false),
+                    LastBlockHeight = table.Column<int>(nullable: false),
+                    Balance = table.Column<double>(nullable: false),
+                    ReceivedAmount = table.Column<double>(nullable: false),
+                    ReceivedCount = table.Column<int>(nullable: false),
+                    SentAmount = table.Column<double>(nullable: false),
+                    SentCount = table.Column<int>(nullable: false),
+                    UpdatedOn = table.Column<DateTime>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AddressAggregate", x => x.AddressId);
+                    table.ForeignKey(
+                        name: "FK_AddressAggregate_Address_AddressId",
+                        column: x => x.AddressId,
+                        principalTable: "Address",
+                        principalColumn: "AddressId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AddressAggregate_Block_LastBlockHeight",
+                        column: x => x.LastBlockHeight,
+                        principalTable: "Block",
+                        principalColumn: "Height",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TransactionInput",
                 columns: table => new
                 {
-                    TransactionInputId = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    TransactionId = table.Column<int>(nullable: false),
                     AddressId = table.Column<int>(nullable: false),
                     Amount = table.Column<double>(nullable: false),
-                    TransactionId = table.Column<int>(nullable: false)
+                    TransactionInputId = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn)
                 },
                 constraints: table =>
                 {
@@ -162,11 +191,11 @@ namespace Nexplorer.Data.Migrations
                 name: "TransactionOutput",
                 columns: table => new
                 {
-                    TransactionOutputId = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    TransactionId = table.Column<int>(nullable: false),
                     AddressId = table.Column<int>(nullable: false),
                     Amount = table.Column<double>(nullable: false),
-                    TransactionId = table.Column<int>(nullable: false)
+                    TransactionOutputId = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn)
                 },
                 constraints: table =>
                 {
@@ -185,6 +214,42 @@ namespace Nexplorer.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "TrustKey",
+                columns: table => new
+                {
+                    TrustKeyId = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    AddressId = table.Column<int>(nullable: false),
+                    TransactionId = table.Column<int>(nullable: false),
+                    GenesisBlockHeight = table.Column<int>(nullable: false),
+                    Key = table.Column<string>(nullable: false),
+                    Hash = table.Column<string>(nullable: false),
+                    CreatedOn = table.Column<DateTime>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TrustKey", x => x.TrustKeyId);
+                    table.ForeignKey(
+                        name: "FK_TrustKey_Address_AddressId",
+                        column: x => x.AddressId,
+                        principalTable: "Address",
+                        principalColumn: "AddressId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TrustKey_Block_GenesisBlockHeight",
+                        column: x => x.GenesisBlockHeight,
+                        principalTable: "Block",
+                        principalColumn: "Height",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TrustKey_Transaction_TransactionId",
+                        column: x => x.TransactionId,
+                        principalTable: "Transaction",
+                        principalColumn: "TransactionId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Address_FirstBlockHeight",
                 table: "Address",
@@ -193,12 +258,33 @@ namespace Nexplorer.Data.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Address_Hash",
                 table: "Address",
-                column: "Hash");
+                column: "Hash",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AddressAggregate_Balance",
+                table: "AddressAggregate",
+                column: "Balance");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AddressAggregate_LastBlockHeight",
+                table: "AddressAggregate",
+                column: "LastBlockHeight");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Block_Channel",
+                table: "Block",
+                column: "Channel");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Block_Hash",
                 table: "Block",
                 column: "Hash");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Block_TimeUtc",
+                table: "Block",
+                column: "TimeUtc");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrphanBlock_Hash",
@@ -221,9 +307,19 @@ namespace Nexplorer.Data.Migrations
                 column: "BlockHeight");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Transaction_Confirmations",
+                table: "Transaction",
+                column: "Confirmations");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Transaction_Hash",
                 table: "Transaction",
                 column: "Hash");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transaction_TimeUtc",
+                table: "Transaction",
+                column: "TimeUtc");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TransactionInput_AddressId",
@@ -254,10 +350,28 @@ namespace Nexplorer.Data.Migrations
                 name: "IX_TransactionOutput_TransactionId",
                 table: "TransactionOutput",
                 column: "TransactionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrustKey_AddressId",
+                table: "TrustKey",
+                column: "AddressId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrustKey_GenesisBlockHeight",
+                table: "TrustKey",
+                column: "GenesisBlockHeight");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrustKey_TransactionId",
+                table: "TrustKey",
+                column: "TransactionId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AddressAggregate");
+
             migrationBuilder.DropTable(
                 name: "BittrexSummary");
 
@@ -269,6 +383,9 @@ namespace Nexplorer.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "TransactionOutput");
+
+            migrationBuilder.DropTable(
+                name: "TrustKey");
 
             migrationBuilder.DropTable(
                 name: "OrphanBlock");

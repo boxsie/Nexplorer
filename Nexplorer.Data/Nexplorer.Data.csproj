@@ -34,4 +34,8 @@
     <ProjectReference Include="..\Nexplorer.Infrastructure\Nexplorer.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\NexusDbMigrations\" />
+  </ItemGroup>
+
 </Project>
