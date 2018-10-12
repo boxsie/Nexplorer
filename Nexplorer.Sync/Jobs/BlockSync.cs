@@ -6,9 +6,12 @@ using Nexplorer.Config;
 using Nexplorer.Data.Cache.Block;
 using Nexplorer.Data.Cache.Services;
 using Nexplorer.Data.Command;
+using Nexplorer.Data.Context;
 using Nexplorer.Data.Publish;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Dtos;
+using Nexplorer.Domain.Entity.Blockchain;
+using Nexplorer.Domain.Enums;
 using Nexplorer.Sync.Core;
 using Quartz;
 
@@ -19,11 +22,13 @@ namespace Nexplorer.Sync.Jobs
         private readonly IBlockCache _blockCache;
         private readonly NexusQuery _nexusQuery;
         private readonly BlockQuery _blockQuery;
-        private readonly BlockAddCommand _blockAdd;
+        private readonly BlockMapper _blockAdd;
         private readonly RollingCountPublisher _countPublisher;
+        private readonly NexusDb _nexusDb;
+        private readonly AddressAggregateUpdateCommand _addressUpdateCommand;
 
-        public BlockSync(IBlockCache blockCache, NexusQuery nexusQuery, BlockQuery blockQuery, BlockAddCommand blockAdd, 
-            RollingCountPublisher countPublisher, ILogger<BlockSync> logger) 
+        public BlockSync(IBlockCache blockCache, NexusQuery nexusQuery, BlockQuery blockQuery, BlockMapper blockAdd, RollingCountPublisher countPublisher, 
+            NexusDb nexusDb, AddressAggregateUpdateCommand addressUpdateCommand, ILogger<BlockSync> logger) 
             : base(logger, 30)
         {
             _blockCache = blockCache;
@@ -31,6 +36,8 @@ namespace Nexplorer.Sync.Jobs
             _blockQuery = blockQuery;
             _blockAdd = blockAdd;
             _countPublisher = countPublisher;
+            _nexusDb = nexusDb;
+            _addressUpdateCommand = addressUpdateCommand;
         }
 
         protected override async Task<string> ExecuteAsync()
@@ -81,8 +88,30 @@ namespace Nexplorer.Sync.Jobs
                 Logger.LogInformation($"Syncing block {finalBlockDto.Height}");
             }
 
-            await _blockAdd.AddBlocksAsync(syncBlocks);
-            await _blockAdd.AddOrphansAsync(orphanBlocks);
+            var blocks = await _blockAdd.MapBlocksAsync(syncBlocks);
+            var orphans = _blockAdd.MapOrphansAsync(orphanBlocks);
+
+            await _nexusDb.Blocks.AddRangeAsync(blocks);
+            await _nexusDb.OrphanBlocks.AddRangeAsync(orphans);
+
+            await UpdateAddressAggregates(blocks);
+
+            await _nexusDb.SaveChangesAsync();
+        }
+
+        private async Task UpdateAddressAggregates(IEnumerable<Block> blocks)
+        {
+            foreach (var block in blocks)
+            {
+                foreach (var tx in block.Transactions)
+                {
+                    foreach (var txIn in tx.Inputs)
+                        await _addressUpdateCommand.UpdateAsync(_nexusDb, txIn.Address.AddressId, TransactionType.Input, txIn.Amount, txIn.Transaction.Block);
+
+                    foreach (var txOut in tx.Outputs)
+                        await _addressUpdateCommand.UpdateAsync(_nexusDb, txOut.Address.AddressId, TransactionType.Output, txOut.Amount, txOut.Transaction.Block);
+                }
+            }
         }
     }
 }

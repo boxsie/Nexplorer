@@ -9,14 +9,16 @@ namespace Nexplorer.Data.Map
 {
     public class TransactionInputOutputMapper
     {
+        private readonly NexusDb _nexusDb;
         private readonly Dictionary<string, Address> _addressCache;
 
-        public TransactionInputOutputMapper()
+        public TransactionInputOutputMapper(NexusDb nexusDb)
         {
+            _nexusDb = nexusDb;
             _addressCache = new Dictionary<string, Address>();
         }
 
-        public async Task<List<T>> MapTransactionInputOutput<T>(NexusDb context, IEnumerable<TransactionInputOutputDto> txInOutDtos, Block block, Transaction transaction) where T : TransactionInputOutput, new()
+        public async Task<List<T>> MapTransactionInputOutput<T>(IEnumerable<TransactionInputOutputDto> txInOutDtos, Block block, Transaction transaction) where T : TransactionInputOutput, new()
         {
             var txInOuts = new List<T>();
 
@@ -26,7 +28,7 @@ namespace Nexplorer.Data.Map
 
                 var address = (cachedAddress
                                   ? _addressCache[txInOutDto.AddressHash]
-                                  : await context.Addresses.Include(x => x.FirstBlock).FirstOrDefaultAsync(x => x.Hash == txInOutDto.AddressHash)) ??
+                                  : await _nexusDb.Addresses.Include(x => x.FirstBlock).FirstOrDefaultAsync(x => x.Hash == txInOutDto.AddressHash)) ??
                               new Address { Hash = txInOutDto.AddressHash, FirstBlock = block };
 
                 if (address.FirstBlock == null)

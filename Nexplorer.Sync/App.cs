@@ -13,20 +13,23 @@ namespace Nexplorer.Sync
 {
     public class App
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly BlockSyncCatchup _catchup;
         private readonly ILogger<App> _logger;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly BlockSyncCatchup _blockCatchup;
+        private readonly AddressAggregateCatchup _addressAggregateCatchup;
 
-        public App(IServiceProvider serviceProvider, BlockSyncCatchup catchup, ILogger<App> logger)
+        public App(ILogger<App> logger, IServiceProvider serviceProvider, BlockSyncCatchup blockCatchup, AddressAggregateCatchup addressAggregateCatchup)
         {
-            _serviceProvider = serviceProvider;
-            _catchup = catchup;
             _logger = logger;
+            _serviceProvider = serviceProvider;
+            _blockCatchup = blockCatchup;
+            _addressAggregateCatchup = addressAggregateCatchup;
         }
 
         public async Task Run()
         {
-            await _catchup.Catchup();
+            await _blockCatchup.Catchup();
+            await _addressAggregateCatchup.Catchup();
 
             await StartJobs();
         }

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
 using Nexplorer.Core;
@@ -13,20 +15,109 @@ using Nexplorer.Data.Context;
 using Nexplorer.Data.Map;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Dtos;
+using Nexplorer.Domain.Enums;
 
 namespace Nexplorer.Sync.Nexus
 {
+    public class AddressAggregateCatchup
+    {
+        private readonly NexusDb _nexusDb;
+        private readonly ILogger<AddressAggregateCatchup> _logger;
+        private readonly AddressAggregateUpdateCommand _addressAggregateUpdate;
+
+        public AddressAggregateCatchup(ILogger<AddressAggregateCatchup> logger, NexusDb nexusDb,
+            AddressAggregateUpdateCommand addressAggregateUpdate)
+        {
+            _logger = logger;
+            _addressAggregateUpdate = addressAggregateUpdate;
+            _nexusDb = nexusDb;
+        }
+
+        public async Task Catchup()
+        {
+            var lastBlockHeight = await GetLastBlockHeight();
+
+            var dbHeight = await _nexusDb.Blocks
+                .OrderBy(x => x.Height)
+                .Select(x => x.Height)
+                .LastOrDefaultAsync();
+
+            while (lastBlockHeight < dbHeight)
+            {
+                var nextBlockHeight = lastBlockHeight + 1;
+
+                var updateCount = 0;
+
+                var bulkSaveCount = Settings.App.BulkSaveCount;
+
+                var lastHeight = dbHeight - nextBlockHeight > bulkSaveCount
+                    ? nextBlockHeight + bulkSaveCount
+                    : dbHeight;
+
+                _logger.LogInformation($"Adding address aggregate data from block {nextBlockHeight} -> {lastHeight}");
+
+                for (var i = nextBlockHeight; i < nextBlockHeight + bulkSaveCount; i++)
+                {
+                    var height = i;
+
+                    if (height > dbHeight)
+                        break;
+
+                    var nextBlock = await _nexusDb.Blocks
+                        .Include(x => x.Transactions)
+                        .ThenInclude(x => x.Inputs)
+                        .ThenInclude(x => x.Address)
+                        .Include(x => x.Transactions)
+                        .ThenInclude(x => x.Outputs)
+                        .ThenInclude(x => x.Address)
+                        .FirstOrDefaultAsync(x => x.Height == height);
+
+                    if (nextBlock == null)
+                        break;
+
+                    foreach (var transaction in nextBlock.Transactions)
+                    {
+                        foreach (var transactionInput in transaction.Inputs)
+                            await _addressAggregateUpdate.UpdateAsync(_nexusDb, transactionInput.Address.AddressId,
+                                TransactionType.Input, transactionInput.Amount, nextBlock);
+
+                        foreach (var transactionOutput in transaction.Outputs)
+                            await _addressAggregateUpdate.UpdateAsync(_nexusDb, transactionOutput.Address.AddressId,
+                                TransactionType.Output, transactionOutput.Amount, nextBlock);
+                    }
+
+                    updateCount++;
+                }
+
+                await _nexusDb.SaveChangesAsync();
+
+                _addressAggregateUpdate.Reset();
+
+                _logger.LogInformation($"{updateCount} address aggregates saved");
+
+                lastBlockHeight = await GetLastBlockHeight();
+            }
+        }
+
+        private async Task<int> GetLastBlockHeight()
+        {
+            return await _nexusDb.AddressAggregates.AnyAsync()
+                ? await _nexusDb.AddressAggregates.MaxAsync(x => x.LastBlock.Height)
+                : 0;
+        }
+    }
+
     public class BlockSyncCatchup
     {
         private readonly NexusQuery _nexusQuery;
         private readonly NexusDb _nexusDb;
         private readonly BlockQuery _blockQuery;
-        private readonly BlockAddCommand _blockAdd;
+        private readonly BlockMapper _blockAdd;
         private readonly BlockCacheBuild _blockCacheBuild;
         private readonly ILogger<BlockSyncCatchup> _logger;
         private readonly RedisCommand _redisCommand;
 
-        public BlockSyncCatchup(NexusQuery nexusQuery, NexusDb nexusDb, BlockQuery blockQuery, BlockAddCommand blockAdd, 
+        public BlockSyncCatchup(NexusQuery nexusQuery, NexusDb nexusDb, BlockQuery blockQuery, BlockMapper blockAdd, 
             BlockCacheBuild blockCacheBuild, ILogger<BlockSyncCatchup> logger, RedisCommand redisCommand)
         {
             _nexusQuery = nexusQuery;
@@ -117,7 +208,10 @@ namespace Nexplorer.Sync.Nexus
                 
                 _logger.LogInformation("Sync complete. Performing sync save...");
 
-                await _blockAdd.AddBlocksAsync(dbBlocks);
+                var blocks = await _blockAdd.MapBlocksAsync(dbBlocks);
+
+                await _nexusDb.AddRangeAsync(blocks);
+                await _nexusDb.SaveChangesAsync();
                 
                 nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
                 syncedHeight = await _blockQuery.GetLastSyncedHeightAsync();

@@ -89,11 +89,12 @@ namespace Nexplorer.Sync
             services.AddTransient<LatestBlockPublisher>();
             services.AddTransient<RollingCountPublisher>();
             services.AddTransient<RedisCommand>();
-            services.AddTransient<BlockAddCommand>();
+            services.AddTransient<BlockMapper>();
             services.AddTransient<AddressAggregateUpdateCommand>();
             services.AddTransient<TransactionInputOutputMapper>();
 
             services.AddTransient<BlockSyncCatchup>();
+            services.AddTransient<AddressAggregateCatchup>();
             services.AddTransient<BlockSync>();
             services.AddTransient<BlockScan>();
             services.AddTransient<BlockCache>();
@@ -102,7 +103,6 @@ namespace Nexplorer.Sync
             services.AddTransient<AddressStats>();
             services.AddTransient<AddressCache>();
             services.AddTransient<AddressAggregation>();
-            services.AddTransient<TransactionRefresh>();
 
             services.AddTransient<INexusClient, NexusClient>();
             services.AddTransient<INexusClient, NexusClient>(x => new NexusClient(x.GetService<ILogger<RpcClient>>(), configuration.GetConnectionString("Nexus")));
