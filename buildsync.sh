@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sudo supervisorctl stop nexplorerSync
-cd ~/Nexplorer/
+cd ~/nexplorer/
 git pull
 cd Nexplorer.Sync
 sudo dotnet publish -c Release
