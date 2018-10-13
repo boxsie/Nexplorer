@@ -206,7 +206,7 @@ namespace Nexplorer.Sync.Nexus
                     break;
 
                 if (i % 5 == 0)
-                    Console.WriteLine($"\r {i} out of {saveCount} synced");
+                    Console.Write($"\r {i} out of {saveCount} synced");
 
                 dbBlocks.Add(blockDto);
 
