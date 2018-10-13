@@ -261,8 +261,7 @@ namespace Nexplorer.Sync.Nexus
                     : ' ';
             }
 
-            if (i % 5 == 0)
-                Console.Write($"\rSyncing {saveCount} blocks... [{bar}] {syncedPct}%");
+            Console.Write($"\rSyncing {saveCount} blocks... [{bar}] {Math.Floor(syncedPct)}%");
         }
     }
 }
