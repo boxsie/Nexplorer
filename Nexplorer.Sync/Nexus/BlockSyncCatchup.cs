@@ -250,13 +250,13 @@ namespace Nexplorer.Sync.Nexus
 
         private void LogProgress(int i, int saveCount)
         {
-            var syncedPct = (i / saveCount) * 100;
+            var syncedPct = ((double)i / saveCount) * 100;
             var progress = Math.Floor((double)syncedPct / 10);
             var bar = "";
 
             for (var o = 0; o < 10; o++)
             {
-                bar += progress < o
+                bar += progress > o
                     ? '#'
                     : ' ';
             }
