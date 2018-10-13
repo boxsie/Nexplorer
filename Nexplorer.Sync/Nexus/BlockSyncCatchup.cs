@@ -120,7 +120,7 @@ namespace Nexplorer.Sync.Nexus
         private readonly ILogger<BlockSyncCatchup> _logger;
         private readonly RedisCommand _redisCommand;
 
-        private Stopwatch _stopwatch;
+        private DateTime _iterationStart;
         private int _totalSeconds;
         private int _iterationCount;
 
@@ -161,16 +161,14 @@ namespace Nexplorer.Sync.Nexus
                 nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
             }
 
-            _stopwatch = new Stopwatch();
+            _iterationStart = DateTime.Now;
             _totalSeconds = 0;
             _iterationCount = 0;
 
             while (syncedHeight + Settings.App.BlockCacheCount < nexusHeight)
             {
                 var syncDelta = nexusHeight - syncedHeight;
-
-                _stopwatch.Start();
-
+                
                 _logger.LogInformation($"Sync is { syncDelta } blocks behind Nexus");
                 
                 var saveCount = Settings.App.BulkSaveCount;
@@ -184,7 +182,7 @@ namespace Nexplorer.Sync.Nexus
                 nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
                 syncedHeight = await _blockQuery.GetLastSyncedHeightAsync();
 
-                ResetStopwatch(syncDelta);
+                LogTimeTaken(syncDelta);
             }
 
             _logger.LogInformation("Database sync is up to date");
@@ -229,23 +227,23 @@ namespace Nexplorer.Sync.Nexus
             }
         }
 
-        private void ResetStopwatch(int syncDelta)
+        private void LogTimeTaken(int syncDelta)
         {
-            if (_stopwatch.IsRunning)
-            {
-                _iterationCount++;
-                _totalSeconds += _stopwatch.Elapsed.Seconds;
+            _iterationCount++;
 
-                var avgSeconds = _totalSeconds / _iterationCount;
-                var estRemainingIterations = syncDelta / Settings.App.BulkSaveCount;
+            var timeDelta = (DateTime.Now - _iterationStart);
 
-                var remainingTime = TimeSpan.FromSeconds(estRemainingIterations * avgSeconds);
+            _totalSeconds += timeDelta.Seconds;
 
-                _logger.LogInformation($"Save complete. Iteration took { _stopwatch.Elapsed.Seconds } seconds");
-                _logger.LogInformation($"Estimated remaining sync time: { remainingTime }");
+            var avgSeconds = _totalSeconds / _iterationCount;
+            var estRemainingIterations = syncDelta / Settings.App.BulkSaveCount;
 
-                _stopwatch.Reset();
-            }
+            var remainingTime = TimeSpan.FromSeconds(estRemainingIterations * avgSeconds);
+
+            _logger.LogInformation($"Save complete. Iteration took { timeDelta.Seconds } seconds");
+            _logger.LogInformation($"Estimated remaining sync time: { remainingTime }");
+
+            _iterationStart = DateTime.Now;
         }
 
         private void LogProgress(int i, int saveCount)
