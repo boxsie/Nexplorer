@@ -205,14 +205,14 @@ namespace Nexplorer.Sync.Nexus
                 if (blockDto == null)
                     break;
 
-                if (i % 5 == 0)
-                    Console.Write($"\r {i} out of {saveCount} synced");
-
                 dbBlocks.Add(blockDto);
 
                 blockDto = await _nexusQuery.GetBlockAsync(blockDto.Height + 1, true);
+
+                LogProgress(i, saveCount);
             }
 
+            Console.Write($"\r ");
             return dbBlocks;
         }
 
@@ -246,6 +246,23 @@ namespace Nexplorer.Sync.Nexus
 
                 _stopwatch.Reset();
             }
+        }
+
+        private void LogProgress(int i, int saveCount)
+        {
+            var syncedPct = (i / saveCount) * 100;
+            var progress = Math.Floor((double)syncedPct / 10);
+            var bar = "";
+
+            for (var o = 0; o < 10; o++)
+            {
+                bar += progress < o
+                    ? '#'
+                    : ' ';
+            }
+
+            if (i % 5 == 0)
+                Console.Write($"\rSyncing[{bar}] {syncedPct}%");
         }
     }
 }
