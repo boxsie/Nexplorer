@@ -212,7 +212,7 @@ namespace Nexplorer.Sync.Nexus
                 LogProgress(i, saveCount);
             }
 
-            Console.Write($"\r ");
+            Console.Write($"\r");
             return dbBlocks;
         }
 
@@ -262,7 +262,7 @@ namespace Nexplorer.Sync.Nexus
             }
 
             if (i % 5 == 0)
-                Console.Write($"\rSyncing[{bar}] {syncedPct}%");
+                Console.Write($"\rSyncing {saveCount} blocks... [{bar}] {syncedPct}%");
         }
     }
 }
