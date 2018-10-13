@@ -6,12 +6,18 @@ namespace Nexplorer.Domain.Entity.Blockchain
     public abstract class TransactionInputOutput
     {
         [Required]
-        public virtual Transaction Transaction { get; set; }
+        public int TransactionId { get; set; }
         
         [Required]
-        public virtual Address Address { get; set; }
+        public int AddressId { get; set; }
         
         [Required]
         public double Amount { get; set; }
+
+        [ForeignKey("TransactionId")]
+        public Transaction Transaction { get; set; }
+
+        [ForeignKey("AddressId")]
+        public Address Address { get; set; }
     }
 }

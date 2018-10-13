@@ -26,7 +26,7 @@ namespace Nexplorer.Domain.Dtos
         public string MerkleRoot { get; set; }
 
         [ProtoMember(7)]
-        public DateTime TimeUtc { get; set; }
+        public DateTime Timestamp { get; set; }
 
         [ProtoMember(8)]
         public double Nonce { get; set; }

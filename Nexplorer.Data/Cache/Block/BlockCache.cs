@@ -223,10 +223,10 @@ namespace Nexplorer.Data.Cache.Block
             foreach (var txDto in block.Transactions)
             {
                 foreach (var txIn in txDto.Inputs)
-                    AddAddressTransaction(txIn.AddressHash, block.Height, txDto.TimeUtc, txDto.Hash, txIn.Amount, TransactionType.Input);
+                    AddAddressTransaction(txIn.AddressHash, block.Height, txDto.Timestamp, txDto.Hash, txIn.Amount, TransactionType.Input);
 
                 foreach (var txOut in txDto.Outputs)
-                    AddAddressTransaction(txOut.AddressHash, block.Height, txDto.TimeUtc, txDto.Hash, txOut.Amount, TransactionType.Output);
+                    AddAddressTransaction(txOut.AddressHash, block.Height, txDto.Timestamp, txDto.Hash, txOut.Amount, TransactionType.Output);
             }
         }
 

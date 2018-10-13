@@ -50,7 +50,7 @@
 //                    continue;
 
 //                transaction.Amount = dto.Amount;
-//                transaction.TimeUtc = dto.TimeUtc;
+//                transaction.Timestamp = dto.Timestamp;
 
 //                transaction.Inputs = await _txInOutMapper.MapTransactionInputOutput<TransactionInput>(_nexusDb, dto.Inputs, transaction.Block, transaction);
 //                transaction.Outputs = await _txInOutMapper.MapTransactionInputOutput<TransactionOutput>(_nexusDb, dto.Outputs, transaction.Block, transaction);

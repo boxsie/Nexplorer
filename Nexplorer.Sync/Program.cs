@@ -69,7 +69,7 @@ namespace Nexplorer.Sync
 
             var configuration = Settings.BuildConfig(services);
                 
-            services.AddDbContext<NexusDb>(x => x.UseMySql(configuration.GetConnectionString("NexusDb"), y => y.MigrationsAssembly("Nexplorer.Data")), ServiceLifetime.Transient);
+            services.AddDbContext<NexusDb>(x => x.UseSqlServer(configuration.GetConnectionString("NexusDb"), y => y.MigrationsAssembly("Nexplorer.Data")), ServiceLifetime.Transient);
 
             services.AddSingleton(ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis")));
 

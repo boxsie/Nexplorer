@@ -19,8 +19,9 @@ namespace Nexplorer.Domain.Entity.Orphan
         [MaxLength(256)]
         public string Hash { get; set; }
         
-        public DateTime TimeUtc { get; set; }
+        [Required]
+        public DateTime Timestamp { get; set; }
         
-        public virtual ICollection<OrphanTransaction> Transactions { get; set; }
+        public List<OrphanTransaction> Transactions { get; set; }
     }
 }

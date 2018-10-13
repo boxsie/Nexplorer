@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -15,6 +17,7 @@ using Nexplorer.Data.Context;
 using Nexplorer.Data.Map;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Dtos;
+using Nexplorer.Domain.Entity.Blockchain;
 using Nexplorer.Domain.Enums;
 
 namespace Nexplorer.Sync.Nexus
@@ -102,7 +105,7 @@ namespace Nexplorer.Sync.Nexus
         private async Task<int> GetLastBlockHeight()
         {
             return await _nexusDb.AddressAggregates.AnyAsync()
-                ? await _nexusDb.AddressAggregates.MaxAsync(x => x.LastBlock.Height)
+                ? await _nexusDb.AddressAggregates.MaxAsync(x => x.LastBlockHeight)
                 : 0;
         }
     }
@@ -110,18 +113,22 @@ namespace Nexplorer.Sync.Nexus
     public class BlockSyncCatchup
     {
         private readonly NexusQuery _nexusQuery;
-        private readonly NexusDb _nexusDb;
+        private readonly IServiceProvider _serviceProvider;
         private readonly BlockQuery _blockQuery;
         private readonly BlockMapper _blockAdd;
         private readonly BlockCacheBuild _blockCacheBuild;
         private readonly ILogger<BlockSyncCatchup> _logger;
         private readonly RedisCommand _redisCommand;
 
-        public BlockSyncCatchup(NexusQuery nexusQuery, NexusDb nexusDb, BlockQuery blockQuery, BlockMapper blockAdd, 
+        private Stopwatch _stopwatch;
+        private int _totalSeconds;
+        private int _iterationCount;
+
+        public BlockSyncCatchup(NexusQuery nexusQuery, IServiceProvider serviceProvider, BlockQuery blockQuery, BlockMapper blockAdd, 
             BlockCacheBuild blockCacheBuild, ILogger<BlockSyncCatchup> logger, RedisCommand redisCommand)
         {
             _nexusQuery = nexusQuery;
-            _nexusDb = nexusDb;
+            _serviceProvider = serviceProvider;
             _blockQuery = blockQuery;
             _blockAdd = blockAdd;
             _blockCacheBuild = blockCacheBuild;
@@ -154,72 +161,91 @@ namespace Nexplorer.Sync.Nexus
                 nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
             }
 
-            var stopwatch = new Stopwatch();
-            var totalSeconds = 0;
-            var iterationCount = 0;
+            _stopwatch = new Stopwatch();
+            _totalSeconds = 0;
+            _iterationCount = 0;
 
             while (syncedHeight + Settings.App.BlockCacheCount < nexusHeight)
             {
                 var syncDelta = nexusHeight - syncedHeight;
 
-                if (stopwatch.IsRunning)
-                {
-                    iterationCount++;
-                    totalSeconds += stopwatch.Elapsed.Seconds;
-
-                    var avgSeconds = totalSeconds / iterationCount;
-                    var estRemainingIterations = syncDelta / Settings.App.BulkSaveCount;
-
-                    var remainingTime = TimeSpan.FromSeconds(estRemainingIterations * avgSeconds);
-
-                    _logger.LogInformation($"Save complete. Iteration took { stopwatch.Elapsed.Seconds } seconds");
-                    _logger.LogInformation($"Estimated remaining sync time: { remainingTime }");
-
-                    stopwatch.Reset();
-                }
-
-                stopwatch.Start();
+                _stopwatch.Start();
 
                 _logger.LogInformation($"Sync is { syncDelta } blocks behind Nexus");
-
-                var dbBlocks = new List<BlockDto>();
-
+                
                 var saveCount = Settings.App.BulkSaveCount;
 
                 if (syncDelta - Settings.App.BulkSaveCount < Settings.App.BlockCacheCount)
                     saveCount = Settings.App.BulkSaveCount - (Settings.App.BlockCacheCount - (syncDelta - Settings.App.BulkSaveCount));
-
-                var blockDto = await _nexusQuery.GetBlockAsync(syncedHeight + 1, true);
                 
-                _logger.LogInformation($"Syncing blocks { blockDto.Height } -> { (blockDto.Height + saveCount) - 1 }...");
+                var nexusBlocks = await GetBlocksFromNexus(syncedHeight, saveCount);
+                await SaveBlocksToDb(nexusBlocks);
 
-                for (var i = 0; i < saveCount; i++)
-                {
-                    if (blockDto == null)
-                        break;
-
-                    if (i % 5 == 0)
-                        _logger.LogInformation($"{i} out of {saveCount} synced");
-
-                    dbBlocks.Add(blockDto);
-
-                    blockDto = await _nexusQuery.GetBlockAsync(blockDto.Height + 1, true);
-                }
-                
-                _logger.LogInformation("Sync complete. Performing sync save...");
-
-                var blocks = await _blockAdd.MapBlocksAsync(dbBlocks);
-
-                await _nexusDb.AddRangeAsync(blocks);
-                await _nexusDb.SaveChangesAsync();
-                
                 nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
                 syncedHeight = await _blockQuery.GetLastSyncedHeightAsync();
+
+                ResetStopwatch(syncDelta);
             }
 
             _logger.LogInformation("Database sync is up to date");
 
             await _blockCacheBuild.BuildAsync(syncedHeight + 1);
+        }
+
+        private async Task<List<BlockDto>> GetBlocksFromNexus(int syncedHeight, int saveCount)
+        {
+            var dbBlocks = new List<BlockDto>();
+
+            var blockDto = await _nexusQuery.GetBlockAsync(syncedHeight + 1, true);
+
+            _logger.LogInformation($"Syncing blocks { blockDto.Height } -> { (blockDto.Height + saveCount) - 1 }...");
+
+            for (var i = 0; i < saveCount; i++)
+            {
+                if (blockDto == null)
+                    break;
+
+                if (i % 5 == 0)
+                    _logger.LogInformation($"{i} out of {saveCount} synced");
+
+                dbBlocks.Add(blockDto);
+
+                blockDto = await _nexusQuery.GetBlockAsync(blockDto.Height + 1, true);
+            }
+
+            return dbBlocks;
+        }
+
+        private async Task SaveBlocksToDb(List<BlockDto> nexusBlocks)
+        {
+            _logger.LogInformation("Sync complete. Performing sync save...");
+
+            using (var context = (NexusDb)_serviceProvider.GetService(typeof(NexusDb)))
+            {
+                var blocks = await _blockAdd.MapBlocksAsync(context, nexusBlocks);
+
+                await context.AddRangeAsync(blocks);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        private void ResetStopwatch(int syncDelta)
+        {
+            if (_stopwatch.IsRunning)
+            {
+                _iterationCount++;
+                _totalSeconds += _stopwatch.Elapsed.Seconds;
+
+                var avgSeconds = _totalSeconds / _iterationCount;
+                var estRemainingIterations = syncDelta / Settings.App.BulkSaveCount;
+
+                var remainingTime = TimeSpan.FromSeconds(estRemainingIterations * avgSeconds);
+
+                _logger.LogInformation($"Save complete. Iteration took { _stopwatch.Elapsed.Seconds } seconds");
+                _logger.LogInformation($"Estimated remaining sync time: { remainingTime }");
+
+                _stopwatch.Reset();
+            }
         }
     }
 }

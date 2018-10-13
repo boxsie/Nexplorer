@@ -14,8 +14,11 @@ namespace Nexplorer.Domain.Entity.Blockchain
         [Required]
         [MaxLength(256)]
         public string Hash { get; set; }
-        
+
         [Required]
-        public virtual Block FirstBlock { get; set; }
+        public int FirstBlockHeight { get; set; }
+        
+        [ForeignKey("FirstBlockHeight")]
+        public Block FirstBlock { get; set; }
     }
 }

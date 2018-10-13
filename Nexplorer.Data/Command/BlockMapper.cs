@@ -22,7 +22,7 @@ namespace Nexplorer.Data.Command
             _mapper = mapper;
         }
 
-        public async Task<List<Block>> MapBlocksAsync(IEnumerable<BlockDto> blockDtos)
+        public async Task<List<Block>> MapBlocksAsync(NexusDb nexusDb, IEnumerable<BlockDto> blockDtos)
         {
             _txInOutMapper.Reset();
 
@@ -39,8 +39,8 @@ namespace Nexplorer.Data.Command
                     if (tx == null)
                         throw new NullReferenceException("Block mapper transaction is null");
 
-                    tx.Inputs = await _txInOutMapper.MapTransactionInputOutput<TransactionInput>(txDto.Inputs, block, tx);
-                    tx.Outputs = await _txInOutMapper.MapTransactionInputOutput<TransactionOutput>(txDto.Outputs, block, tx);
+                    tx.Inputs = await _txInOutMapper.MapTransactionInputOutput<TransactionInput>(nexusDb, txDto.Inputs, block, tx);
+                    tx.Outputs = await _txInOutMapper.MapTransactionInputOutput<TransactionOutput>(nexusDb, txDto.Outputs, block, tx);
                 }
 
                 blocks.Add(block);

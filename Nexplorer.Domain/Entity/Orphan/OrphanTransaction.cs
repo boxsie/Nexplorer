@@ -18,5 +18,8 @@ namespace Nexplorer.Domain.Entity.Orphan
         [Required]
         [MaxLength(256)]
         public string Hash { get; set; }
+
+        [ForeignKey("BlockHeight")]
+        public OrphanBlock OrphanBlock { get; set; }
     }
 }

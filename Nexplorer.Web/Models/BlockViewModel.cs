@@ -35,7 +35,7 @@ namespace Nexplorer.Web.Models
             Size = block.Size;
             Channel = ((BlockChannels)block.Channel).ToString();
             Version = block.Version;
-            TimeUtc = block.TimeUtc;
+            TimeUtc = block.Timestamp;
             Nonce = block.Nonce;
             Bits = block.Bits;
             Difficulty = block.Difficulty;

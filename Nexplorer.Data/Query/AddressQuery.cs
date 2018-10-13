@@ -303,12 +303,12 @@ namespace Nexplorer.Data.Query
                               t.BlockHeight,
                               t.Hash AS TransactionHash,
                               tIn.Amount,
-                              t.TimeUtc
+                              t.Timestamp
                               FROM Transaction t
                               INNER JOIN TransactionInput tIn ON tIn.TransactionId = t.TransactionId
                               INNER JOIN Address a ON a.AddressId = tIn.AddressId
                               WHERE a.AddressId = @addressId
-                              ORDER BY t.TimeUtc DESC";
+                              ORDER BY t.Timestamp DESC";
                     break;
                 case TransactionType.Output:
                     sqlQ += @"SELECT
@@ -316,12 +316,12 @@ namespace Nexplorer.Data.Query
                               t.BlockHeight,
                               t.Hash AS TransactionHash,
                               tOut.Amount,
-                              t.TimeUtc
+                              t.Timestamp
                               FROM Transaction t
                               INNER JOIN TransactionOutput tOut ON tOut.TransactionId = t.TransactionId
                               INNER JOIN Address a ON a.AddressId = tOut.AddressId
                               WHERE a.AddressId = @addressId
-                              ORDER BY t.TimeUtc DESC";
+                              ORDER BY t.Timestamp DESC";
                     break;
                 case TransactionType.Both:
                     sqlQ += @"SELECT 
@@ -329,7 +329,7 @@ namespace Nexplorer.Data.Query
                               t.Hash AS TransactionHash,
                               t.BlockHeight,
                               tOut.Amount,
-                              t.TimeUtc
+                              t.Timestamp
                               FROM TransactionOutput tOut
                               INNER JOIN Transaction t On t.TransactionId = tOut.TransactionId
                               WHERE tOut.AddressId = @addressId
@@ -339,11 +339,11 @@ namespace Nexplorer.Data.Query
                               t.Hash AS TransactionHash,
                               t.BlockHeight,
                               tIn.Amount,
-                              t.TimeUtc
+                              t.Timestamp
                               FROM TransactionInput tIn
                               INNER JOIN Transaction t On t.TransactionId = tIn.TransactionId
                               WHERE tIn.AddressId = @addressId                         
-                              ORDER BY TimeUtc DESC, TxType DESC";
+                              ORDER BY Timestamp DESC, TxType DESC";
                     break;
             }
 
@@ -396,21 +396,21 @@ namespace Nexplorer.Data.Query
             const string sqlQ = @"SELECT 
                                   2 AS TxType,
                                   tOut.Amount,
-                                  t.TimeUtc
+                                  t.Timestamp
                                   FROM TransactionOutput tOut
                                   INNER JOIN Transaction t On t.TransactionId = tOut.TransactionId
                                   WHERE tOut.AddressId = @addressId
-                                  AND t.TimeUtc >= @fromDate                         
+                                  AND t.Timestamp >= @fromDate                         
                                   UNION ALL
                                   SELECT
                                   1 AS TxType,
                                   tIn.Amount,
-                                  t.TimeUtc
+                                  t.Timestamp
                                   FROM TransactionInput tIn
                                   INNER JOIN Transaction t On t.TransactionId = tIn.TransactionId
                                   WHERE tIn.AddressId = @addressId
-                                  AND t.TimeUtc >= @fromDate                         
-                                  ORDER BY TimeUtc, TxType DESC";
+                                  AND t.Timestamp >= @fromDate                         
+                                  ORDER BY Timestamp, TxType DESC";
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
@@ -501,11 +501,11 @@ namespace Nexplorer.Data.Query
         {
             var mostRecent = await _nexusDb.Blocks
                 .OrderByDescending(x => x.Height)
-                .Select(x => x.TimeUtc)
+                .Select(x => x.Timestamp)
                 .FirstOrDefaultAsync();
 
             return await _nexusDb.Addresses
-                .Where(x => x.FirstBlock.TimeUtc >= mostRecent.AddHours(-1))
+                .Where(x => x.FirstBlock.Timestamp >= mostRecent.AddHours(-1))
                 .CountAsync();
         }
 

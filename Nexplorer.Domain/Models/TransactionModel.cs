@@ -22,7 +22,7 @@ namespace Nexplorer.Domain.Models
             TransactionHash = tx.Hash;
             Confirmations = tx.Confirmations;
             Amount = tx.Amount;
-            TimeUtc = tx.TimeUtc;
+            TimeUtc = tx.Timestamp;
 
             TransactionInputs = tx.Inputs?.Select(x => new TransactionInputOutputModel(x, tx.Hash)).ToList()
                                 ?? new List<TransactionInputOutputModel>();

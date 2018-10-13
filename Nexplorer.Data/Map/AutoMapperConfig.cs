@@ -43,15 +43,16 @@ namespace Nexplorer.Data.Map
                 x.CreateMap<BlockDto, OrphanBlock>()
                     .ForMember(d => d.BlockId, o => o.Ignore());
                 x.CreateMap<TransactionDto, OrphanTransaction>()
-                    .ForMember(d => d.BlockHeight, o => o.MapFrom(s => s.BlockHeight));
+                    .ForMember(d => d.BlockHeight, o => o.MapFrom(s => s.BlockHeight))
+                    .ForMember(d => d.OrphanBlock, o => o.Ignore());
 
                 x.CreateMap<BlockResponse, BlockDto>()
-                    .ForMember(d => d.TimeUtc, o => o.MapFrom(s => s.Time))
+                    .ForMember(d => d.Timestamp, o => o.MapFrom(s => s.Time))
                     .ForMember(d => d.Transactions, o => o.Ignore());
 
                 x.CreateMap<TransactionResponse, TransactionDto>()
                     .ForMember(d => d.Hash, o => o.MapFrom(s => s.TxId))
-                    .ForMember(d => d.TimeUtc, o => o.MapFrom(s => Helpers.ToDateTime(s.Time)))
+                    .ForMember(d => d.Timestamp, o => o.MapFrom(s => Helpers.ToDateTime(s.Time)))
                     .ForMember(d => d.Inputs, o => o.MapFrom(s => MapTxInOutDto(s.Inputs)))
                     .ForMember(d => d.Outputs, o => o.MapFrom(s => MapTxInOutDto(s.Outputs)))
                     .ForMember(d => d.TransactionId, o => o.Ignore())

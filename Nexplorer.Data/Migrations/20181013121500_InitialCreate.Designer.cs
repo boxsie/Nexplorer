@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Nexplorer.Data.Context;
@@ -9,7 +10,7 @@ using Nexplorer.Data.Context;
 namespace Nexplorer.Data.Migrations
 {
     [DbContext(typeof(NexusDb))]
-    [Migration("20181012222515_InitialCreate")]
+    [Migration("20181013121500_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -17,12 +18,14 @@ namespace Nexplorer.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.1.4-rtm-31024")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128)
+                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.Address", b =>
                 {
                     b.Property<int>("AddressId")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("FirstBlockHeight");
 
@@ -66,7 +69,9 @@ namespace Nexplorer.Data.Migrations
                 {
                     b.Property<int>("Height");
 
-                    b.Property<string>("Bits");
+                    b.Property<string>("Bits")
+                        .IsRequired()
+                        .HasMaxLength(256);
 
                     b.Property<int>("Channel");
 
@@ -76,7 +81,9 @@ namespace Nexplorer.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(256);
 
-                    b.Property<string>("MerkleRoot");
+                    b.Property<string>("MerkleRoot")
+                        .IsRequired()
+                        .HasMaxLength(256);
 
                     b.Property<double>("Mint");
 
@@ -84,7 +91,7 @@ namespace Nexplorer.Data.Migrations
 
                     b.Property<int>("Size");
 
-                    b.Property<DateTime>("TimeUtc");
+                    b.Property<DateTime>("Timestamp");
 
                     b.Property<int>("Version");
 
@@ -96,7 +103,8 @@ namespace Nexplorer.Data.Migrations
             modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.Transaction", b =>
                 {
                     b.Property<int>("TransactionId")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<double>("Amount");
 
@@ -108,7 +116,7 @@ namespace Nexplorer.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(256);
 
-                    b.Property<DateTime>("TimeUtc");
+                    b.Property<DateTime>("Timestamp");
 
                     b.HasKey("TransactionId");
 
@@ -120,7 +128,8 @@ namespace Nexplorer.Data.Migrations
             modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.TransactionInput", b =>
                 {
                     b.Property<int>("TransactionInputId")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("AddressId");
 
@@ -140,7 +149,8 @@ namespace Nexplorer.Data.Migrations
             modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.TransactionOutput", b =>
                 {
                     b.Property<int>("TransactionOutputId")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("AddressId");
 
@@ -160,13 +170,14 @@ namespace Nexplorer.Data.Migrations
             modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.TrustKey", b =>
                 {
                     b.Property<int>("TrustKeyId")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("AddressId");
 
                     b.Property<DateTime>("CreatedOn");
 
-                    b.Property<int>("GenesisBlockHeight");
+                    b.Property<int>("GenesisHeight");
 
                     b.Property<string>("Hash")
                         .IsRequired();
@@ -178,9 +189,10 @@ namespace Nexplorer.Data.Migrations
 
                     b.HasKey("TrustKeyId");
 
-                    b.HasIndex("AddressId");
+                    b.HasIndex("AddressId")
+                        .IsUnique();
 
-                    b.HasIndex("GenesisBlockHeight");
+                    b.HasIndex("GenesisHeight");
 
                     b.HasIndex("TransactionId");
 
@@ -190,7 +202,8 @@ namespace Nexplorer.Data.Migrations
             modelBuilder.Entity("Nexplorer.Domain.Entity.Exchange.BittrexSummary", b =>
                 {
                     b.Property<int>("BittrexSummaryId")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<double>("Ask");
 
@@ -222,7 +235,8 @@ namespace Nexplorer.Data.Migrations
             modelBuilder.Entity("Nexplorer.Domain.Entity.Orphan.OrphanBlock", b =>
                 {
                     b.Property<int>("BlockId")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Hash")
                         .IsRequired()
@@ -230,7 +244,7 @@ namespace Nexplorer.Data.Migrations
 
                     b.Property<int>("Height");
 
-                    b.Property<DateTime>("TimeUtc");
+                    b.Property<DateTime>("Timestamp");
 
                     b.HasKey("BlockId");
 
@@ -240,7 +254,8 @@ namespace Nexplorer.Data.Migrations
             modelBuilder.Entity("Nexplorer.Domain.Entity.Orphan.OrphanTransaction", b =>
                 {
                     b.Property<int>("TransactionId")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("BlockHeight");
 
@@ -248,11 +263,9 @@ namespace Nexplorer.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(256);
 
-                    b.Property<int?>("OrphanBlockBlockId");
-
                     b.HasKey("TransactionId");
 
-                    b.HasIndex("OrphanBlockBlockId");
+                    b.HasIndex("BlockHeight");
 
                     b.ToTable("OrphanTransaction");
                 });
@@ -275,7 +288,7 @@ namespace Nexplorer.Data.Migrations
                     b.HasOne("Nexplorer.Domain.Entity.Blockchain.Block", "LastBlock")
                         .WithMany()
                         .HasForeignKey("LastBlockHeight")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.Transaction", b =>
@@ -296,7 +309,7 @@ namespace Nexplorer.Data.Migrations
                     b.HasOne("Nexplorer.Domain.Entity.Blockchain.Transaction", "Transaction")
                         .WithMany("Inputs")
                         .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.TransactionOutput", b =>
@@ -309,32 +322,33 @@ namespace Nexplorer.Data.Migrations
                     b.HasOne("Nexplorer.Domain.Entity.Blockchain.Transaction", "Transaction")
                         .WithMany("Outputs")
                         .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.TrustKey", b =>
                 {
                     b.HasOne("Nexplorer.Domain.Entity.Blockchain.Address", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .WithOne()
+                        .HasForeignKey("Nexplorer.Domain.Entity.Blockchain.TrustKey", "AddressId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Nexplorer.Domain.Entity.Blockchain.Block", "GenesisBlock")
                         .WithMany()
-                        .HasForeignKey("GenesisBlockHeight")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("GenesisHeight")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Nexplorer.Domain.Entity.Blockchain.Transaction", "Transaction")
                         .WithMany()
                         .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Nexplorer.Domain.Entity.Orphan.OrphanTransaction", b =>
                 {
-                    b.HasOne("Nexplorer.Domain.Entity.Orphan.OrphanBlock")
+                    b.HasOne("Nexplorer.Domain.Entity.Orphan.OrphanBlock", "OrphanBlock")
                         .WithMany("Transactions")
-                        .HasForeignKey("OrphanBlockBlockId");
+                        .HasForeignKey("BlockHeight")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

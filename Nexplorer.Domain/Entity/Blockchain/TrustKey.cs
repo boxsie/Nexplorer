@@ -12,13 +12,13 @@ namespace Nexplorer.Domain.Entity.Blockchain
         public int TrustKeyId { get; set; }
 
         [Required]
-        public virtual Address Address { get; set; }
+        public int GenesisHeight { get; set; }
 
         [Required]
-        public virtual Transaction Transaction { get; set; }
+        public int AddressId { get; set; }
 
         [Required]
-        public virtual Block GenesisBlock { get; set; }
+        public int TransactionId { get; set; }
 
         [Required]
         public string Key { get; set; }
@@ -28,5 +28,14 @@ namespace Nexplorer.Domain.Entity.Blockchain
 
         [Required]
         public DateTime CreatedOn { get; set; }
+        
+        [ForeignKey("GenesisHeight")]
+        public Block GenesisBlock { get; set; }
+
+        [ForeignKey("AddressId")]
+        public Address Address { get; set; }
+
+        [ForeignKey("TransactionId")]
+        public Transaction Transaction { get; set; }
     }
 }

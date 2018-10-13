@@ -20,7 +20,7 @@ namespace Nexplorer.Domain.Dtos
         public int Confirmations { get; set; }
 
         [ProtoMember(5)]
-        public DateTime TimeUtc { get; set; }
+        public DateTime Timestamp { get; set; }
 
         [ProtoMember(6)]
         public double Amount { get; set; }

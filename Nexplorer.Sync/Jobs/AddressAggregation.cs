@@ -25,7 +25,7 @@ namespace Nexplorer.Sync.Jobs
         protected override async Task<string> ExecuteAsync()
         {
             var lastBlockHeight = await _nexusDb.AddressAggregates.AnyAsync()
-                ? await _nexusDb.AddressAggregates.MaxAsync(x => x.LastBlock.Height)
+                ? await _nexusDb.AddressAggregates.MaxAsync(x => x.LastBlockHeight)
                 : 0;
 
             var dbHeight = await _nexusDb.Blocks

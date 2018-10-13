@@ -20,7 +20,7 @@ namespace Nexplorer.Domain.Dtos
         public string Channel { get; set; }
 
         [ProtoMember(5)]
-        public DateTime TimeUtc { get; set; }
+        public DateTime Timestamp { get; set; }
 
         [ProtoMember(6)]
         public double Difficulty { get; set; }
@@ -36,7 +36,7 @@ namespace Nexplorer.Domain.Dtos
             Hash = block.Hash;
             Size = block.Size;
             Channel = ((BlockChannels)block.Channel).ToString();
-            TimeUtc = block.TimeUtc;
+            Timestamp = block.Timestamp;
             Difficulty = block.Difficulty;
             TransactionCount = block.Transactions.Count;
         }

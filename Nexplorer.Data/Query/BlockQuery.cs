@@ -104,7 +104,7 @@ namespace Nexplorer.Data.Query
 
         public async Task<BlockDto> GetBlockAsync(DateTime time)
         {
-            var block = await _nexusDb.Blocks.OrderByDescending(x => x.TimeUtc).FirstOrDefaultAsync(x => x.TimeUtc < time);
+            var block = await _nexusDb.Blocks.OrderByDescending(x => x.Timestamp).FirstOrDefaultAsync(x => x.Timestamp < time);
 
             return _mapper.Map<BlockDto>(block);
         }
@@ -124,7 +124,7 @@ namespace Nexplorer.Data.Query
         public async Task<DateTime> GetBlockTimestamp(int height)
         {
             return height > 0
-                ? await _nexusDb.Blocks.Where(x => x.Height == height).Select(x => x.TimeUtc).FirstOrDefaultAsync()
+                ? await _nexusDb.Blocks.Where(x => x.Height == height).Select(x => x.Timestamp).FirstOrDefaultAsync()
                 : new DateTime();
         }
 
@@ -140,12 +140,12 @@ namespace Nexplorer.Data.Query
 
         public async Task<int> GetBlockCount(DateTime from, int days)
         {
-            return await _nexusDb.Blocks.CountAsync(x => x.TimeUtc >= from.AddDays(-days));
+            return await _nexusDb.Blocks.CountAsync(x => x.Timestamp >= from.AddDays(-days));
         }
 
         public async Task<int> GetTransactionCount(DateTime from, int days)
         {
-            return await _nexusDb.Transactions.CountAsync(x => x.TimeUtc >= from.AddDays(-days));
+            return await _nexusDb.Transactions.CountAsync(x => x.Timestamp >= from.AddDays(-days));
         }
 
         public async Task LatestBlockSubscribeAsync(Func<BlockLiteDto, Task> onPublish)

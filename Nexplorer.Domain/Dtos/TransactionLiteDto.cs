@@ -20,7 +20,7 @@ namespace Nexplorer.Domain.Dtos
         public double Amount { get; set; }
 
         [ProtoMember(5)]
-        public DateTime TimeUtc { get; set; }
+        public DateTime Timestamp { get; set; }
         
         [ProtoMember(6)]
         public int TransactionInputCount { get; set; }
@@ -36,7 +36,7 @@ namespace Nexplorer.Domain.Dtos
             TransactionHash = tx.Hash;
             Confirmations = tx.Confirmations;
             Amount = tx.Amount;
-            TimeUtc = tx.TimeUtc;
+            Timestamp = tx.Timestamp;
             TransactionInputCount = tx.Inputs?.Count ?? 0;
             TransactionOutputCount = tx.Outputs?.Count ?? 0;
         }

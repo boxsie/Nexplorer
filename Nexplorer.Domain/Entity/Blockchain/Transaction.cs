@@ -14,16 +14,25 @@ namespace Nexplorer.Domain.Entity.Blockchain
         public int TransactionId { get; set; }
         
         [Required]
-        public virtual Block Block { get; set; }
+        public int BlockHeight { get; set; }
+
+        [ForeignKey("BlockHeight")]
+        public Block Block { get; set; }
         
         [Required]
         [MaxLength(256)]
         public string Hash { get; set; }
-        
+
+        [Required]
         public int Confirmations { get; set; }
-        public DateTime TimeUtc { get; set; }
+
+        [Required]
+        public DateTime Timestamp { get; set; }
+
+        [Required]
         public double Amount { get; set; }
-        public virtual ICollection<TransactionInput> Inputs { get; set; }
-        public virtual ICollection<TransactionOutput> Outputs { get; set; }
+        
+        public List<TransactionInput> Inputs { get; set; }
+        public List<TransactionOutput> Outputs { get; set; }
     }
 }

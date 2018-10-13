@@ -88,7 +88,7 @@ namespace Nexplorer.Sync.Jobs
                 Logger.LogInformation($"Syncing block {finalBlockDto.Height}");
             }
 
-            var blocks = await _blockAdd.MapBlocksAsync(syncBlocks);
+            var blocks = await _blockAdd.MapBlocksAsync(_nexusDb, syncBlocks);
             var orphans = _blockAdd.MapOrphansAsync(orphanBlocks);
 
             await _nexusDb.Blocks.AddRangeAsync(blocks);

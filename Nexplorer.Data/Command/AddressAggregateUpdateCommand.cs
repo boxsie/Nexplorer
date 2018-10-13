@@ -29,7 +29,6 @@ namespace Nexplorer.Data.Command
             else
             {
                 addAgg = await context.AddressAggregates
-                    .Include(x => x.LastBlock)
                     .FirstOrDefaultAsync(x => x.AddressId == addressId);
 
                 if (addAgg == null)

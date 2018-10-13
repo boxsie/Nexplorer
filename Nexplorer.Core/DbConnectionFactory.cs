@@ -1,6 +1,6 @@
 ﻿using System.Data.Common;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
 using Nexplorer.Config;
 
 namespace Nexplorer.Core
@@ -19,7 +19,7 @@ namespace Nexplorer.Core
 
         private static async Task<DbConnection> GetOpenDbConnectionAsync(string connectionString)
         {
-            var connection = new MySqlConnection(connectionString);
+            var connection = new SqlConnection(connectionString);
 
             await connection.OpenAsync();
 

@@ -9,13 +9,11 @@ namespace Nexplorer.Domain.Entity.Blockchain
     public class AddressAggregate
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int AddressId { get; set; }
 
-        [ForeignKey("AddressId")]
-        public virtual Address Address { get; set; }
-
         [Required]
-        public Block LastBlock { get; set; }
+        public int LastBlockHeight { get; set; }
 
         [Required]
         public double Balance { get; set; }
@@ -35,6 +33,12 @@ namespace Nexplorer.Domain.Entity.Blockchain
         [Required]
         public DateTime UpdatedOn { get; set; }
 
+        [ForeignKey("AddressId")]
+        public Address Address { get; set; }
+
+        [ForeignKey("LastBlockHeight")]
+        public Block LastBlock { get; set; }
+
         public void ModifyAggregateProperties(TransactionType txType, double amount, Block block)
         {
             switch (txType)
@@ -51,8 +55,8 @@ namespace Nexplorer.Domain.Entity.Blockchain
 
             Balance = Math.Round(ReceivedAmount - SentAmount, 8);
             
-            if (block.Height > (LastBlock?.Height ?? 0))
-                LastBlock = block;
+            if (block.Height > LastBlockHeight)
+                LastBlockHeight = block.Height;
 
             UpdatedOn = DateTime.Now;
         }

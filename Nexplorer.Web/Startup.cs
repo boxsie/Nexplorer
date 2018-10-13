@@ -47,8 +47,8 @@ namespace Nexplorer.Web
 
             var config = Settings.BuildConfig(services);
 
-            services.AddDbContext<NexusDb>(x => x.UseMySql(config.GetConnectionString("NexusDb"), y => y.MigrationsAssembly("Nexplorer.Data")), ServiceLifetime.Transient);
-            services.AddDbContext<NexplorerDb>(x => x.UseMySql(config.GetConnectionString("NexplorerDb"), y => y.MigrationsAssembly("Nexplorer.Data")), ServiceLifetime.Transient);
+            services.AddDbContext<NexusDb>(x => x.UseSqlServer(config.GetConnectionString("NexusDb"), y => y.MigrationsAssembly("Nexplorer.Data")), ServiceLifetime.Transient);
+            services.AddDbContext<NexplorerDb>(x => x.UseSqlServer(config.GetConnectionString("NexplorerDb"), y => y.MigrationsAssembly("Nexplorer.Data")), ServiceLifetime.Transient);
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<NexplorerDb>()
