@@ -120,8 +120,8 @@ namespace Nexplorer.Sync.Nexus
         private readonly ILogger<BlockSyncCatchup> _logger;
         private readonly RedisCommand _redisCommand;
 
-        private DateTime _iterationStart;
-        private int _totalSeconds;
+        private Stopwatch _stopwatch;
+        private double _totalSeconds;
         private int _iterationCount;
 
         public BlockSyncCatchup(NexusQuery nexusQuery, IServiceProvider serviceProvider, BlockQuery blockQuery, BlockMapper blockAdd, 
@@ -161,7 +161,7 @@ namespace Nexplorer.Sync.Nexus
                 nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
             }
 
-            _iterationStart = DateTime.Now;
+            _stopwatch = new Stopwatch();
             _totalSeconds = 0;
             _iterationCount = 0;
 
@@ -176,18 +176,29 @@ namespace Nexplorer.Sync.Nexus
                 if (syncDelta - Settings.App.BulkSaveCount < Settings.App.BlockCacheCount)
                     saveCount = Settings.App.BulkSaveCount - (Settings.App.BlockCacheCount - (syncDelta - Settings.App.BulkSaveCount));
                 
-                var nexusBlocks = await GetBlocksFromNexus(syncedHeight, saveCount);
-                await SaveBlocksToDb(nexusBlocks);
+                _stopwatch.Start();
+
+                await SyncBlocks(syncedHeight, saveCount);
+
+                _stopwatch.Stop();
 
                 nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
                 syncedHeight = await _blockQuery.GetLastSyncedHeightAsync();
 
-                LogTimeTaken(syncDelta);
+                LogTimeTaken(syncDelta, _stopwatch.Elapsed);
+
+                _stopwatch.Reset();
             }
 
             _logger.LogInformation("Database sync is up to date");
 
             await _blockCacheBuild.BuildAsync(syncedHeight + 1);
+        }
+
+        private async Task SyncBlocks(int syncedHeight, int saveCount)
+        {
+            var nexusBlocks = await GetBlocksFromNexus(syncedHeight, saveCount);
+            await SaveBlocksToDb(nexusBlocks);
         }
 
         private async Task<List<BlockDto>> GetBlocksFromNexus(int syncedHeight, int saveCount)
@@ -227,39 +238,35 @@ namespace Nexplorer.Sync.Nexus
             }
         }
 
-        private void LogTimeTaken(int syncDelta)
+        private void LogTimeTaken(int syncDelta, TimeSpan timeTaken)
         {
             _iterationCount++;
-
-            var timeDelta = (DateTime.Now - _iterationStart);
-
-            _totalSeconds += timeDelta.Seconds;
+            
+            _totalSeconds += timeTaken.TotalSeconds;
 
             var avgSeconds = _totalSeconds / _iterationCount;
             var estRemainingIterations = syncDelta / Settings.App.BulkSaveCount;
 
             var remainingTime = TimeSpan.FromSeconds(estRemainingIterations * avgSeconds);
 
-            _logger.LogInformation($"Save complete. Iteration took { timeDelta.Seconds } seconds");
+            _logger.LogInformation($"Save complete. Iteration took { timeTaken }");
             _logger.LogInformation($"Estimated remaining sync time: { remainingTime }");
-
-            _iterationStart = DateTime.Now;
         }
 
-        private void LogProgress(int i, int saveCount)
+        private static void LogProgress(int i, int saveCount)
         {
             var syncedPct = ((double)i / saveCount) * 100;
-            var progress = Math.Floor((double)syncedPct / 10);
+            var progress = Math.Floor((double)syncedPct / 2);
             var bar = "";
 
-            for (var o = 0; o < 10; o++)
+            for (var o = 0; o < 50; o++)
             {
                 bar += progress > o
                     ? '#'
                     : ' ';
             }
 
-            Console.Write($"\rSyncing {saveCount} blocks... [{bar}] {Math.Floor(syncedPct)}%");
+            Console.Write($"\rSyncing {saveCount} blocks... [{bar}] {Math.Floor(syncedPct)}% ");
         }
     }
 }
