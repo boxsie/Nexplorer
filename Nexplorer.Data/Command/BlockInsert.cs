@@ -121,12 +121,16 @@ namespace Nexplorer.Data.Command
 
             foreach (var tx in txs)
             {
+                var timestamp = tx.Timestamp == DateTime.MinValue
+                    ? new DateTime(1970, 1, 1)
+                    : tx.Timestamp;
+
                 var result = await sqlCon.QueryAsync<int>(TxInsertSql, new
                 {
                     tx.Amount,
                     tx.BlockHeight,
                     tx.Hash,
-                    tx.Timestamp
+                    TimeStamp = timestamp
                 }, trans);
 
                 txIds.Add(result.Single());
