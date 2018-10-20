@@ -115,7 +115,7 @@ namespace Nexplorer.Sync.Nexus
         private readonly NexusQuery _nexusQuery;
         private readonly IServiceProvider _serviceProvider;
         private readonly BlockQuery _blockQuery;
-        private readonly BlockMapper _blockAdd;
+        private readonly BlockInsertCommand _blockInsert;
         private readonly BlockCacheBuild _blockCacheBuild;
         private readonly ILogger<BlockSyncCatchup> _logger;
         private readonly RedisCommand _redisCommand;
@@ -124,13 +124,13 @@ namespace Nexplorer.Sync.Nexus
         private double _totalSeconds;
         private int _iterationCount;
 
-        public BlockSyncCatchup(NexusQuery nexusQuery, IServiceProvider serviceProvider, BlockQuery blockQuery, BlockMapper blockAdd, 
+        public BlockSyncCatchup(NexusQuery nexusQuery, IServiceProvider serviceProvider, BlockQuery blockQuery, BlockInsertCommand blockInsert,
             BlockCacheBuild blockCacheBuild, ILogger<BlockSyncCatchup> logger, RedisCommand redisCommand)
         {
             _nexusQuery = nexusQuery;
             _serviceProvider = serviceProvider;
             _blockQuery = blockQuery;
-            _blockAdd = blockAdd;
+            _blockInsert = blockInsert;
             _blockCacheBuild = blockCacheBuild;
             _logger = logger;
             _redisCommand = redisCommand;
@@ -229,13 +229,7 @@ namespace Nexplorer.Sync.Nexus
         {
             _logger.LogInformation("Sync complete. Performing sync save...");
 
-            using (var context = (NexusDb)_serviceProvider.GetService(typeof(NexusDb)))
-            {
-                var blocks = await _blockAdd.MapBlocksAsync(context, nexusBlocks);
-
-                await context.AddRangeAsync(blocks);
-                await context.SaveChangesAsync();
-            }
+            await _blockInsert.InsertBlocksAsync(nexusBlocks);
         }
 
         private void LogTimeTaken(int syncDelta, TimeSpan timeTaken)

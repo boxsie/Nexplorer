@@ -24,9 +24,6 @@ namespace Nexplorer.Domain.Entity.Blockchain
         public string Hash { get; set; }
 
         [Required]
-        public int Confirmations { get; set; }
-
-        [Required]
         public DateTime Timestamp { get; set; }
 
         [Required]

@@ -210,7 +210,7 @@ namespace Nexplorer.Data.Cache.Block
             if (_transactionLiteCache == null)
                 _transactionLiteCache = new List<TransactionLiteDto>();
 
-            var txLites = txs.Select(x => new TransactionLiteDto(x, blockHeight)).ToList();
+            var txLites = txs.Select(x => new TransactionLiteDto(x, blockHeight, _cache.Count - blockHeight)).ToList();
 
             _transactionLiteCache.InsertRange(0, txLites);
 

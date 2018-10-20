@@ -22,8 +22,7 @@ namespace Nexplorer.Data.Migrations
                     Ask = table.Column<double>(nullable: false),
                     OpenBuyOrders = table.Column<int>(nullable: false),
                     OpenSellOrders = table.Column<int>(nullable: false),
-                    TimeStamp = table.Column<DateTime>(nullable: false),
-                    UpdatedOn = table.Column<DateTime>(nullable: false)
+                    TimeStamp = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -94,7 +93,6 @@ namespace Nexplorer.Data.Migrations
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     BlockHeight = table.Column<int>(nullable: false),
                     Hash = table.Column<string>(maxLength: 256, nullable: false),
-                    Confirmations = table.Column<int>(nullable: false),
                     Timestamp = table.Column<DateTime>(nullable: false),
                     Amount = table.Column<double>(nullable: false)
                 },
@@ -163,11 +161,11 @@ namespace Nexplorer.Data.Migrations
                 name: "TransactionInput",
                 columns: table => new
                 {
+                    TransactionInputId = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     TransactionId = table.Column<int>(nullable: false),
                     AddressId = table.Column<int>(nullable: false),
-                    Amount = table.Column<double>(nullable: false),
-                    TransactionInputId = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+                    Amount = table.Column<double>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -190,11 +188,11 @@ namespace Nexplorer.Data.Migrations
                 name: "TransactionOutput",
                 columns: table => new
                 {
+                    TransactionOutputId = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     TransactionId = table.Column<int>(nullable: false),
                     AddressId = table.Column<int>(nullable: false),
-                    Amount = table.Column<double>(nullable: false),
-                    TransactionOutputId = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn)
+                    Amount = table.Column<double>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -253,6 +251,11 @@ namespace Nexplorer.Data.Migrations
                 name: "IX_Address_FirstBlockHeight",
                 table: "Address",
                 column: "FirstBlockHeight");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Address_Hash",
+                table: "Address",
+                column: "Hash");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AddressAggregate_LastBlockHeight",

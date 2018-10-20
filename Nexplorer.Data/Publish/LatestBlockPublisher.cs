@@ -32,7 +32,7 @@ namespace Nexplorer.Data.Publish
 
             foreach (var tx in block.Transactions)
                 await _redisCommand.PublishAsync(Settings.Redis.NewTransactionPubSub,
-                    new TransactionLiteDto(tx, block.Height));
+                    new TransactionLiteDto(tx, block.Height, 1));
 
             _logger.LogInformation($"Published block {block.Height}");
 

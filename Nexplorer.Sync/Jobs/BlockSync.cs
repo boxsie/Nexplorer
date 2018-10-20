@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
 using Nexplorer.Data.Cache.Block;
@@ -11,6 +12,7 @@ using Nexplorer.Data.Publish;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Entity.Blockchain;
+using Nexplorer.Domain.Entity.Orphan;
 using Nexplorer.Domain.Enums;
 using Nexplorer.Sync.Core;
 using Quartz;
@@ -22,22 +24,24 @@ namespace Nexplorer.Sync.Jobs
         private readonly IBlockCache _blockCache;
         private readonly NexusQuery _nexusQuery;
         private readonly BlockQuery _blockQuery;
-        private readonly BlockMapper _blockAdd;
+        private readonly BlockInsertCommand _blockInsert;
         private readonly RollingCountPublisher _countPublisher;
         private readonly NexusDb _nexusDb;
         private readonly AddressAggregateUpdateCommand _addressUpdateCommand;
+        private readonly IMapper _mapper;
 
-        public BlockSync(IBlockCache blockCache, NexusQuery nexusQuery, BlockQuery blockQuery, BlockMapper blockAdd, RollingCountPublisher countPublisher, 
-            NexusDb nexusDb, AddressAggregateUpdateCommand addressUpdateCommand, ILogger<BlockSync> logger) 
+        public BlockSync(IBlockCache blockCache, NexusQuery nexusQuery, BlockQuery blockQuery, BlockInsertCommand blockInsert, RollingCountPublisher countPublisher, 
+            NexusDb nexusDb, AddressAggregateUpdateCommand addressUpdateCommand, ILogger<BlockSync> logger, IMapper mapper) 
             : base(logger, 30)
         {
             _blockCache = blockCache;
             _nexusQuery = nexusQuery;
             _blockQuery = blockQuery;
-            _blockAdd = blockAdd;
+            _blockInsert = blockInsert;
             _countPublisher = countPublisher;
             _nexusDb = nexusDb;
             _addressUpdateCommand = addressUpdateCommand;
+            _mapper = mapper;
         }
 
         protected override async Task<string> ExecuteAsync()
@@ -61,7 +65,7 @@ namespace Nexplorer.Sync.Jobs
             return "Block sync is up to date";
         }
 
-        private async Task SyncBlocks(IEnumerable<BlockDto> blockDtos)
+        private async Task SyncBlocks(List<BlockDto> blockDtos)
         {
             var syncBlocks = new List<BlockDto>();
             var orphanBlocks = new List<BlockDto>();
@@ -88,14 +92,10 @@ namespace Nexplorer.Sync.Jobs
                 Logger.LogInformation($"Syncing block {finalBlockDto.Height}");
             }
 
-            var blocks = await _blockAdd.MapBlocksAsync(_nexusDb, syncBlocks);
-            var orphans = _blockAdd.MapOrphansAsync(orphanBlocks);
+            await _blockInsert.InsertBlocksAsync(blockDtos);
 
-            await _nexusDb.Blocks.AddRangeAsync(blocks);
+            var orphans = orphanBlocks.Select(x => _mapper.Map<OrphanBlock>(x));
             await _nexusDb.OrphanBlocks.AddRangeAsync(orphans);
-
-            await UpdateAddressAggregates(blocks);
-
             await _nexusDb.SaveChangesAsync();
         }
 

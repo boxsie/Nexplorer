@@ -20,8 +20,7 @@ namespace Nexplorer.Data.Map
                 OpenSellOrders = summaryResponse.OpenSellOrders,
                 Volume = summaryResponse.Volume,
                 BaseVolume = summaryResponse.BaseVolume,
-                TimeStamp = summaryResponse.TimeStamp,
-                UpdatedOn = DateTime.Now
+                TimeStamp = summaryResponse.TimeStamp
             };
         }
     }

@@ -35,6 +35,8 @@ namespace Nexplorer.Data.Migrations
 
                     b.HasIndex("FirstBlockHeight");
 
+                    b.HasIndex("Hash");
+
                     b.ToTable("Address");
                 });
 
@@ -107,8 +109,6 @@ namespace Nexplorer.Data.Migrations
                     b.Property<double>("Amount");
 
                     b.Property<int>("BlockHeight");
-
-                    b.Property<int>("Confirmations");
 
                     b.Property<string>("Hash")
                         .IsRequired()
@@ -220,8 +220,6 @@ namespace Nexplorer.Data.Migrations
                     b.Property<int>("OpenSellOrders");
 
                     b.Property<DateTime>("TimeStamp");
-
-                    b.Property<DateTime>("UpdatedOn");
 
                     b.Property<double>("Volume");
 

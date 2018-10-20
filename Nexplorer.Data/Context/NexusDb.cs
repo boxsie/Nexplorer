@@ -24,6 +24,14 @@ namespace Nexplorer.Data.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Indexes
+
+            modelBuilder.Entity<Address>()
+                .HasIndex(x => x.Hash);
+
+
+            // Relationships
+
             modelBuilder.Entity<TransactionInput>()
                 .HasOne(x => x.Transaction)
                 .WithMany(x => x.Inputs)

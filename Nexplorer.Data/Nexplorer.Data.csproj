@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\NexplorerDbMigrations\**" />
+    <EmbeddedResource Remove="Migrations\NexplorerDbMigrations\**" />
+    <None Remove="Migrations\NexplorerDbMigrations\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Migrations\20180219191955_AddAggregateDataToAddress.cs" />
     <Compile Remove="Migrations\20180219194741_AddAggregateDataToAddress.cs" />
     <Compile Remove="Migrations\20180219200734_AddAddressAggregateData.cs" />
@@ -32,11 +38,6 @@
     <ProjectReference Include="..\Nexplorer.Core\Nexplorer.Core.csproj" />
     <ProjectReference Include="..\Nexplorer.Domain\Nexplorer.Domain.csproj" />
     <ProjectReference Include="..\Nexplorer.Infrastructure\Nexplorer.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Migrations\NexplorerDbMigrations\" />
-    <Folder Include="Migrations\NexusDbMigrations\" />
   </ItemGroup>
 
 </Project>

@@ -38,8 +38,5 @@ namespace Nexplorer.Domain.Entity.Exchange
 
         [Required]
         public DateTime TimeStamp { get; set; }
-
-        [Required]
-        public DateTime UpdatedOn { get; set; }
     }
 }

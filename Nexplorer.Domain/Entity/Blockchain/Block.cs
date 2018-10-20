@@ -42,6 +42,7 @@ namespace Nexplorer.Domain.Entity.Blockchain
 
         [Required]
         public double Difficulty { get; set; }
+
         [Required]
         public double Mint { get; set; }
         

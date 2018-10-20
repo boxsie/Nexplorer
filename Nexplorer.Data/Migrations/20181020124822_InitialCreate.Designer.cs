@@ -10,7 +10,7 @@ using Nexplorer.Data.Context;
 namespace Nexplorer.Data.Migrations
 {
     [DbContext(typeof(NexusDb))]
-    [Migration("20181013121500_InitialCreate")]
+    [Migration("20181020124822_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,6 +36,8 @@ namespace Nexplorer.Data.Migrations
                     b.HasKey("AddressId");
 
                     b.HasIndex("FirstBlockHeight");
+
+                    b.HasIndex("Hash");
 
                     b.ToTable("Address");
                 });
@@ -109,8 +111,6 @@ namespace Nexplorer.Data.Migrations
                     b.Property<double>("Amount");
 
                     b.Property<int>("BlockHeight");
-
-                    b.Property<int>("Confirmations");
 
                     b.Property<string>("Hash")
                         .IsRequired()
@@ -222,8 +222,6 @@ namespace Nexplorer.Data.Migrations
                     b.Property<int>("OpenSellOrders");
 
                     b.Property<DateTime>("TimeStamp");
-
-                    b.Property<DateTime>("UpdatedOn");
 
                     b.Property<double>("Volume");
 

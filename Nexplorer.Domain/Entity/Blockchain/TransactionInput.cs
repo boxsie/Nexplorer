@@ -5,10 +5,25 @@ using ProtoBuf;
 namespace Nexplorer.Domain.Entity.Blockchain
 {
     [Table("TransactionInput")]
-    public class TransactionInput : TransactionInputOutput
+    public class TransactionInput
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int TransactionInputId { get; set; }
+
+        [Required]
+        public int TransactionId { get; set; }
+
+        [Required]
+        public int AddressId { get; set; }
+
+        [Required]
+        public double Amount { get; set; }
+
+        [ForeignKey("TransactionId")]
+        public Transaction Transaction { get; set; }
+
+        [ForeignKey("AddressId")]
+        public Address Address { get; set; }
     }
 }

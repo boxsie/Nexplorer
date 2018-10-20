@@ -99,7 +99,7 @@ namespace Nexplorer.Web.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("addresses")]
-        [ProducesResponseType(typeof(FilterResponse<Address, AddressesCriteria>), 200)]
+        [ProducesResponseType(typeof(FilterResponse<FilteredAddress, AddressesCriteria>), 200)]
         public async Task<IActionResult> GetFilteredAddresses(AddressesCriteria addressesCriteria)
         {
             if (addressesCriteria == null)
@@ -116,11 +116,11 @@ namespace Nexplorer.Web.Controllers
             var addressResult = await _addressQuery.GetAddressLitesFilteredAsync(criteria, 
                 addressesCriteria.StartAt.Value, addressesCriteria.Count.Value, true, MaxAddressesReults);
 
-            var response = new FilterResponse<Address, AddressesCriteria>
+            var response = new FilterResponse<FilteredAddress, AddressesCriteria>
             {
                 Criteria = addressesCriteria,
                 FilterResultCount = addressResult.ResultCount,
-                Data = addressResult.Addresses.Select(x => _mapper.Map<Address>(x)).ToList()
+                Data = addressResult.Addresses.Select(x => _mapper.Map<FilteredAddress>(x)).ToList()
             };
 
             return Ok(response);

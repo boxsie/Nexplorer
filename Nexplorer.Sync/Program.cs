@@ -89,9 +89,8 @@ namespace Nexplorer.Sync
             services.AddTransient<LatestBlockPublisher>();
             services.AddTransient<RollingCountPublisher>();
             services.AddTransient<RedisCommand>();
-            services.AddTransient<BlockMapper>();
+            services.AddTransient<BlockInsertCommand>();
             services.AddTransient<AddressAggregateUpdateCommand>();
-            services.AddTransient<TransactionInputOutputMapper>();
 
             services.AddTransient<BlockSyncCatchup>();
             services.AddTransient<AddressAggregateCatchup>();

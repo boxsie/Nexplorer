@@ -1,6 +1,6 @@
 ﻿namespace Nexplorer.Data.Api
 {
-    public class Address
+    public class FilteredAddress
     {
         public string Hash { get; set; }
         public double Balance { get; set; }

@@ -10,7 +10,6 @@ using Nexplorer.Domain.Entity.Blockchain;
 using Nexplorer.Domain.Entity.Orphan;
 using Nexplorer.Domain.Entity.User;
 using Nexplorer.Infrastructure.Geolocate;
-using Address = Nexplorer.Data.Api.Address;
 
 namespace Nexplorer.Data.Map
 {
@@ -22,23 +21,12 @@ namespace Nexplorer.Data.Map
             { 
                 x.CreateMap<Block, BlockDto>();
                 x.CreateMap<Transaction, TransactionDto>()
-                    .ForMember(d => d.BlockHeight, o => o.MapFrom(s => s.Block.Height));
+                    .ForMember(d => d.BlockHeight, o => o.MapFrom(s => s.Block.Height))
+                    .ForMember(d => d.Confirmations, o => o.Ignore());
                 x.CreateMap<TransactionInput, TransactionInputOutputDto>()
                     .ForMember(d => d.AddressHash, o => o.MapFrom(s => s.Address.Hash));
                 x.CreateMap<TransactionOutput, TransactionInputOutputDto>()
                     .ForMember(d => d.AddressHash, o => o.MapFrom(s => s.Address.Hash));
-
-                x.CreateMap<BlockDto, Block>()
-                    .AfterMap((s, d) =>
-                    {
-                        foreach (var tx in d.Transactions)
-                            tx.Block = d;
-                    });
-                x.CreateMap<TransactionDto, Transaction>()
-                    .ForMember(d => d.TransactionId, o => o.Ignore())
-                    .ForMember(d => d.Block, o => o.Ignore())
-                    .ForMember(d => d.Inputs, o => o.Ignore())
-                    .ForMember(d => d.Outputs, o => o.Ignore());
 
                 x.CreateMap<BlockDto, OrphanBlock>()
                     .ForMember(d => d.BlockId, o => o.Ignore());
@@ -99,7 +87,7 @@ namespace Nexplorer.Data.Map
                     .ForMember(d => d.HeightFrom, o => o.MapFrom(s => s.LastBockHeightFrom))
                     .ForMember(d => d.HeightTo, o => o.MapFrom(s => s.LastBlockHeightTo));
                     ;
-                x.CreateMap<AddressLiteDto, Address>()
+                x.CreateMap<AddressLiteDto, FilteredAddress>()
                     .ForMember(d => d.FirstBlockHeight, o => o.MapFrom(s => s.FirstBlockSeen))
                     .ForMember(d => d.LastBlockHeight, o => o.MapFrom(s => s.LastBlockSeen));
             });

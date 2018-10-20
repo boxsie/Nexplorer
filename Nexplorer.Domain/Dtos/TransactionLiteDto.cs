@@ -30,11 +30,10 @@ namespace Nexplorer.Domain.Dtos
 
         public TransactionLiteDto() { }
         
-        public TransactionLiteDto(TransactionDto tx, int height)
+        public TransactionLiteDto(TransactionDto tx, int height, int confirmations)
         {
             BlockHeight = height;
             TransactionHash = tx.Hash;
-            Confirmations = tx.Confirmations;
             Amount = tx.Amount;
             Timestamp = tx.Timestamp;
             TransactionInputCount = tx.Inputs?.Count ?? 0;
