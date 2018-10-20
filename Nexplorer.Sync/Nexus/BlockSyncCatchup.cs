@@ -115,7 +115,6 @@ namespace Nexplorer.Sync.Nexus
         private readonly NexusQuery _nexusQuery;
         private readonly IServiceProvider _serviceProvider;
         private readonly BlockQuery _blockQuery;
-        private readonly BlockInsertCommand _blockInsert;
         private readonly BlockCacheBuild _blockCacheBuild;
         private readonly ILogger<BlockSyncCatchup> _logger;
         private readonly RedisCommand _redisCommand;
@@ -123,14 +122,14 @@ namespace Nexplorer.Sync.Nexus
         private Stopwatch _stopwatch;
         private double _totalSeconds;
         private int _iterationCount;
+        private bool _allowProgressUpdate;
 
-        public BlockSyncCatchup(NexusQuery nexusQuery, IServiceProvider serviceProvider, BlockQuery blockQuery, BlockInsertCommand blockInsert,
+        public BlockSyncCatchup(NexusQuery nexusQuery, IServiceProvider serviceProvider, BlockQuery blockQuery,
             BlockCacheBuild blockCacheBuild, ILogger<BlockSyncCatchup> logger, RedisCommand redisCommand)
         {
             _nexusQuery = nexusQuery;
             _serviceProvider = serviceProvider;
             _blockQuery = blockQuery;
-            _blockInsert = blockInsert;
             _blockCacheBuild = blockCacheBuild;
             _logger = logger;
             _redisCommand = redisCommand;
@@ -161,6 +160,8 @@ namespace Nexplorer.Sync.Nexus
                 nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
             }
 
+            await StartStreamingNexusBlocks(syncedHeight + 1, nexusHeight, Settings.App.BulkSaveCount);
+
             _stopwatch = new Stopwatch();
             _totalSeconds = 0;
             _iterationCount = 0;
@@ -168,8 +169,8 @@ namespace Nexplorer.Sync.Nexus
             while (syncedHeight + Settings.App.BlockCacheCount < nexusHeight)
             {
                 var syncDelta = nexusHeight - syncedHeight;
-                
-                _logger.LogInformation($"Sync is { syncDelta } blocks behind Nexus");
+
+                Console.WriteLine($"Sync is {syncDelta:N0} blocks behind Nexus");
                 
                 var saveCount = Settings.App.BulkSaveCount;
 
@@ -188,6 +189,8 @@ namespace Nexplorer.Sync.Nexus
                 LogTimeTaken(syncDelta, _stopwatch.Elapsed);
 
                 _stopwatch.Reset();
+
+                _allowProgressUpdate = true;
             }
 
             _logger.LogInformation("Database sync is up to date");
@@ -197,39 +200,66 @@ namespace Nexplorer.Sync.Nexus
 
         private async Task SyncBlocks(int syncedHeight, int saveCount)
         {
-            var nexusBlocks = await GetBlocksFromNexus(syncedHeight, saveCount);
-            await SaveBlocksToDb(nexusBlocks);
-        }
+            var streamCount = await _redisCommand.GetAsync<int>(Settings.Redis.BlockSyncStreamCacheHeight);
 
-        private async Task<List<BlockDto>> GetBlocksFromNexus(int syncedHeight, int saveCount)
-        {
-            var dbBlocks = new List<BlockDto>();
-
-            var blockDto = await _nexusQuery.GetBlockAsync(syncedHeight + 1, true);
-
-            _logger.LogInformation($"Syncing blocks { blockDto.Height } -> { (blockDto.Height + saveCount) - 1 }...");
-
-            for (var i = 0; i < saveCount; i++)
+            while (streamCount < syncedHeight + saveCount)
             {
-                if (blockDto == null)
-                    break;
+                await Task.Delay(TimeSpan.FromSeconds(1));
 
-                dbBlocks.Add(blockDto);
-
-                blockDto = await _nexusQuery.GetBlockAsync(blockDto.Height + 1, true);
-
-                LogProgress(i, saveCount);
+                streamCount = await _redisCommand.GetAsync<int>(Settings.Redis.BlockSyncStreamCacheHeight);
             }
 
-            Console.Write($"\r");
-            return dbBlocks;
+            _allowProgressUpdate = false;
+
+            var nexusBlocks = new List<BlockDto>();
+
+            Console.WriteLine($"\nSyncing blocks from height {(syncedHeight + 1):N0} - {(syncedHeight + 1 + saveCount):N0}...");
+
+            for (var i = syncedHeight + 1; i <= syncedHeight + saveCount; i++)
+                nexusBlocks.Add(await _redisCommand.GetAsync<BlockDto>(CreateStreamKey(i)));
+
+            Console.WriteLine("Sync complete. Performing sync save...");
+
+            await nexusBlocks.InsertBlocksAsync();
+
+            foreach (var nexusBlock in nexusBlocks)
+                await _redisCommand.DeleteAsync(CreateStreamKey(nexusBlock.Height));
         }
 
-        private async Task SaveBlocksToDb(List<BlockDto> nexusBlocks)
+        private async Task StartStreamingNexusBlocks(int startingHeight, int nexusHeight, int saveCount)
         {
-            _logger.LogInformation("Sync complete. Performing sync save...");
+            _allowProgressUpdate = true;
 
-            await _blockInsert.InsertBlocksAsync(nexusBlocks);
+            var blockDto = await _nexusQuery.GetBlockAsync(startingHeight, true);
+
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            Task.Run(async () =>
+            {
+                var countUntilSave = saveCount;
+
+                while (blockDto != null)
+                {
+                    await _redisCommand.SetAsync(CreateStreamKey(blockDto.Height), blockDto);
+                    await _redisCommand.SetAsync(Settings.Redis.BlockSyncStreamCacheHeight, blockDto.Height);
+                    
+                    if (_allowProgressUpdate)
+                        Console.Write($"\rStreaming Nexus blocks... {LogProgress(blockDto.Height, nexusHeight, out var streamPct)} {streamPct:N4}% ({blockDto.Height:N0}/{nexusHeight:N0}) | Stream sync in {countUntilSave} blocks        ");
+
+                    countUntilSave--;
+
+                    if (countUntilSave < 0)
+                        countUntilSave = saveCount;
+
+                    blockDto = await _nexusQuery.GetBlockAsync(blockDto.Height + 1, true);
+                }
+            });
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+
+        }
+
+        private string CreateStreamKey(int blockHeight)
+        {
+            return $"{Settings.Redis.BlockSyncStreamCache}:{blockHeight}";
         }
 
         private void LogTimeTaken(int syncDelta, TimeSpan timeTaken)
@@ -243,24 +273,25 @@ namespace Nexplorer.Sync.Nexus
 
             var remainingTime = TimeSpan.FromSeconds(estRemainingIterations * avgSeconds);
 
-            _logger.LogInformation($"Save complete. Iteration took { timeTaken }");
-            _logger.LogInformation($"Estimated remaining sync time: { remainingTime }");
+            Console.WriteLine($"Save complete. Iteration took { timeTaken }");
+            Console.WriteLine($"Estimated remaining sync time: { remainingTime }");
         }
 
-        private static void LogProgress(int i, int saveCount)
+        private static string LogProgress(int i, int total, out double pct)
         {
-            var syncedPct = ((double)i / saveCount) * 100;
-            var progress = Math.Floor((double)syncedPct / 2);
+            pct = ((double)i / total) * 100;
+
+            var progress = Math.Floor((double)pct / 2);
             var bar = "";
 
-            for (var o = 0; o < 50; o++)
+            for (var o = 0; o < 20; o++)
             {
                 bar += progress > o
                     ? '#'
                     : ' ';
             }
 
-            Console.Write($"\rSyncing {saveCount} blocks... [{bar}] {Math.Floor(syncedPct)}% ");
+            return $"[{bar}]";
         }
     }
 }

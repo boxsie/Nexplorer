@@ -10,6 +10,8 @@ namespace Nexplorer.Config.Core
         public string TrustKeyCache { get; set; }
         public string TrustKeyAddressCache { get; set; }
         public string NexusAddressCache { get; set; }
+        public string BlockSyncStreamCache { get; set; }
+        public string BlockSyncStreamCacheHeight { get; set; }
 
         // Stats
         public string BlockCount24Hours { get; set; }

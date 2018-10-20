@@ -14,7 +14,7 @@ using Nexplorer.Domain.Entity.Blockchain;
 
 namespace Nexplorer.Data.Command
 {
-    public class BlockInsertCommand
+    public static class BlockInsert
     {
         private const string BlockInsertSql = @"
             INSERT INTO [dbo].[Block] ([Height], [Bits], [Channel], [Difficulty], [Hash], [MerkleRoot], [Mint], [Nonce], [Size], [Timestamp], [Version]) 
@@ -43,7 +43,7 @@ namespace Nexplorer.Data.Command
             FROM [dbo].[Address] a
             WHERE a.Hash = @Hash";
         
-        public async Task InsertBlocksAsync(IEnumerable<BlockDto> blockDtos)
+        public static async Task InsertBlocksAsync(this IEnumerable<BlockDto> blockDtos)
         {
             using (var con = new SqlConnection(Settings.Connection.NexusDb))
             {
@@ -76,30 +76,6 @@ namespace Nexplorer.Data.Command
                     trans.Commit();
                 }
             }
-        }
-
-        private static async Task<Dictionary<string, int>> InsertAddressesAsync(IDbConnection sqlCon, IDbTransaction trans, IEnumerable<TransactionInputOutputDto> txInOuts, int blockHeight)
-        {
-            var addressCache = new Dictionary<string, int>();
-            var addressHashes = txInOuts.Select(y => y.AddressHash).Distinct();
-
-            foreach (var addressHash in addressHashes)
-            {
-                var selectResult = await sqlCon.QueryAsync<int>(AddressSelectSql, new { Hash = addressHash }, trans);
-
-                var id = selectResult.FirstOrDefault();
-
-                if (id == 0)
-                {
-                    var insertResult = await sqlCon.QueryAsync<int>(AddressInsertSql, new { Hash = addressHash, BlockHeight = blockHeight }, trans);
-
-                    id = insertResult.Single();
-                }
-                
-                addressCache.Add(addressHash, id);
-            }
-
-            return addressCache;
         }
 
         private static async Task InsertBlockAsync(IDbConnection sqlCon, IDbTransaction trans, Block block)
@@ -138,6 +114,30 @@ namespace Nexplorer.Data.Command
             }
 
             return txIds;
+        }
+
+        private static async Task<Dictionary<string, int>> InsertAddressesAsync(IDbConnection sqlCon, IDbTransaction trans, IEnumerable<TransactionInputOutputDto> txInOuts, int blockHeight)
+        {
+            var addressCache = new Dictionary<string, int>();
+            var addressHashes = txInOuts.Select(y => y.AddressHash).Distinct();
+
+            foreach (var addressHash in addressHashes)
+            {
+                var selectResult = await sqlCon.QueryAsync<int>(AddressSelectSql, new { Hash = addressHash }, trans);
+
+                var id = selectResult.FirstOrDefault();
+
+                if (id == 0)
+                {
+                    var insertResult = await sqlCon.QueryAsync<int>(AddressInsertSql, new { Hash = addressHash, BlockHeight = blockHeight }, trans);
+
+                    id = insertResult.Single();
+                }
+
+                addressCache.Add(addressHash, id);
+            }
+
+            return addressCache;
         }
 
         private static async Task InsertTransactionInputsAsync(IDbConnection sqlCon, IDbTransaction trans, IEnumerable<TransactionInput> txIns)

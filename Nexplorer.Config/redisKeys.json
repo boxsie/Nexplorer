@@ -7,6 +7,8 @@
     "TrustKeyCache": "addresses:trustkeycache",
     "NexusAddressCache": "addresses:nexusaddresscache",
     "TrustKeyAddressCache": "addresses:trustkeyaddresscache",
+    "BlockSyncStreamCache": "blocksync:streamcache",
+    "BlockSyncStreamCacheHeight": "blocksync:streamcache:height",
     "BlockCount24Hours": "blocks:count24hours",
     "TransactionCount24Hours": "transactions:count24hours",
     "NewBlockPubSub": "blocks:new",

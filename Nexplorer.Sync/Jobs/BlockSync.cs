@@ -24,20 +24,18 @@ namespace Nexplorer.Sync.Jobs
         private readonly IBlockCache _blockCache;
         private readonly NexusQuery _nexusQuery;
         private readonly BlockQuery _blockQuery;
-        private readonly BlockInsertCommand _blockInsert;
         private readonly RollingCountPublisher _countPublisher;
         private readonly NexusDb _nexusDb;
         private readonly AddressAggregateUpdateCommand _addressUpdateCommand;
         private readonly IMapper _mapper;
 
-        public BlockSync(IBlockCache blockCache, NexusQuery nexusQuery, BlockQuery blockQuery, BlockInsertCommand blockInsert, RollingCountPublisher countPublisher, 
+        public BlockSync(IBlockCache blockCache, NexusQuery nexusQuery, BlockQuery blockQuery, RollingCountPublisher countPublisher, 
             NexusDb nexusDb, AddressAggregateUpdateCommand addressUpdateCommand, ILogger<BlockSync> logger, IMapper mapper) 
             : base(logger, 30)
         {
             _blockCache = blockCache;
             _nexusQuery = nexusQuery;
             _blockQuery = blockQuery;
-            _blockInsert = blockInsert;
             _countPublisher = countPublisher;
             _nexusDb = nexusDb;
             _addressUpdateCommand = addressUpdateCommand;
@@ -92,7 +90,7 @@ namespace Nexplorer.Sync.Jobs
                 Logger.LogInformation($"Syncing block {finalBlockDto.Height}");
             }
 
-            await _blockInsert.InsertBlocksAsync(blockDtos);
+            await blockDtos.InsertBlocksAsync();
 
             var orphans = orphanBlocks.Select(x => _mapper.Map<OrphanBlock>(x));
             await _nexusDb.OrphanBlocks.AddRangeAsync(orphans);
