@@ -123,6 +123,7 @@ namespace Nexplorer.Sync.Nexus
         private double _totalSeconds;
         private int _iterationCount;
         private bool _allowProgressUpdate;
+        private int _streamCount;
 
         public BlockSyncCatchup(NexusQuery nexusQuery, IServiceProvider serviceProvider, BlockQuery blockQuery,
             BlockCacheBuild blockCacheBuild, ILogger<BlockSyncCatchup> logger, RedisCommand redisCommand)
@@ -160,7 +161,7 @@ namespace Nexplorer.Sync.Nexus
                 nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
             }
 
-            await StartStreamingNexusBlocks(syncedHeight + 1, nexusHeight, Settings.App.BulkSaveCount);
+            await StartStreamingNexusBlocks(syncedHeight + 1, nexusHeight);
 
             _stopwatch = new Stopwatch();
             _totalSeconds = 0;
@@ -170,7 +171,7 @@ namespace Nexplorer.Sync.Nexus
             {
                 var syncDelta = nexusHeight - syncedHeight;
 
-                Console.WriteLine($"Sync is {syncDelta:N0} blocks behind Nexus");
+                Console.WriteLine($"\nSync is {syncDelta:N0} blocks behind Nexus");
                 
                 var saveCount = Settings.App.BulkSaveCount;
 
@@ -213,7 +214,7 @@ namespace Nexplorer.Sync.Nexus
 
             var nexusBlocks = new List<BlockDto>();
 
-            Console.WriteLine($"\nSyncing blocks from height {(syncedHeight + 1):N0} - {(syncedHeight + 1 + saveCount):N0}...");
+            Console.WriteLine($"\nSyncing blocks from height {(syncedHeight + 1):N0} - {(syncedHeight + saveCount):N0}...");
 
             for (var i = syncedHeight + 1; i <= syncedHeight + saveCount; i++)
                 nexusBlocks.Add(await _redisCommand.GetAsync<BlockDto>(CreateStreamKey(i)));
@@ -224,9 +225,11 @@ namespace Nexplorer.Sync.Nexus
 
             foreach (var nexusBlock in nexusBlocks)
                 await _redisCommand.DeleteAsync(CreateStreamKey(nexusBlock.Height));
+
+            _streamCount -= nexusBlocks.Count;
         }
 
-        private async Task StartStreamingNexusBlocks(int startingHeight, int nexusHeight, int saveCount)
+        private async Task StartStreamingNexusBlocks(int startingHeight, int nexusHeight)
         {
             _allowProgressUpdate = true;
 
@@ -235,20 +238,15 @@ namespace Nexplorer.Sync.Nexus
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             Task.Run(async () =>
             {
-                var countUntilSave = saveCount;
-
                 while (blockDto != null)
                 {
                     await _redisCommand.SetAsync(CreateStreamKey(blockDto.Height), blockDto);
                     await _redisCommand.SetAsync(Settings.Redis.BlockSyncStreamCacheHeight, blockDto.Height);
                     
                     if (_allowProgressUpdate)
-                        Console.Write($"\rStreaming Nexus blocks... {LogProgress(blockDto.Height, nexusHeight, out var streamPct)} {streamPct:N4}% ({blockDto.Height:N0}/{nexusHeight:N0}) | Stream sync in {countUntilSave} blocks        ");
+                        Console.Write($"\rStreaming Nexus blocks... {LogProgress(blockDto.Height, nexusHeight, out var streamPct)} {streamPct:N4}% ({blockDto.Height:N0}/{nexusHeight:N0}) | Stream is {_streamCount} blocks ahead        ");
 
-                    countUntilSave--;
-
-                    if (countUntilSave < 0)
-                        countUntilSave = saveCount;
+                    _streamCount++;
 
                     blockDto = await _nexusQuery.GetBlockAsync(blockDto.Height + 1, true);
                 }
@@ -273,7 +271,7 @@ namespace Nexplorer.Sync.Nexus
 
             var remainingTime = TimeSpan.FromSeconds(estRemainingIterations * avgSeconds);
 
-            Console.WriteLine($"Save complete. Iteration took { timeTaken }");
+            Console.WriteLine($"\nSave complete. Iteration took { timeTaken }");
             Console.WriteLine($"Estimated remaining sync time: { remainingTime }");
         }
 
@@ -281,7 +279,7 @@ namespace Nexplorer.Sync.Nexus
         {
             pct = ((double)i / total) * 100;
 
-            var progress = Math.Floor((double)pct / 2);
+            var progress = Math.Floor((double)pct / 5);
             var bar = "";
 
             for (var o = 0; o < 20; o++)

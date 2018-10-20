@@ -43,7 +43,7 @@ namespace Nexplorer.Data.Command
             FROM [dbo].[Address] a
             WHERE a.Hash = @Hash";
         
-        public static async Task InsertBlocksAsync(this IEnumerable<BlockDto> blockDtos)
+        public static async Task InsertBlocksAsync(this List<BlockDto> blockDtos)
         {
             using (var con = new SqlConnection(Settings.Connection.NexusDb))
             {
@@ -51,14 +51,14 @@ namespace Nexplorer.Data.Command
 
                 using (var trans = con.BeginTransaction())
                 {
-                    foreach (var blockDto in blockDtos)
+                    for (var index = 0; index < blockDtos.Count; index++)
                     {
-                        var block = MapBlock(blockDto);
+                        var blockDto = blockDtos[index];
 
+                        var block = MapBlock(blockDto);
                         await InsertBlockAsync(con, trans, block);
 
                         var txs = MapTransactions(blockDto.Transactions);
-
                         var txIds = await InsertTransactionsAsync(con, trans, txs);
 
                         var txInOutDtos = blockDto.Transactions.SelectMany(x => x.Inputs.Concat(x.Outputs)).ToList();
@@ -71,11 +71,30 @@ namespace Nexplorer.Data.Command
 
                         await InsertTransactionInputsAsync(con, trans, txInsOuts.SelectMany(x => x.Item1));
                         await InsertTransactionOutputsAsync(con, trans, txInsOuts.SelectMany(x => x.Item2));
+
+                        LogProgress(index, blockDtos.Count - 1);
                     }
 
                     trans.Commit();
                 }
             }
+        }
+
+        private static void LogProgress(int i, int total)
+        {
+            var pct = ((double)i / total) * 100;
+
+            var progress = Math.Floor((double)pct / 5);
+            var bar = "";
+
+            for (var o = 0; o < 20; o++)
+            {
+                bar += progress > o
+                    ? '#'
+                    : ' ';
+            }
+
+            Console.Write($"\rSaving blocks to database... [{bar}] {pct:N2}%   ");
         }
 
         private static async Task InsertBlockAsync(IDbConnection sqlCon, IDbTransaction trans, Block block)
