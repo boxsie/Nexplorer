@@ -28,6 +28,10 @@ namespace Nexplorer.Sync.Nexus
         private readonly ILogger<AddressAggregateCatchup> _logger;
         private readonly AddressAggregateUpdateCommand _addressAggregateUpdate;
 
+        private Stopwatch _stopwatch;
+        private double _totalSeconds;
+        private int _iterationCount;
+
         public AddressAggregateCatchup(ILogger<AddressAggregateCatchup> logger, NexusDb nexusDb,
             AddressAggregateUpdateCommand addressAggregateUpdate)
         {
@@ -45,11 +49,13 @@ namespace Nexplorer.Sync.Nexus
                 .Select(x => x.Height)
                 .LastOrDefaultAsync();
 
+            _stopwatch = new Stopwatch();
+            _totalSeconds = 0;
+            _iterationCount = 0;
+
             while (lastBlockHeight < dbHeight)
             {
                 var nextBlockHeight = lastBlockHeight + 1;
-
-                var updateCount = 0;
 
                 var bulkSaveCount = Settings.App.BulkSaveCount;
 
@@ -57,7 +63,10 @@ namespace Nexplorer.Sync.Nexus
                     ? nextBlockHeight + bulkSaveCount
                     : dbHeight;
 
+                Console.WriteLine();
                 _logger.LogInformation($"Adding address aggregate data from block {nextBlockHeight} -> {lastHeight}");
+
+                _stopwatch.Restart();
 
                 for (var i = nextBlockHeight; i < nextBlockHeight + bulkSaveCount; i++)
                 {
@@ -78,6 +87,8 @@ namespace Nexplorer.Sync.Nexus
                     if (nextBlock == null)
                         break;
 
+                    Console.Write($"\rAggregating block addresses... {LogProgress(i, dbHeight, out var blockPct)} {blockPct:N4}% ({i:N0}/{dbHeight:N0})");
+
                     foreach (var transaction in nextBlock.Transactions)
                     {
                         foreach (var transactionInput in transaction.Inputs)
@@ -88,17 +99,17 @@ namespace Nexplorer.Sync.Nexus
                             await _addressAggregateUpdate.UpdateAsync(_nexusDb, transactionOutput.Address.AddressId,
                                 TransactionType.Output, transactionOutput.Amount, nextBlock);
                     }
-
-                    updateCount++;
                 }
+
+                Console.WriteLine($"\nSaving address aggregates...");
 
                 await _nexusDb.SaveChangesAsync();
 
                 _addressAggregateUpdate.Reset();
 
-                _logger.LogInformation($"{updateCount} address aggregates saved");
-
                 lastBlockHeight = await GetLastBlockHeight();
+
+                LogTimeTaken(dbHeight - nextBlockHeight, _stopwatch.Elapsed);
             }
         }
 
@@ -107,6 +118,38 @@ namespace Nexplorer.Sync.Nexus
             return await _nexusDb.AddressAggregates.AnyAsync()
                 ? await _nexusDb.AddressAggregates.MaxAsync(x => x.LastBlockHeight)
                 : 0;
+        }
+
+        private void LogTimeTaken(int syncDelta, TimeSpan timeTaken)
+        {
+            _iterationCount++;
+
+            _totalSeconds += timeTaken.TotalSeconds;
+
+            var avgSeconds = _totalSeconds / _iterationCount;
+            var estRemainingIterations = syncDelta / Settings.App.BulkSaveCount;
+
+            var remainingTime = TimeSpan.FromSeconds(estRemainingIterations * avgSeconds);
+
+            Console.WriteLine($"\nSave complete. Iteration took { timeTaken }");
+            Console.WriteLine($"Estimated remaining sync time: { remainingTime }");
+        }
+
+        private static string LogProgress(int i, int total, out double pct)
+        {
+            pct = ((double)i / total) * 100;
+
+            var progress = Math.Floor((double)pct / 5);
+            var bar = "";
+
+            for (var o = 0; o < 20; o++)
+            {
+                bar += progress > o
+                    ? '#'
+                    : ' ';
+            }
+
+            return $"[{bar}]";
         }
     }
 
@@ -118,6 +161,7 @@ namespace Nexplorer.Sync.Nexus
         private readonly BlockCacheBuild _blockCacheBuild;
         private readonly ILogger<BlockSyncCatchup> _logger;
         private readonly RedisCommand _redisCommand;
+        private readonly CancellationTokenSource _cancelBlockStream;
 
         private Stopwatch _stopwatch;
         private double _totalSeconds;
@@ -134,6 +178,7 @@ namespace Nexplorer.Sync.Nexus
             _blockCacheBuild = blockCacheBuild;
             _logger = logger;
             _redisCommand = redisCommand;
+            _cancelBlockStream = new CancellationTokenSource();
         }
 
         public async Task Catchup()
@@ -194,9 +239,11 @@ namespace Nexplorer.Sync.Nexus
                 _allowProgressUpdate = true;
             }
 
-            _logger.LogInformation("Database sync is up to date");
+            Console.WriteLine();
+            _logger.LogInformation("Stopping Nexus block stream");
+            _cancelBlockStream.Cancel();
 
-            await _blockCacheBuild.BuildAsync(syncedHeight + 1);
+            _logger.LogInformation("Database sync is up to date");
         }
 
         private async Task SyncBlocks(int syncedHeight, int saveCount)
@@ -250,7 +297,7 @@ namespace Nexplorer.Sync.Nexus
 
                     blockDto = await _nexusQuery.GetBlockAsync(blockDto.Height + 1, true);
                 }
-            });
+            }, _cancelBlockStream.Token);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
         }
