@@ -39,7 +39,7 @@ namespace Nexplorer.Domain.Entity.Blockchain
         [ForeignKey("LastBlockHeight")]
         public Block LastBlock { get; set; }
 
-        public void ModifyAggregateProperties(TransactionType txType, double amount, Block block)
+        public void ModifyAggregateProperties(TransactionType txType, double amount, int blockHeight)
         {
             switch (txType)
             {
@@ -55,8 +55,8 @@ namespace Nexplorer.Domain.Entity.Blockchain
 
             Balance = Math.Round(ReceivedAmount - SentAmount, 8);
             
-            if (block.Height > LastBlockHeight)
-                LastBlockHeight = block.Height;
+            if (blockHeight > LastBlockHeight)
+                LastBlockHeight = blockHeight;
 
             UpdatedOn = DateTime.Now;
         }

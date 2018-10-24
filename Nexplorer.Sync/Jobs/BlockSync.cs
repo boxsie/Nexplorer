@@ -26,11 +26,10 @@ namespace Nexplorer.Sync.Jobs
         private readonly BlockQuery _blockQuery;
         private readonly RollingCountPublisher _countPublisher;
         private readonly NexusDb _nexusDb;
-        private readonly AddressAggregateUpdateCommand _addressUpdateCommand;
         private readonly IMapper _mapper;
 
         public BlockSync(IBlockCache blockCache, NexusQuery nexusQuery, BlockQuery blockQuery, RollingCountPublisher countPublisher, 
-            NexusDb nexusDb, AddressAggregateUpdateCommand addressUpdateCommand, ILogger<BlockSync> logger, IMapper mapper) 
+            NexusDb nexusDb, ILogger<BlockSync> logger, IMapper mapper) 
             : base(logger, 30)
         {
             _blockCache = blockCache;
@@ -38,7 +37,6 @@ namespace Nexplorer.Sync.Jobs
             _blockQuery = blockQuery;
             _countPublisher = countPublisher;
             _nexusDb = nexusDb;
-            _addressUpdateCommand = addressUpdateCommand;
             _mapper = mapper;
         }
 
@@ -97,19 +95,19 @@ namespace Nexplorer.Sync.Jobs
             await _nexusDb.SaveChangesAsync();
         }
 
-        private async Task UpdateAddressAggregates(IEnumerable<Block> blocks)
-        {
-            foreach (var block in blocks)
-            {
-                foreach (var tx in block.Transactions)
-                {
-                    foreach (var txIn in tx.Inputs)
-                        await _addressUpdateCommand.UpdateAsync(_nexusDb, txIn.Address.AddressId, TransactionType.Input, txIn.Amount, txIn.Transaction.Block);
+        //private async Task UpdateAddressAggregates(IEnumerable<Block> blocks)
+        //{
+        //    foreach (var block in blocks)
+        //    {
+        //        foreach (var tx in block.Transactions)
+        //        {
+        //            foreach (var txIn in tx.Inputs)
+        //                await _addressUpdateCommand.UpdateAsync(_nexusDb, txIn.Address.AddressId, TransactionType.Input, txIn.Amount, txIn.Transaction.Block);
 
-                    foreach (var txOut in tx.Outputs)
-                        await _addressUpdateCommand.UpdateAsync(_nexusDb, txOut.Address.AddressId, TransactionType.Output, txOut.Amount, txOut.Transaction.Block);
-                }
-            }
-        }
+        //            foreach (var txOut in tx.Outputs)
+        //                await _addressUpdateCommand.UpdateAsync(_nexusDb, txOut.Address.AddressId, TransactionType.Output, txOut.Amount, txOut.Transaction.Block);
+        //        }
+        //    }
+        //}
     }
 }

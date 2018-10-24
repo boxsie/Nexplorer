@@ -3,156 +3,21 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
 using Nexplorer.Core;
 using Nexplorer.Data.Cache.Block;
 using Nexplorer.Data.Cache.Services;
 using Nexplorer.Data.Command;
-using Nexplorer.Data.Context;
 using Nexplorer.Data.Map;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Entity.Blockchain;
-using Nexplorer.Domain.Enums;
 
 namespace Nexplorer.Sync.Nexus
 {
-    public class AddressAggregateCatchup
-    {
-        private readonly NexusDb _nexusDb;
-        private readonly ILogger<AddressAggregateCatchup> _logger;
-        private readonly AddressAggregateUpdateCommand _addressAggregateUpdate;
-
-        private Stopwatch _stopwatch;
-        private double _totalSeconds;
-        private int _iterationCount;
-
-        public AddressAggregateCatchup(ILogger<AddressAggregateCatchup> logger, NexusDb nexusDb,
-            AddressAggregateUpdateCommand addressAggregateUpdate)
-        {
-            _logger = logger;
-            _addressAggregateUpdate = addressAggregateUpdate;
-            _nexusDb = nexusDb;
-        }
-
-        public async Task Catchup()
-        {
-            var lastBlockHeight = await GetLastBlockHeight();
-
-            var dbHeight = await _nexusDb.Blocks
-                .OrderBy(x => x.Height)
-                .Select(x => x.Height)
-                .LastOrDefaultAsync();
-
-            _stopwatch = new Stopwatch();
-            _totalSeconds = 0;
-            _iterationCount = 0;
-
-            while (lastBlockHeight < dbHeight)
-            {
-                var nextBlockHeight = lastBlockHeight + 1;
-
-                var bulkSaveCount = Settings.App.BulkSaveCount;
-
-                var lastHeight = dbHeight - nextBlockHeight > bulkSaveCount
-                    ? nextBlockHeight + bulkSaveCount
-                    : dbHeight;
-
-                Console.WriteLine();
-                _logger.LogInformation($"Adding address aggregate data from block {nextBlockHeight} -> {lastHeight}");
-
-                _stopwatch.Restart();
-
-                for (var i = nextBlockHeight; i < nextBlockHeight + bulkSaveCount; i++)
-                {
-                    var height = i;
-
-                    if (height > dbHeight)
-                        break;
-
-                    var nextBlock = await _nexusDb.Blocks
-                        .Include(x => x.Transactions)
-                        .ThenInclude(x => x.Inputs)
-                        .ThenInclude(x => x.Address)
-                        .Include(x => x.Transactions)
-                        .ThenInclude(x => x.Outputs)
-                        .ThenInclude(x => x.Address)
-                        .FirstOrDefaultAsync(x => x.Height == height);
-
-                    if (nextBlock == null)
-                        break;
-
-                    Console.Write($"\rAggregating block addresses... {LogProgress(i, dbHeight, out var blockPct)} {blockPct:N4}% ({i:N0}/{dbHeight:N0})");
-
-                    foreach (var transaction in nextBlock.Transactions)
-                    {
-                        foreach (var transactionInput in transaction.Inputs)
-                            await _addressAggregateUpdate.UpdateAsync(_nexusDb, transactionInput.Address.AddressId,
-                                TransactionType.Input, transactionInput.Amount, nextBlock);
-
-                        foreach (var transactionOutput in transaction.Outputs)
-                            await _addressAggregateUpdate.UpdateAsync(_nexusDb, transactionOutput.Address.AddressId,
-                                TransactionType.Output, transactionOutput.Amount, nextBlock);
-                    }
-                }
-
-                Console.WriteLine($"\nSaving address aggregates...");
-
-                await _nexusDb.SaveChangesAsync();
-
-                _addressAggregateUpdate.Reset();
-
-                lastBlockHeight = await GetLastBlockHeight();
-
-                LogTimeTaken(dbHeight - nextBlockHeight, _stopwatch.Elapsed);
-            }
-        }
-
-        private async Task<int> GetLastBlockHeight()
-        {
-            return await _nexusDb.AddressAggregates.AnyAsync()
-                ? await _nexusDb.AddressAggregates.MaxAsync(x => x.LastBlockHeight)
-                : 0;
-        }
-
-        private void LogTimeTaken(int syncDelta, TimeSpan timeTaken)
-        {
-            _iterationCount++;
-
-            _totalSeconds += timeTaken.TotalSeconds;
-
-            var avgSeconds = _totalSeconds / _iterationCount;
-            var estRemainingIterations = syncDelta / Settings.App.BulkSaveCount;
-
-            var remainingTime = TimeSpan.FromSeconds(estRemainingIterations * avgSeconds);
-
-            Console.WriteLine($"\nSave complete. Iteration took { timeTaken }");
-            Console.WriteLine($"Estimated remaining sync time: { remainingTime }");
-        }
-
-        private static string LogProgress(int i, int total, out double pct)
-        {
-            pct = ((double)i / total) * 100;
-
-            var progress = Math.Floor((double)pct / 5);
-            var bar = "";
-
-            for (var o = 0; o < 20; o++)
-            {
-                bar += progress > o
-                    ? '#'
-                    : ' ';
-            }
-
-            return $"[{bar}]";
-        }
-    }
-
     public class BlockSyncCatchup
     {
         private readonly NexusQuery _nexusQuery;

@@ -15,9 +15,6 @@ namespace Nexplorer.Domain.Entity.Blockchain
         
         [Required]
         public int BlockHeight { get; set; }
-
-        [ForeignKey("BlockHeight")]
-        public Block Block { get; set; }
         
         [Required]
         [MaxLength(256)]
@@ -28,7 +25,10 @@ namespace Nexplorer.Domain.Entity.Blockchain
 
         [Required]
         public double Amount { get; set; }
-        
+
+        [ForeignKey("BlockHeight")]
+        public Block Block { get; set; }
+
         public List<TransactionInput> Inputs { get; set; }
         public List<TransactionOutput> Outputs { get; set; }
     }

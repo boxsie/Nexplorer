@@ -11,9 +11,194 @@ using Nexplorer.Core;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Entity.Blockchain;
+using Nexplorer.Domain.Enums;
 
 namespace Nexplorer.Data.Command
 {
+    public static class AddressAggregator
+    {
+        private const string BlockTxSelectSql = @"
+            SELECT
+	            1 AS TxType,
+	            t.BlockHeight,
+	            t.Amount,
+	            txIn.AddressId
+            FROM [dbo].[TransactionInput] txIn
+            INNER JOIN [dbo].[Address] a ON a.AddressId = txIn.AddressId
+            INNER JOIN [dbo].[Transaction] t ON t.TransactionId = txIn.TransactionId
+            INNER JOIN [dbo].[Block] b ON b.Height = t.BlockHeight
+            WHERE b.Height = @BlockHeight
+            UNION ALL
+            SELECT
+	            2 AS TxType,
+	            t.BlockHeight,
+	            t.Amount,	
+	            txOut.AddressId
+            FROM [dbo].[TransactionOutput] txOut
+            INNER JOIN [dbo].[Address] a ON a.AddressId = txOut.AddressId
+            INNER JOIN [dbo].[Transaction] t ON t.TransactionId = txOut.TransactionId
+            INNER JOIN [dbo].[Block] b ON b.Height = t.BlockHeight
+            WHERE b.Height = @BlockHeight";
+
+        private const string AddressAggregateSelectSql = @"
+            SELECT    
+                a.AddressId,
+	            a.LastBlockHeight,
+	            a.Balance,
+	            a.ReceivedAmount,
+	            a.ReceivedCount,
+	            a.SentAmount,
+	            a.SentCount,
+	            a.UpdatedOn 
+            FROM [dbo].[AddressAggregate] a
+            WHERE a.AddressId = @AddressId";
+
+        private const string AddressAggregateInsertSql = @"
+            INSERT INTO [dbo].[AddressAggregate] ([AddressId], [LastBlockHeight], [Balance], [ReceivedAmount], [ReceivedCount], [SentAmount], [SentCount], [UpdatedOn]) 
+            VALUES (@AddressId, @LastBlockHeight, @Balance, @ReceivedAmount, @ReceivedCount, @SentAmount, @SentCount, @UpdatedOn);";
+
+        private const string AddressAggregateUpdateSql = @"
+            UPDATE [dbo].[AddressAggregate]  
+            SET 
+                LastBlockHeight = @LastBlockHeight, 
+                Balance = @Balance, 
+                ReceivedAmount = @ReceivedAmount, 
+                ReceivedCount = @ReceivedCount, 
+                SentAmount = @SentAmount, 
+                SentCount = @SentCount, 
+                UpdatedOn = @UpdatedOn
+            WHERE AddressId = @AddressId";
+
+        public static async Task AggregateAddresses(int startHeight, int count)
+        {
+            var addressAggregates = new Dictionary<int, AddressAggregate>();
+
+            using (var con = new SqlConnection(Settings.Connection.NexusDb))
+            {
+                await con.OpenAsync();
+
+                using (var trans = con.BeginTransaction())
+                {
+                    for (var i = startHeight; i < startHeight + count; i++)
+                    {
+                        var txIoDtos = await con.QueryAsync<TransactionInputOutputDto>(BlockTxSelectSql, new {BlockHeight = i}, trans);
+
+                        foreach (var txIoDto in txIoDtos)
+                            await UpdateOrInsertAggregate(con, trans, addressAggregates, txIoDto);
+
+                        LogProgress((i - startHeight) + 1, count);
+                    }
+
+                    trans.Commit();
+                }
+            }
+        }
+
+        public static async Task AggregateAddresses(this List<Block> blocks)
+        {
+            var addressAggregates = new Dictionary<int, AddressAggregate>();
+
+            using (var con = new SqlConnection(Settings.Connection.NexusDb))
+            {
+                await con.OpenAsync();
+
+                using (var trans = con.BeginTransaction())
+                {
+                    var txIoDtos = blocks
+                        .SelectMany(x => x.Transactions
+                            .SelectMany(y => y.Inputs
+                                .Select(z => new { TxType = TransactionType.Input, z.AddressId, z.Amount })
+                                .Concat(y.Outputs
+                                    .Select(z => new { TxType = TransactionType.Output, z.AddressId, z.Amount}))
+                                .Select(z => new TransactionInputOutputDto
+                                {
+                                    AddressId = z.AddressId,
+                                    Amount = z.Amount,
+                                    BlockHeight = x.Height,
+                                    TxType = z.TxType
+                                })))
+                        .ToList();
+
+                    for (var i = 0; i < txIoDtos.Count; i++)
+                    {
+                        var txIoDto = txIoDtos[i];
+
+                        await UpdateOrInsertAggregate(con, trans, addressAggregates, txIoDto);
+
+                        LogProgress(i, txIoDtos.Count);
+                    }
+
+                    trans.Commit();
+                }
+            }
+        }
+
+        private static async Task<Dictionary<int, AddressAggregate>> UpdateOrInsertAggregate(IDbConnection sqlCon, IDbTransaction trans, 
+            Dictionary<int, AddressAggregate> cache, TransactionInputOutputDto txIo)
+        {
+            AddressAggregate addAgg;
+
+            if (cache.ContainsKey(txIo.AddressId))
+            {
+                addAgg = cache[txIo.AddressId];
+
+                addAgg.ModifyAggregateProperties(txIo.TxType, txIo.Amount, txIo.BlockHeight);
+
+                await UpdateOrInsertAggregate(sqlCon, trans, addAgg, false);
+            }
+            else
+            {
+                var response = (await sqlCon.QueryAsync<AddressAggregate>(AddressAggregateSelectSql, new { txIo.AddressId }, trans)).ToList();
+
+                var isNew = !response.Any();
+
+                addAgg = isNew
+                    ? new AddressAggregate { AddressId = txIo.AddressId }
+                    : response.First();
+
+                addAgg.ModifyAggregateProperties(txIo.TxType, txIo.Amount, txIo.BlockHeight);
+
+                await UpdateOrInsertAggregate(sqlCon, trans, addAgg, isNew);
+
+                cache.Add(addAgg.AddressId, addAgg);
+            }
+
+            return cache;
+        }
+
+        private static async Task UpdateOrInsertAggregate(IDbConnection sqlCon, IDbTransaction trans, AddressAggregate addAgg, bool isInsert)
+        {
+            await sqlCon.ExecuteAsync(isInsert ? AddressAggregateInsertSql : AddressAggregateUpdateSql, new
+            {
+                addAgg.AddressId,
+                addAgg.LastBlockHeight,
+                addAgg.Balance,
+                addAgg.ReceivedAmount,
+                addAgg.ReceivedCount,
+                addAgg.SentAmount,
+                addAgg.SentCount,
+                UpdatedOn = DateTime.Now
+            }, trans);
+        }
+
+        private static void LogProgress(int i, int total)
+        {
+            var pct = ((double)i / total) * 100;
+
+            var progress = Math.Floor((double)pct / 5);
+            var bar = "";
+
+            for (var o = 0; o < 20; o++)
+            {
+                bar += progress > o
+                    ? '#'
+                    : ' ';
+            }
+
+            Console.Write($"\rSaving address aggregate updates to database... [{bar}] {pct:N2}%   ");
+        }
+    }
+
     public static class BlockInsert
     {
         private const string BlockInsertSql = @"
@@ -139,7 +324,7 @@ namespace Nexplorer.Data.Command
             return txIds;
         }
 
-        private static async Task<Dictionary<string, int>> InsertAddressesAsync(IDbConnection sqlCon, IDbTransaction trans, IEnumerable<TransactionInputOutputDto> txInOuts, int blockHeight)
+        private static async Task<Dictionary<string, int>> InsertAddressesAsync(IDbConnection sqlCon, IDbTransaction trans, IEnumerable<TransactionInputOutputLiteDto> txInOuts, int blockHeight)
         {
             var addressCache = new Dictionary<string, int>();
             var addressHashes = txInOuts.Select(y => y.AddressHash).Distinct();

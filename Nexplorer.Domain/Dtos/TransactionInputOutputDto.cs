@@ -1,14 +1,13 @@
-using ProtoBuf;
+using System;
+using Nexplorer.Domain.Enums;
 
 namespace Nexplorer.Domain.Dtos
 {
-    [ProtoContract]
     public class TransactionInputOutputDto
     {
-        [ProtoMember(1)]
-        public string AddressHash { get; set; }
-
-        [ProtoMember(2)]
+        public TransactionType TxType { get; set; }
+        public int BlockHeight { get; set; }
         public double Amount { get; set; }
+        public int AddressId { get; set; }
     }
 }

@@ -26,15 +26,15 @@ namespace Nexplorer.Domain.Dtos
         public double Amount { get; set; }
 
         [ProtoMember(7)]
-        public List<TransactionInputOutputDto> Inputs { get; set; }
+        public List<TransactionInputOutputLiteDto> Inputs { get; set; }
 
         [ProtoMember(8)]
-        public List<TransactionInputOutputDto> Outputs { get; set; }
+        public List<TransactionInputOutputLiteDto> Outputs { get; set; }
 
         public TransactionDto()
         {
-            Inputs = new List<TransactionInputOutputDto>();
-            Outputs = new List<TransactionInputOutputDto>();
+            Inputs = new List<TransactionInputOutputLiteDto>();
+            Outputs = new List<TransactionInputOutputLiteDto>();
         }
     }
 }

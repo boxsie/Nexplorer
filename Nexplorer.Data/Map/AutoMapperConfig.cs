@@ -23,9 +23,9 @@ namespace Nexplorer.Data.Map
                 x.CreateMap<Transaction, TransactionDto>()
                     .ForMember(d => d.BlockHeight, o => o.MapFrom(s => s.Block.Height))
                     .ForMember(d => d.Confirmations, o => o.Ignore());
-                x.CreateMap<TransactionInput, TransactionInputOutputDto>()
+                x.CreateMap<TransactionInput, TransactionInputOutputLiteDto>()
                     .ForMember(d => d.AddressHash, o => o.MapFrom(s => s.Address.Hash));
-                x.CreateMap<TransactionOutput, TransactionInputOutputDto>()
+                x.CreateMap<TransactionOutput, TransactionInputOutputLiteDto>()
                     .ForMember(d => d.AddressHash, o => o.MapFrom(s => s.Address.Hash));
 
                 x.CreateMap<BlockDto, OrphanBlock>()
@@ -97,9 +97,9 @@ namespace Nexplorer.Data.Map
             return config.CreateMapper();
         }
 
-        private static List<TransactionInputOutputDto> MapTxInOutDto(IEnumerable<string> rawInputOutput)
+        private static List<TransactionInputOutputLiteDto> MapTxInOutDto(IEnumerable<string> rawInputOutput)
         {
-            var txIos = new List<TransactionInputOutputDto>();
+            var txIos = new List<TransactionInputOutputLiteDto>();
 
             if (rawInputOutput == null)
                 return txIos;
@@ -108,9 +108,9 @@ namespace Nexplorer.Data.Map
             {
                 var split = s.Split(':');
                 var hash = split.Length > 0 ? split[0] : "";
-                var hasAmount = double.TryParse(split.Length > 1 ? split[1] : "", out double amountD);
+                var hasAmount = double.TryParse(split.Length > 1 ? split[1] : "", out var amountD);
 
-                txIos.Add(new TransactionInputOutputDto
+                txIos.Add(new TransactionInputOutputLiteDto
                 {
                     Amount = hasAmount ? amountD : 0,
                     AddressHash = hash
