@@ -26,6 +26,12 @@ namespace Nexplorer.Data.Context
         {
             // Indexes
 
+            modelBuilder.Entity<Block>()
+                .HasIndex(x => x.Hash);
+
+            modelBuilder.Entity<Transaction>()
+                .HasIndex(x => x.Hash);
+
             modelBuilder.Entity<Address>()
                 .HasIndex(x => x.Hash);
 
