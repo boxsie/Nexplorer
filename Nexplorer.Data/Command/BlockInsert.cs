@@ -20,38 +20,38 @@ namespace Nexplorer.Data.Command
         private const string BlockTxSelectSql = @"
             SELECT
 	            1 AS TxType,
-	            t.BlockHeight,
-	            t.Amount,
-	            txIn.AddressId
+	            t.[BlockHeight],
+	            txIn.[Amount],
+	            txIn.[AddressId]
             FROM [dbo].[TransactionInput] txIn
             INNER JOIN [dbo].[Address] a ON a.AddressId = txIn.AddressId
             INNER JOIN [dbo].[Transaction] t ON t.TransactionId = txIn.TransactionId
             INNER JOIN [dbo].[Block] b ON b.Height = t.BlockHeight
-            WHERE b.Height = @BlockHeight
+            WHERE b.[Height] = @BlockHeight
             UNION ALL
             SELECT
 	            2 AS TxType,
-	            t.BlockHeight,
-	            t.Amount,	
-	            txOut.AddressId
+	            t.[BlockHeight],
+	            txOut.[Amount],	
+	            txOut.[AddressId]
             FROM [dbo].[TransactionOutput] txOut
             INNER JOIN [dbo].[Address] a ON a.AddressId = txOut.AddressId
             INNER JOIN [dbo].[Transaction] t ON t.TransactionId = txOut.TransactionId
             INNER JOIN [dbo].[Block] b ON b.Height = t.BlockHeight
-            WHERE b.Height = @BlockHeight";
+            WHERE b.[Height] = @BlockHeight";
 
         private const string AddressAggregateSelectSql = @"
             SELECT    
-                a.AddressId,
-	            a.LastBlockHeight,
-	            a.Balance,
-	            a.ReceivedAmount,
-	            a.ReceivedCount,
-	            a.SentAmount,
-	            a.SentCount,
-	            a.UpdatedOn 
+                a.[AddressId],
+	            a.[LastBlockHeight],
+	            a.[Balance],
+	            a.[ReceivedAmount],
+	            a.[ReceivedCount],
+	            a.[SentAmount],
+	            a.[SentCount],
+	            a.[UpdatedOn] 
             FROM [dbo].[AddressAggregate] a
-            WHERE a.AddressId = @AddressId";
+            WHERE a.[AddressId] = @AddressId";
 
         private const string AddressAggregateInsertSql = @"
             INSERT INTO [dbo].[AddressAggregate] ([AddressId], [LastBlockHeight], [Balance], [ReceivedAmount], [ReceivedCount], [SentAmount], [SentCount], [UpdatedOn]) 
@@ -60,19 +60,24 @@ namespace Nexplorer.Data.Command
         private const string AddressAggregateUpdateSql = @"
             UPDATE [dbo].[AddressAggregate]  
             SET 
-                LastBlockHeight = @LastBlockHeight, 
-                Balance = @Balance, 
-                ReceivedAmount = @ReceivedAmount, 
-                ReceivedCount = @ReceivedCount, 
-                SentAmount = @SentAmount, 
-                SentCount = @SentCount, 
-                UpdatedOn = @UpdatedOn
-            WHERE AddressId = @AddressId";
+                [LastBlockHeight] = @LastBlockHeight, 
+                [Balance] = @Balance, 
+                [ReceivedAmount] = @ReceivedAmount, 
+                [ReceivedCount] = @ReceivedCount, 
+                [SentAmount] = @SentAmount, 
+                [SentCount] = @SentCount, 
+                [UpdatedOn] = @UpdatedOn
+            WHERE [AddressId] = @AddressId";
+
+        private static readonly Dictionary<int, AddressAggregate> _addressAggregates;
+
+        static AddressAggregator()
+        {
+            _addressAggregates = new Dictionary<int, AddressAggregate>();
+        }
 
         public static async Task AggregateAddresses(int startHeight, int count)
         {
-            var addressAggregates = new Dictionary<int, AddressAggregate>();
-
             using (var con = new SqlConnection(Settings.Connection.NexusDb))
             {
                 await con.OpenAsync();
@@ -84,7 +89,7 @@ namespace Nexplorer.Data.Command
                         var txIoDtos = await con.QueryAsync<TransactionInputOutputDto>(BlockTxSelectSql, new {BlockHeight = i}, trans);
 
                         foreach (var txIoDto in txIoDtos)
-                            await UpdateOrInsertAggregate(con, trans, addressAggregates, txIoDto);
+                            await UpdateOrInsertAggregate(con, trans, txIoDto);
 
                         LogProgress((i - startHeight) + 1, count);
                     }
@@ -96,8 +101,6 @@ namespace Nexplorer.Data.Command
 
         public static async Task AggregateAddresses(this List<Block> blocks)
         {
-            var addressAggregates = new Dictionary<int, AddressAggregate>();
-
             using (var con = new SqlConnection(Settings.Connection.NexusDb))
             {
                 await con.OpenAsync();
@@ -123,7 +126,7 @@ namespace Nexplorer.Data.Command
                     {
                         var txIoDto = txIoDtos[i];
 
-                        await UpdateOrInsertAggregate(con, trans, addressAggregates, txIoDto);
+                        await UpdateOrInsertAggregate(con, trans, txIoDto);
 
                         LogProgress(i, txIoDtos.Count);
                     }
@@ -133,14 +136,13 @@ namespace Nexplorer.Data.Command
             }
         }
 
-        private static async Task<Dictionary<int, AddressAggregate>> UpdateOrInsertAggregate(IDbConnection sqlCon, IDbTransaction trans, 
-            Dictionary<int, AddressAggregate> cache, TransactionInputOutputDto txIo)
+        private static async Task UpdateOrInsertAggregate(IDbConnection sqlCon, IDbTransaction trans, TransactionInputOutputDto txIo)
         {
             AddressAggregate addAgg;
 
-            if (cache.ContainsKey(txIo.AddressId))
+            if (_addressAggregates.ContainsKey(txIo.AddressId))
             {
-                addAgg = cache[txIo.AddressId];
+                addAgg = _addressAggregates[txIo.AddressId];
 
                 addAgg.ModifyAggregateProperties(txIo.TxType, txIo.Amount, txIo.BlockHeight);
 
@@ -160,10 +162,8 @@ namespace Nexplorer.Data.Command
 
                 await UpdateOrInsertAggregate(sqlCon, trans, addAgg, isNew);
 
-                cache.Add(addAgg.AddressId, addAgg);
+                _addressAggregates.Add(addAgg.AddressId, addAgg);
             }
-
-            return cache;
         }
 
         private static async Task UpdateOrInsertAggregate(IDbConnection sqlCon, IDbTransaction trans, AddressAggregate addAgg, bool isInsert)

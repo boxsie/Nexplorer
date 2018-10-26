@@ -50,7 +50,7 @@ namespace Nexplorer.Sync.Nexus
                     : dbHeight;
 
                 Console.WriteLine();
-                _logger.LogInformation($"\nAdding address aggregate data from block {nextBlockHeight} -> {lastHeight}");
+                _logger.LogInformation($"\nAdding address aggregate data from block {nextBlockHeight} -> {lastHeight - 1}");
 
                 _stopwatch.Restart();
 
@@ -61,6 +61,10 @@ namespace Nexplorer.Sync.Nexus
                 lastBlockHeight = await GetLastBlockHeight();
 
                 LogTimeTaken(dbHeight - nextBlockHeight, _stopwatch.Elapsed);
+
+#if DEBUG
+                await Task.Delay(1000);
+#endif
             }
         }
 
