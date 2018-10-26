@@ -12,7 +12,7 @@ using Nexplorer.Sync.Core;
 
 namespace Nexplorer.Sync.Jobs
 {
-    public class AddressStats : SyncJob
+    public class AddressStatsJob : SyncJob
     {
         private const int IntervalSeconds = 30;
         private const int BigUpdateIntervalSeconds = 60 * 60;
@@ -23,7 +23,7 @@ namespace Nexplorer.Sync.Jobs
         private readonly BlockQuery _blockQuery;
         private readonly NexusQuery _nexusQuery;
 
-        public AddressStats(ILogger<AddressStats> logger, RedisCommand redisCommand, AddressQuery addressQuery, BlockQuery blockQuery, NexusQuery nexusQuery)
+        public AddressStatsJob(ILogger<AddressStatsJob> logger, RedisCommand redisCommand, AddressQuery addressQuery, BlockQuery blockQuery, NexusQuery nexusQuery)
             : base(logger, IntervalSeconds)
         {
             _redisCommand = redisCommand;

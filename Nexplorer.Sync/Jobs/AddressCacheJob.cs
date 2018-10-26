@@ -16,7 +16,7 @@ using Quartz;
 
 namespace Nexplorer.Sync.Jobs
 {
-    public class AddressCache : SyncJob
+    public class AddressCacheJob : SyncJob
     {
         private readonly NexusQuery _nexusQuery;
         private readonly NexusDb _nexusDb;
@@ -24,7 +24,7 @@ namespace Nexplorer.Sync.Jobs
         private readonly AddressQuery _addressQuery;
         private readonly RedisCommand _redisCommand;
 
-        public AddressCache(ILogger<AddressCache> logger, NexusQuery nexusQuery, NexusDb nexusDb, BlockQuery blockQuery,
+        public AddressCacheJob(ILogger<AddressCacheJob> logger, NexusQuery nexusQuery, NexusDb nexusDb, BlockQuery blockQuery,
             AddressQuery addressQuery, RedisCommand redisCommand) : base(logger, 60)
         {
             _nexusQuery = nexusQuery;

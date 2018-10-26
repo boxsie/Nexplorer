@@ -14,13 +14,13 @@ using Quartz;
 
 namespace Nexplorer.Sync.Jobs
 {
-    public class MiningStats : SyncJob
+    public class MiningStatsJob : SyncJob
     {
         private readonly RedisCommand _redisCommand;
         private readonly NexusQuery _nexusQuery;
         private readonly StatQuery _statQuery;
 
-        public MiningStats(ILogger<MiningStats> logger, RedisCommand redisCommand, NexusQuery nexusQuery, StatQuery statQuery)
+        public MiningStatsJob(ILogger<MiningStatsJob> logger, RedisCommand redisCommand, NexusQuery nexusQuery, StatQuery statQuery)
             : base(logger, 10)
         {
             _redisCommand = redisCommand;

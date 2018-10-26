@@ -11,13 +11,13 @@ using Quartz;
 
 namespace Nexplorer.Sync.Jobs
 {
-    public class BlockCache : SyncJob
+    public class BlockCacheJob : SyncJob
     {
         private readonly IBlockCache _blockCache;
         private readonly NexusQuery _nexusQuery;
         private readonly BlockQuery _blockQuery;
 
-        public BlockCache(IBlockCache blockCache, NexusQuery nexusQuery, BlockQuery blockQuery, ILogger<BlockCache> logger) 
+        public BlockCacheJob(IBlockCache blockCache, NexusQuery nexusQuery, BlockQuery blockQuery, ILogger<BlockCacheJob> logger) 
             : base(logger, 120)
         {
             _blockCache = blockCache;

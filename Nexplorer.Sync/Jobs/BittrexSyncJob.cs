@@ -15,7 +15,7 @@ using StackExchange.Redis;
 
 namespace Nexplorer.Sync.Jobs
 {
-    public class BittrexSync : SyncJob
+    public class BittrexSyncJob : SyncJob
     {
         private readonly BittrexClient _bittrexClient;
         private readonly NexusDb _nexusDb;
@@ -27,7 +27,7 @@ namespace Nexplorer.Sync.Jobs
         private static int _runCount;
         private const int DbSaveRunInterval = 5;
 
-        public BittrexSync(BittrexClient bittrexClient, NexusDb nexusDb, ILogger<BittrexSync> logger, RedisCommand redis)
+        public BittrexSyncJob(BittrexClient bittrexClient, NexusDb nexusDb, ILogger<BittrexSyncJob> logger, RedisCommand redis)
             : base(logger, 5)
         {
             _bittrexClient = bittrexClient;

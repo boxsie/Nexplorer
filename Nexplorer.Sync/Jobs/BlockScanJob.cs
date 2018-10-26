@@ -10,15 +10,15 @@ using Nexplorer.Sync.Core;
 
 namespace Nexplorer.Sync.Jobs
 {
-    public class BlockScan : SyncJob
+    public class BlockScanJob : SyncJob
     {
         private readonly IBlockCache _blockCache;
         private readonly NexusQuery _nexusQuery;
         private readonly BlockQuery _blockQuery;
         private readonly LatestBlockPublisher _blockPublisher;
 
-        public BlockScan(IBlockCache blockCache, NexusQuery nexusQuery, BlockQuery blockQuery, 
-            LatestBlockPublisher blockPublisher, ILogger<BlockScan> logger) 
+        public BlockScanJob(IBlockCache blockCache, NexusQuery nexusQuery, BlockQuery blockQuery, 
+            LatestBlockPublisher blockPublisher, ILogger<BlockScanJob> logger) 
             : base(logger, 1)
         {
             _blockCache = blockCache;

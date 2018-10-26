@@ -19,7 +19,7 @@ using Quartz;
 
 namespace Nexplorer.Sync.Jobs
 {
-    public class BlockSync : SyncJob
+    public class BlockSyncJob : SyncJob
     {
         private readonly IBlockCache _blockCache;
         private readonly NexusQuery _nexusQuery;
@@ -28,8 +28,8 @@ namespace Nexplorer.Sync.Jobs
         private readonly NexusDb _nexusDb;
         private readonly IMapper _mapper;
 
-        public BlockSync(IBlockCache blockCache, NexusQuery nexusQuery, BlockQuery blockQuery, RollingCountPublisher countPublisher, 
-            NexusDb nexusDb, ILogger<BlockSync> logger, IMapper mapper) 
+        public BlockSyncJob(IBlockCache blockCache, NexusQuery nexusQuery, BlockQuery blockQuery, RollingCountPublisher countPublisher, 
+            NexusDb nexusDb, ILogger<BlockSyncJob> logger, IMapper mapper) 
             : base(logger, 30)
         {
             _blockCache = blockCache;

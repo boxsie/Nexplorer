@@ -21,7 +21,6 @@ using NLog.Extensions.Logging;
 using StackExchange.Redis;
 using Nexplorer.Sync.Jobs;
 using NLog;
-using BlockCache = Nexplorer.Sync.Jobs.BlockCache;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Nexplorer.Sync
@@ -92,14 +91,13 @@ namespace Nexplorer.Sync
 
             services.AddTransient<BlockSyncCatchup>();
             services.AddTransient<AddressAggregateCatchup>();
-            services.AddTransient<BlockSync>();
-            services.AddTransient<BlockScan>();
-            services.AddTransient<BlockCache>();
-            services.AddTransient<BittrexSync>();
-            services.AddTransient<MiningStats>();
-            services.AddTransient<AddressStats>();
-            services.AddTransient<AddressCache>();
-            services.AddTransient<AddressAggregation>();
+            services.AddTransient<BlockSyncJob>();
+            services.AddTransient<BlockScanJob>();
+            services.AddTransient<BlockCacheJob>();
+            services.AddTransient<BittrexSyncJob>();
+            services.AddTransient<MiningStatsJob>();
+            services.AddTransient<AddressStatsJob>();
+            services.AddTransient<AddressCacheJob>();
 
             services.AddTransient<INexusClient, NexusClient>();
             services.AddTransient<INexusClient, NexusClient>(x => new NexusClient(x.GetService<ILogger<RpcClient>>(), configuration.GetConnectionString("Nexus")));
