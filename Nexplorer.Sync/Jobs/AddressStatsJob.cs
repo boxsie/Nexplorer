@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
 using Nexplorer.Core;
 using Nexplorer.Data.Query;
+using Nexplorer.Domain.Criteria;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Enums;
 using Nexplorer.Sync.Core;
@@ -50,7 +51,6 @@ namespace Nexplorer.Sync.Jobs
 
             addressStats.AddressCount = await _addressQuery.GetUniqueAddressCountAsync();
             addressStats.CreatedPerHour = await _addressQuery.GetAddressesCreatedLastHourAsync();
-            addressStats.StakingCount = await _addressQuery.GetTrustKeyCountAsync();
             addressStats.ZeroBalance = (int)(await _addressQuery.GetCountFilteredAsync(new AddressFilterCriteria { MaxBalance = 0 }));
 
             if (noStats || _secondsSinceLastBigUpdate > BigUpdateIntervalSeconds)
@@ -62,6 +62,7 @@ namespace Nexplorer.Sync.Jobs
                     OrderBy = OrderAddressesBy.HighestBalance,
                     MinBalance = stakeThreshold
                 }, 0, int.MaxValue, false);
+                addressStats.BalanceOverOneThousand = stakeableAddresses.Results.Count;
 
                 var oldAddresses = await _addressQuery.GetAddressLitesFilteredAsync(new AddressFilterCriteria
                 {
@@ -69,10 +70,16 @@ namespace Nexplorer.Sync.Jobs
                     MinBalance = 0.00000001d,
                     HeightTo = dormantThreshold.Height
                 }, 0, int.MaxValue, false);
+                addressStats.DormantOverOneYear = oldAddresses.Results.Count;
+
+                var stakingAddresses = await _addressQuery.GetAddressLitesFilteredAsync(new AddressFilterCriteria
+                {
+                    IsStaking = true
+                }, 0, int.MaxValue, false);
+                addressStats.StakingCount = stakingAddresses.Results.Count;
+                addressStats.TotalStakedCoins = Math.Round(stakingAddresses.Results.Sum(x => x.Balance), 8);
 
                 addressStats.AverageBalance = await _addressQuery.GetAverageBalanceAsync(false);
-                addressStats.BalanceOverOneThousand = stakeableAddresses.Addresses.Count;
-                addressStats.DormantOverOneYear = oldAddresses.Addresses.Count;
 
                 var distributionBands = Enum.GetValues(typeof(AddressBalanceDistributionBands))
                     .Cast<AddressBalanceDistributionBands>()

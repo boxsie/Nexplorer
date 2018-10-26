@@ -83,6 +83,7 @@ namespace Nexplorer.Sync
             services.AddTransient<BlockQuery>();
             services.AddTransient<AddressQuery>();
             services.AddTransient<StatQuery>();
+            services.AddTransient<AddressAggregator>();
 
             services.AddTransient<BlockCacheBuild>();
             services.AddTransient<LatestBlockPublisher>();

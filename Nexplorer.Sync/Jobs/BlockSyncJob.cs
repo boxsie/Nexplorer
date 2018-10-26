@@ -90,7 +90,8 @@ namespace Nexplorer.Sync.Jobs
 
             var newBlocks = await blockDtos.InsertBlocksAsync();
 
-            await newBlocks.AggregateAddresses();
+            using (var addAgg = new AddressAggregator())
+                await addAgg.AggregateAddresses(newBlocks);
 
             var orphans = orphanBlocks.Select(x => _mapper.Map<OrphanBlock>(x));
             await _nexusDb.OrphanBlocks.AddRangeAsync(orphans);

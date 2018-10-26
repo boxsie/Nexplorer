@@ -39,32 +39,35 @@ namespace Nexplorer.Sync.Nexus
             _totalSeconds = 0;
             _iterationCount = 0;
 
-            while (lastBlockHeight < dbHeight)
-            {
-                var nextBlockHeight = lastBlockHeight + 1;
+            using (var addAgg = new AddressAggregator())
+            { 
+                while (lastBlockHeight < dbHeight)
+                {
+                    var nextBlockHeight = lastBlockHeight + 1;
 
-                var bulkSaveCount = Settings.App.BulkSaveCount;
+                    var bulkSaveCount = Settings.App.BulkSaveCount;
 
-                var lastHeight = dbHeight - nextBlockHeight > bulkSaveCount
-                    ? nextBlockHeight + bulkSaveCount
-                    : dbHeight;
+                    var lastHeight = dbHeight - nextBlockHeight > bulkSaveCount
+                        ? nextBlockHeight + bulkSaveCount
+                        : dbHeight;
 
-                Console.WriteLine();
-                _logger.LogInformation($"\nAdding address aggregate data from block {nextBlockHeight} -> {lastHeight - 1}");
+                    Console.WriteLine();
 
-                _stopwatch.Restart();
+                    _logger.LogInformation($"Adding address aggregate data from block {nextBlockHeight} -> {lastHeight - 1}");
 
-                Console.WriteLine($"Aggregating block addresses... {LogProgress(lastBlockHeight, dbHeight, out var blockPct)} {blockPct:N4}% ({lastBlockHeight:N0}/{dbHeight:N0})");
+                    _stopwatch.Restart();
 
-                await AddressAggregator.AggregateAddresses(nextBlockHeight, bulkSaveCount);
+                    Console.WriteLine($"Aggregating block addresses... {LogProgress(lastBlockHeight, dbHeight, out var blockPct)} {blockPct:N4}% ({lastBlockHeight:N0}/{dbHeight:N0})");
 
-                lastBlockHeight = await GetLastBlockHeight();
+                    await addAgg.AggregateAddresses(nextBlockHeight, bulkSaveCount);
 
-                LogTimeTaken(dbHeight - nextBlockHeight, _stopwatch.Elapsed);
+                    lastBlockHeight = await GetLastBlockHeight();
 
+                    LogTimeTaken(dbHeight - nextBlockHeight, _stopwatch.Elapsed);
 #if DEBUG
-                await Task.Delay(1000);
+                    await Task.Delay(1000);
 #endif
+                }
             }
         }
 

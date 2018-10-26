@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Nexplorer.Config;
 using Nexplorer.Core;
 using Nexplorer.Data.Cache.Services;
+using Nexplorer.Domain.Criteria;
 using Nexplorer.Domain.Enums;
 
 namespace Nexplorer.Data.Query
@@ -74,14 +75,7 @@ namespace Nexplorer.Data.Query
 
             return truskKeyCache.FirstOrDefault(x => x.AddressHash == addressHash);
         }
-
-        public async Task<int> GetTrustKeyCountAsync()
-        {
-            var truskKeyCache = await _redisCommand.GetAsync<List<TrustKeyDto>>(Settings.Redis.TrustKeyCache);
-
-            return truskKeyCache?.Count ?? 0;
-        }
-
+        
         public int GetNexusAddressCount()
         {
             return NexusAmbassadorAddresses.Length + NexusDevAddresses.Length + NexusEmbassyAddresses.Length;
@@ -190,7 +184,7 @@ namespace Nexplorer.Data.Query
             }
         }
 
-        public async Task<AddressFilterResult> GetAddressLitesFilteredAsync(AddressFilterCriteria filter, int start, int count, bool countResults, int? maxResults = null)
+        public async Task<FilterResult<AddressLiteDto>> GetAddressLitesFilteredAsync(AddressFilterCriteria filter, int start, int count, bool countResults, int? maxResults = null)
         {
             var min = filter.MinBalance ?? 0;
             var max = filter.MaxBalance ?? double.MaxValue;
@@ -215,10 +209,10 @@ namespace Nexplorer.Data.Query
 
                 var ordered = OrderAddresses(filtered, filter.OrderBy).ToList();
 
-                var result = new AddressFilterResult
+                var result = new FilterResult<AddressLiteDto>
                 {
                     ResultCount = ordered.Count,
-                    Addresses = ordered.Skip(start).Take(count).ToList()
+                    Results = ordered.Skip(start).Take(count).ToList()
                 };
 
                 return result;
@@ -256,7 +250,7 @@ namespace Nexplorer.Data.Query
 
             var sqlC = @"SELECT 
                          COUNT(*)
-                         FROM (SELECT TOP (@maxResults) 
+                         FROM (SELECT TOP (@maxResults)
                                1 AS Cnt
                                FROM [dbo].[Address] a 
                                LEFT JOIN [dbo].[AddressAggregate] aa ON aa.[AddressId] = a.[AddressId]
@@ -264,24 +258,24 @@ namespace Nexplorer.Data.Query
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
-                var results = new AddressFilterResult();
+                var results = new FilterResult<AddressLiteDto>();
                 var param = new {min, max, fromHeight, toHeight, start, count, maxResults = maxResults ?? int.MaxValue};
 
                 if (countResults)
                 {
                     using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
                     {
-                        results.Addresses = (await multi.ReadAsync<AddressLiteDto>()).ToList();
+                        results.Results = (await multi.ReadAsync<AddressLiteDto>()).ToList();
                         results.ResultCount = (int)(await multi.ReadAsync<int>()).FirstOrDefault();
                     }
                 }
                 else
                 {
-                    results.Addresses = (await sqlCon.QueryAsync<AddressLiteDto>(sqlQ, param)).ToList();
+                    results.Results = (await sqlCon.QueryAsync<AddressLiteDto>(sqlQ, param)).ToList();
                     results.ResultCount = -1;
                 }
 
-                foreach (var address in results.Addresses)
+                foreach (var address in results.Results)
                 {
                     address.InterestRate = trustAddresses?.FirstOrDefault(x => x.Hash == address.Hash)?.InterestRate;
                     address.IsNexus = nexusAddresses?.Any(x => x.Hash == address.Hash) ?? false;

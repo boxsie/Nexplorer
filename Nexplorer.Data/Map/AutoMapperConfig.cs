@@ -5,6 +5,7 @@ using AutoMapper;
 using Nexplorer.Client.Response;
 using Nexplorer.Core;
 using Nexplorer.Data.Api;
+using Nexplorer.Domain.Criteria;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Entity.Blockchain;
 using Nexplorer.Domain.Entity.Orphan;

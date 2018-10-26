@@ -107,6 +107,7 @@ export class AddressIndexViewModel {
                     this.averageBalance = `${statDto.averageBalance.toFixed(3).toLocaleString()} NXS`;
                     this.newAddressRate = `${statDto.createdPerHour.toLocaleString()} p/hour`;
                     this.amountStaking = statDto.stakingCount.toLocaleString();
+                    this.totalStakedCoins = `${statDto.totalStakedCoins.toFixed(3).toLocaleString()} NXS`;
                     this.stakeablePercentage = `${((statDto.balanceOverOneThousand / statDto.addressCount) * 100).toFixed(3).toLocaleString()} %`;
                     this.percentageDormant = `${((statDto.dormantOverOneYear / statDto.addressCount) * 100).toFixed(3).toLocaleString()} %`;
                     this.zeroBalance = `${((statDto.zeroBalance / statDto.addressCount) * 100).toFixed(3).toLocaleString()} %`;

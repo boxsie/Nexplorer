@@ -4,9 +4,9 @@ import Moment from 'moment';
 import Avatars from '@dicebear/avatars';
 import SpriteCollection from '@dicebear/avatars-identicon-sprites';
 
-import AddressTxTable from '../Library/addressTxTable.js';
-import CurrencyHelper from '../Library/currencyHelper.js';
-import ActivityChart from '../Library/addressActivityChart.js';
+import AddressTxTable from '../Library/addressTxTable';
+import CurrencyHelper from '../Library/currencyHelper';
+import ActivityChart from '../Library/addressActivityChart';
 
 import '../../Style/addresses.address.scss';
 

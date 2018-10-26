@@ -25,5 +25,8 @@ namespace Nexplorer.Domain.Dtos
 
         [ProtoMember(7)]
         public int ZeroBalance { get; set; }
+
+        [ProtoMember(8)]
+        public double TotalStakedCoins { get; set; }
     }
 }

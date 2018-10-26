@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Nexplorer.Domain.Criteria;
 using Nexplorer.Domain.Dtos;
 
 namespace Nexplorer.Web.Dtos
 {
-    public class DataTablePostModel
+    public class DataTablePostModel<T>
     {
         [JsonProperty("filter")]
         public string Filter { get; set; }
 
         [JsonProperty("filterDto")]
-        public AddressFilterCriteria FilterCriteria { get; set; }
+        public T FilterCriteria { get; set; }
 
         [JsonProperty("draw")]
         public int Draw { get; set; }

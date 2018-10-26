@@ -9,6 +9,7 @@ using Nexplorer.Core;
 using Nexplorer.Data.Api;
 using Nexplorer.Data.Cache.Services;
 using Nexplorer.Data.Query;
+using Nexplorer.Domain.Criteria;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Enums;
 
@@ -19,6 +20,7 @@ namespace Nexplorer.Web.Controllers
     public class NexplorerApiController : ControllerBase
     {
         private readonly IMapper _mapper;
+        private readonly RedisCommand _redis;
         private readonly ExchangeQuery _exchangeQuery;
         private readonly StatQuery _statQuery;
         private readonly AddressQuery _addressQuery;
@@ -29,6 +31,7 @@ namespace Nexplorer.Web.Controllers
         public NexplorerApiController(IMapper mapper, RedisCommand redis, ExchangeQuery exchangeQuery, StatQuery statQuery, AddressQuery addressQuery)
         {
             _mapper = mapper;
+            _redis = redis;
             _exchangeQuery = exchangeQuery;
             _statQuery = statQuery;
             _addressQuery = addressQuery;
@@ -41,17 +44,19 @@ namespace Nexplorer.Web.Controllers
         /// <remarks>This returns the latest Nexus channel stats.</remarks>
         [HttpGet]
         [Route("channel/stats")]
-        [ProducesResponseType(typeof(ChannelStats), 200)]
+        [ProducesResponseType(typeof(ChainStats), 200)]
         public async Task<IActionResult> GetChannelStats()
         {
             var channelStats = await _statQuery.GetChannelStatsAsync();
+            var supplyRate = await _redis.GetAsync<SupplyRateDto>(Settings.Redis.SupplyRatesLatest);
 
             if (channelStats == null)
                 return NotFound("There were no stats found");
 
-            return Ok(new ChannelStats
+            return Ok(new ChainStats
             {
                 TotalHeight = channelStats.Sum(x => x.Height),
+                TotalSupply = supplyRate.MoneySupply,
                 Channels = channelStats
             });
         }
@@ -81,8 +86,6 @@ namespace Nexplorer.Web.Controllers
                 Volume = channelStats.Volume
             });
         }
-
-
 
         // GET addresses
         /// <summary>
@@ -120,7 +123,7 @@ namespace Nexplorer.Web.Controllers
             {
                 Criteria = addressesCriteria,
                 FilterResultCount = addressResult.ResultCount,
-                Data = addressResult.Addresses.Select(x => _mapper.Map<FilteredAddress>(x)).ToList()
+                Data = addressResult.Results.Select(x => _mapper.Map<FilteredAddress>(x)).ToList()
             };
 
             return Ok(response);

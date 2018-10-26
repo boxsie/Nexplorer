@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Nexplorer.Domain.Enums;
 
-namespace Nexplorer.Domain.Dtos
+namespace Nexplorer.Domain.Criteria
 {
     public class AddressFilterCriteria
     {

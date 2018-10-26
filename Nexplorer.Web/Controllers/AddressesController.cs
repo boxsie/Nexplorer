@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Nexplorer.Data.Query;
+using Nexplorer.Domain.Criteria;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Entity.User;
 using Nexplorer.Domain.Enums;
@@ -25,13 +26,14 @@ namespace Nexplorer.Web.Controllers
         private readonly ExchangeQuery _exchangeQuery;
         private readonly BlockQuery _blockQuery;
         private readonly UserQuery _userQuery;
+        private readonly TransactionQuery _transactionQuery;
 
         private const int TransactionsPerPage = 5;
         private const int MaxAddressesPerFilterPage = 100;
         private const int MaxAddressesFilterResults = 1000;
 
         public AddressesController(UserManager<ApplicationUser> userManager, AddressQuery addressQuery, CurrencyQuery currencyQuery,
-            ExchangeQuery exchangeQuery, BlockQuery blockQuery, UserQuery userQuery)
+            ExchangeQuery exchangeQuery, BlockQuery blockQuery, UserQuery userQuery, TransactionQuery transactionQuery)
         {
             _userManager = userManager;
             _addressQuery = addressQuery;
@@ -39,6 +41,7 @@ namespace Nexplorer.Web.Controllers
             _exchangeQuery = exchangeQuery;
             _blockQuery = blockQuery;
             _userQuery = userQuery;
+            _transactionQuery = transactionQuery;
         }
         
         public async Task<IActionResult> Index()
@@ -103,9 +106,23 @@ namespace Nexplorer.Web.Controllers
         }
         
         [HttpGet]
-        public async Task<IActionResult> GetAddressTxs(string addressHash, int? start, int? count, TransactionType txType)
+        public async Task<IActionResult> GetAddressTxs(DataTablePostModel<TransactionFilterCriteria> model)
         {
-            return Ok(await _addressQuery.GetAddressTransactionsAsync(addressHash, txType, start ?? 0, count ?? 0));
+            var count = model.Length > MaxAddressesPerFilterPage
+                ? MaxAddressesPerFilterPage
+                : model.Length;
+
+            var data = await _transactionQuery.GetTransactionsFilteredAsync(model.FilterCriteria, model.Start, count, false);
+
+            var response = new
+            {
+                Draw = model.Draw,
+                RecordsTotal = 0,
+                RecordsFiltered = data.ResultCount,
+                Data = data.Results
+            };
+
+            return Ok(response);
         }
 
         [HttpGet]
@@ -118,7 +135,7 @@ namespace Nexplorer.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetAddresses(DataTablePostModel model)
+        public async Task<IActionResult> GetAddresses(DataTablePostModel<AddressFilterCriteria> model)
         {
             var criteria = model.Filter != "custom"
                 ? GetCriteria(model.Filter)
@@ -139,7 +156,7 @@ namespace Nexplorer.Web.Controllers
                 Draw = model.Draw,
                 RecordsTotal = 0,
                 RecordsFiltered = resultCount,
-                Data = data.Addresses
+                Data = data.Results
             };
 
             return Ok(response);
