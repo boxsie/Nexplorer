@@ -88,26 +88,13 @@ namespace Nexplorer.Sync.Jobs
                 Logger.LogInformation($"Syncing block {finalBlockDto.Height}");
             }
 
-            await blockDtos.InsertBlocksAsync();
+            var newBlocks = await blockDtos.InsertBlocksAsync();
+
+            await newBlocks.AggregateAddresses();
 
             var orphans = orphanBlocks.Select(x => _mapper.Map<OrphanBlock>(x));
             await _nexusDb.OrphanBlocks.AddRangeAsync(orphans);
             await _nexusDb.SaveChangesAsync();
         }
-
-        //private async Task UpdateAddressAggregates(IEnumerable<Block> blocks)
-        //{
-        //    foreach (var block in blocks)
-        //    {
-        //        foreach (var tx in block.Transactions)
-        //        {
-        //            foreach (var txIn in tx.Inputs)
-        //                await _addressUpdateCommand.UpdateAsync(_nexusDb, txIn.Address.AddressId, TransactionType.Input, txIn.Amount, txIn.Transaction.Block);
-
-        //            foreach (var txOut in tx.Outputs)
-        //                await _addressUpdateCommand.UpdateAsync(_nexusDb, txOut.Address.AddressId, TransactionType.Output, txOut.Amount, txOut.Transaction.Block);
-        //        }
-        //    }
-        //}
     }
 }

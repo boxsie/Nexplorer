@@ -15,19 +15,24 @@ namespace Nexplorer.Data.Cache.Block
         private readonly RollingCountPublisher _countPublisher;
         private readonly RedisCommand _redisCommand;
         private readonly ILogger<BlockCacheBuild> _logger;
+        private readonly BlockQuery _blockQuery;
 
-        public BlockCacheBuild(IBlockCache blockCache, NexusQuery nexusQuery, RollingCountPublisher countPublisher, RedisCommand redisCommand, ILogger<BlockCacheBuild> logger)
+        public BlockCacheBuild(IBlockCache blockCache, NexusQuery nexusQuery, RollingCountPublisher countPublisher, 
+            RedisCommand redisCommand, ILogger<BlockCacheBuild> logger, BlockQuery blockQuery)
         {
             _blockCache = blockCache;
             _nexusQuery = nexusQuery;
             _countPublisher = countPublisher;
             _redisCommand = redisCommand;
             _logger = logger;
+            _blockQuery = blockQuery;
         }
 
-        public async Task BuildAsync(int syncedHeight)
+        public async Task BuildAsync()
         {
             await _blockCache.Clear();
+
+            var syncedHeight = await _blockQuery.GetLastSyncedHeightAsync();
 
             var blockCount = 0;
             var txCount = 0;

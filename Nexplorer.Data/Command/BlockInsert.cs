@@ -99,7 +99,7 @@ namespace Nexplorer.Data.Command
             }
         }
 
-        public static async Task AggregateAddresses(this List<Block> blocks)
+        public static async Task AggregateAddresses(this IEnumerable<Block> blocks)
         {
             using (var con = new SqlConnection(Settings.Connection.NexusDb))
             {
@@ -228,8 +228,10 @@ namespace Nexplorer.Data.Command
             FROM [dbo].[Address] a
             WHERE a.Hash = @Hash";
         
-        public static async Task InsertBlocksAsync(this List<BlockDto> blockDtos)
+        public static async Task<IEnumerable<Block>> InsertBlocksAsync(this List<BlockDto> blockDtos)
         {
+            var blocks = new List<Block>();
+
             using (var con = new SqlConnection(Settings.Connection.NexusDb))
             {
                 await con.OpenAsync();
@@ -243,8 +245,8 @@ namespace Nexplorer.Data.Command
                         var block = MapBlock(blockDto);
                         await InsertBlockAsync(con, trans, block);
 
-                        var txs = MapTransactions(blockDto.Transactions);
-                        var txIds = await InsertTransactionsAsync(con, trans, txs);
+                        block.Transactions = MapTransactions(blockDto.Transactions).ToList();
+                        var txIds = await InsertTransactionsAsync(con, trans, block.Transactions);
 
                         var txInOutDtos = blockDto.Transactions.SelectMany(x => x.Inputs.Concat(x.Outputs)).ToList();
 
@@ -254,8 +256,19 @@ namespace Nexplorer.Data.Command
                             .Select((x, i) => MapTransactionInputOutputs(x, addressesCache, txIds[i]))
                             .ToList();
 
-                        await InsertTransactionInputsAsync(con, trans, txInsOuts.SelectMany(x => x.Item1));
-                        await InsertTransactionOutputsAsync(con, trans, txInsOuts.SelectMany(x => x.Item2));
+                        var inputs = txInsOuts.SelectMany(x => x.Item1).ToList();
+                        var outputs = txInsOuts.SelectMany(x => x.Item2).ToList();
+
+                        await InsertTransactionInputsAsync(con, trans, inputs);
+                        await InsertTransactionOutputsAsync(con, trans, outputs);
+
+                        foreach (var tx in block.Transactions)
+                        {
+                            tx.Inputs = inputs.Where(x => x.TransactionId == tx.TransactionId).ToList();
+                            tx.Outputs = outputs.Where(x => x.TransactionId == tx.TransactionId).ToList();
+                        }
+
+                        blocks.Add(block);
 
                         LogProgress(index, blockDtos.Count - 1);
                     }
@@ -263,6 +276,8 @@ namespace Nexplorer.Data.Command
                     trans.Commit();
                 }
             }
+
+            return blocks;
         }
 
         private static void LogProgress(int i, int total)

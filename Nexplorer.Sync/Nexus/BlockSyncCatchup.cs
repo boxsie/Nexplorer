@@ -23,7 +23,6 @@ namespace Nexplorer.Sync.Nexus
         private readonly NexusQuery _nexusQuery;
         private readonly IServiceProvider _serviceProvider;
         private readonly BlockQuery _blockQuery;
-        private readonly BlockCacheBuild _blockCacheBuild;
         private readonly ILogger<BlockSyncCatchup> _logger;
         private readonly RedisCommand _redisCommand;
         private readonly CancellationTokenSource _cancelBlockStream;
@@ -34,13 +33,11 @@ namespace Nexplorer.Sync.Nexus
         private bool _allowProgressUpdate;
         private int _streamCount;
 
-        public BlockSyncCatchup(NexusQuery nexusQuery, IServiceProvider serviceProvider, BlockQuery blockQuery,
-            BlockCacheBuild blockCacheBuild, ILogger<BlockSyncCatchup> logger, RedisCommand redisCommand)
+        public BlockSyncCatchup(NexusQuery nexusQuery, IServiceProvider serviceProvider, BlockQuery blockQuery, ILogger<BlockSyncCatchup> logger, RedisCommand redisCommand)
         {
             _nexusQuery = nexusQuery;
             _serviceProvider = serviceProvider;
             _blockQuery = blockQuery;
-            _blockCacheBuild = blockCacheBuild;
             _logger = logger;
             _redisCommand = redisCommand;
             _cancelBlockStream = new CancellationTokenSource();

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Nexplorer.Data.Cache.Block;
 using Nexplorer.Data.Query;
 using Nexplorer.Sync.Core;
 using Nexplorer.Sync.Nexus;
@@ -17,19 +18,23 @@ namespace Nexplorer.Sync
         private readonly IServiceProvider _serviceProvider;
         private readonly BlockSyncCatchup _blockCatchup;
         private readonly AddressAggregateCatchup _addressAggregateCatchup;
+        private readonly BlockCacheBuild _blockCacheBuild;
 
-        public App(ILogger<App> logger, IServiceProvider serviceProvider, BlockSyncCatchup blockCatchup, AddressAggregateCatchup addressAggregateCatchup)
+        public App(ILogger<App> logger, IServiceProvider serviceProvider, BlockSyncCatchup blockCatchup, 
+            AddressAggregateCatchup addressAggregateCatchup, BlockCacheBuild blockCacheBuild)
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
             _blockCatchup = blockCatchup;
             _addressAggregateCatchup = addressAggregateCatchup;
+            _blockCacheBuild = blockCacheBuild;
         }
 
         public async Task Run()
         {
             await _blockCatchup.Catchup();
             await _addressAggregateCatchup.Catchup();
+            await _blockCacheBuild.BuildAsync();
 
             await StartJobs();
         }
