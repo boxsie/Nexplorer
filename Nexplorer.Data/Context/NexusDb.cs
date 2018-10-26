@@ -29,6 +29,9 @@ namespace Nexplorer.Data.Context
             modelBuilder.Entity<Address>()
                 .HasIndex(x => x.Hash);
 
+            modelBuilder.Entity<AddressAggregate>()
+                .HasIndex(x => x.Balance);
+
 
             // Relationships
 
