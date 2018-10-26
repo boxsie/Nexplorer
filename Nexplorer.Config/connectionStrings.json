@@ -1,8 +1,8 @@
 ﻿{
   "ConnectionStrings": {
-    "Redis": "192.168.1.117:6379,password=DJEv3Qb1XMW7FJ0UekbM,allowAdmin=true",
-    "NexusDb": "Server=192.168.1.117;Database=nexusdb;User Id=sa;Password=5bAY9aT0V2GMfX2snvO3yusBrSAUTOszrQtUH2ke;",
-    "NexplorerDb": "Server=192.168.1.117;Database=nexplorerdb;User Id=sa;Password=5bAY9aT0V2GMfX2snvO3yusBrSAUTOszrQtUH2ke;",
-    "Nexus": "192.168.1.117:9336;Username=admin;Password=hL675FnCjgWNSJKfORyN"
+    "Redis": "localhost:6379,password=moop,allowAdmin=true",
+    "NexusDb": "Server=localhost;Database=nexusdb;User Id=moop;Password=moop;",
+    "NexplorerDb": "Server=localhost;Database=nexplorerdb;User Id=moop;Password=moop;",
+    "Nexus": "localhost:9336;Username=moop;Password=moop"
   }
 }

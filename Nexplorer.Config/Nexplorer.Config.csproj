@@ -7,7 +7,6 @@
   <ItemGroup>
     <None Remove="appSettings.json" />
     <None Remove="connectionStrings.debug.json" />
-    <None Remove="connectionStrings.json" />
     <None Remove="connectionStrings.live.json" />
     <None Remove="emailConfig.json" />
     <None Remove="redisKeys.json" />
@@ -17,9 +16,6 @@
     <Content Include="appSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Include="connectionStrings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="emailConfig.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -39,6 +35,12 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="connectionStrings.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
