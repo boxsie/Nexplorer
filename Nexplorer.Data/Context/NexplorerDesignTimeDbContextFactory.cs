@@ -17,7 +17,10 @@ namespace Nexplorer.Data.Context
 
             var connectionString = config.GetConnectionString("NexusDb");
 
-            builder.UseSqlServer(connectionString, x => x.MigrationsAssembly("Nexplorer.Data"));
+            builder.UseSqlServer(connectionString, x =>
+            {
+                x.MigrationsAssembly("Nexplorer.Data");
+            });
 
             return new NexplorerDb(builder.Options);
         }

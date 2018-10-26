@@ -20,7 +20,9 @@ namespace Nexplorer.Data.Context
 
         public DbSet<BittrexSummary> BittrexSummaries { get; set; }
 
-        public NexusDb(DbContextOptions<NexusDb> options) : base(options) { }
+        public NexusDb(DbContextOptions<NexusDb> options) : base(options)
+        {
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

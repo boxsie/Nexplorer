@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -18,7 +19,11 @@ namespace Nexplorer.Data.Context
 
             var connectionString = config.GetConnectionString("NexusDb");
 
-            builder.UseSqlServer(connectionString, x => x.MigrationsAssembly("Nexplorer.Data"));
+            builder.UseSqlServer(connectionString, x =>
+            {
+                x.MigrationsAssembly("Nexplorer.Data");
+                x.CommandTimeout((int)TimeSpan.FromHours(2).TotalSeconds);
+            });
 
             return new NexusDb(builder.Options);
         }

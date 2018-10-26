@@ -21,6 +21,7 @@ export class AddressIndexViewModel {
                 newAddressRate: ' - ',
                 amountStaking: ' - ',
                 stakeablePercentage: ' - ',
+                totalStakedCoins: ' - ',
                 percentageDormant: ' - ',
                 zeroBalance: ' - ',
                 currentFilter: 'all',

@@ -16,8 +16,9 @@ namespace Nexplorer.Sync.Jobs
     public class AddressStatsJob : SyncJob
     {
         private const int IntervalSeconds = 30;
-        private const int BigUpdateIntervalSeconds = 60 * 60;
+        private const int BigUpdateIntervalSeconds = 60;
         private static int _secondsSinceLastBigUpdate = 0;
+        private const int StakeThreshold = 1000;
 
         private readonly RedisCommand _redisCommand;
         private readonly AddressQuery _addressQuery;
@@ -35,7 +36,6 @@ namespace Nexplorer.Sync.Jobs
 
         protected override async Task<string> ExecuteAsync()
         {
-            const int stakeThreshold = 1000;
             var dormantThreshold = await _blockQuery.GetBlockAsync(DateTime.Now.AddYears(-1));
 
             _secondsSinceLastBigUpdate += IntervalSeconds;
@@ -60,7 +60,7 @@ namespace Nexplorer.Sync.Jobs
                 var stakeableAddresses = await _addressQuery.GetAddressLitesFilteredAsync(new AddressFilterCriteria
                 {
                     OrderBy = OrderAddressesBy.HighestBalance,
-                    MinBalance = stakeThreshold
+                    MinBalance = StakeThreshold
                 }, 0, int.MaxValue, false);
                 addressStats.BalanceOverOneThousand = stakeableAddresses.Results.Count;
 
