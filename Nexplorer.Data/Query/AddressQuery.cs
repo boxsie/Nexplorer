@@ -199,10 +199,13 @@ namespace Nexplorer.Data.Query
 
             if (isNxs || isStk)
             {
-                var adds = (!isNxs || !isStk) 
-                    ? isNxs 
-                        ? nexusAddresses 
-                        : trustAddresses 
+                if ((isNxs && (nexusAddresses == null || !nexusAddresses.Any()) || (isStk && (trustAddresses == null || !trustAddresses.Any()))))
+                    return new FilterResult<AddressLiteDto> { ResultCount = 0, Results = new List<AddressLiteDto>() };
+
+                var adds = (!isNxs || !isStk)
+                    ? isNxs
+                        ? nexusAddresses
+                        : trustAddresses
                     : trustAddresses.Where(x => nexusAddresses.Any(y => y.Hash == x.Hash));
 
                 var filtered = adds.Where(x => x.Balance >= min && x.Balance <= max && x.LastBlockSeen >= fromHeight && x.LastBlockSeen <= toHeight);
