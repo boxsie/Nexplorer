@@ -27,6 +27,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Migrations\NexplorerDbMigrations\20181026123554_InitialCreate.cs" />
+    <Compile Include="Migrations\NexplorerDbMigrations\20181026123554_InitialCreate.Designer.cs" />
+    <Compile Include="Migrations\NexplorerDbMigrations\NexplorerDbModelSnapshot.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="7.0.1" />
     <PackageReference Include="Dapper" Version="1.50.5" />
     <PackageReference Include="StackExchange.Redis.StrongName" Version="1.2.6" />

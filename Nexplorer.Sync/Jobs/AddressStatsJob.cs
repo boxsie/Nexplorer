@@ -70,7 +70,7 @@ namespace Nexplorer.Sync.Jobs
                     HeightTo = dormantThreshold.Height
                 }, 0, int.MaxValue, false);
 
-                addressStats.AverageBalance = await _addressQuery.GetAverageBalanceAsync();
+                addressStats.AverageBalance = await _addressQuery.GetAverageBalanceAsync(false);
                 addressStats.BalanceOverOneThousand = stakeableAddresses.Addresses.Count;
                 addressStats.DormantOverOneYear = oldAddresses.Addresses.Count;
 

@@ -106,17 +106,17 @@ namespace Nexplorer.Data.Query
         public async Task<AddressDto> GetAddressAsync(int addressId, string addressHash)
         {
             const string sqlQ = @"SELECT
-                                  a.AddressId,
-                                  a.Hash,
-                                  a.FirstBlockHeight AS FirstBlockSeen,
-                                  aa.LastBlockHeight  AS LastBlockSeen,
-                                  aa.ReceivedAmount,
-                                  aa.ReceivedCount,
-                                  aa.SentAmount,
-                                  aa.SentCount
-                                  FROM Address a
-                                  LEFT JOIN AddressAggregate aa ON aa.AddressId = a.AddressId
-                                  WHERE a.AddressId = @addressId;";
+                                  a.[AddressId],
+                                  a.[Hash],
+                                  a.[FirstBlockHeight] AS FirstBlockSeen,
+                                  aa.[LastBlockHeight]  AS LastBlockSeen,
+                                  aa.[ReceivedAmount],
+                                  aa.[ReceivedCount],
+                                  aa.[SentAmount],
+                                  aa.[SentCount]
+                                  FROM [dbo].[Address] a
+                                  LEFT JOIN [dbo].[AddressAggregate] aa ON aa.[AddressId] = a.[AddressId]
+                                  WHERE a.[AddressId] = @addressId;";
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
@@ -131,14 +131,14 @@ namespace Nexplorer.Data.Query
         public async Task<AddressLiteDto> GetAddressLiteAsync(int addressId, string addressHash)
         {
             const string sqlQ = @"SELECT
-                                  a.AddressId,
-                                  a.Hash,
-                                  a.FirstBlockHeight AS FirstBlockSeen,
-                                  aa.LastBlockHeight  AS LastBlockSeen,
-                                  aa.Balance
-                                  FROM Address a
-                                  LEFT JOIN AddressAggregate aa ON aa.AddressId = a.AddressId
-                                  WHERE a.AddressId = @addressId;";
+                                  a.[AddressId],
+                                  a.[Hash],
+                                  a.[FirstBlockHeight] AS FirstBlockSeen,
+                                  aa.[LastBlockHeight]  AS LastBlockSeen,
+                                  aa.[Balance]
+                                  FROM [dbo].[Address] a
+                                  LEFT JOIN [dbo].[AddressAggregate] aa ON aa.[AddressId] = a.[AddressId]
+                                  WHERE a.[AddressId] = @addressId;";
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
@@ -159,8 +159,8 @@ namespace Nexplorer.Data.Query
 
             var sqlQ = $@"SELECT
                           SUM(aa.Balance)
-                          FROM AddressAggregate aa
-                          WHERE aa.Balance >= @min AND aa.Balance <= @max AND aa.LastBlockHeight >= @fromHeight AND aa.LastBlockHeight <= @toHeight;";
+                          FROM [dbo].[AddressAggregate] aa
+                          WHERE aa.[Balance] >= @min AND aa.[Balance] <= @max AND aa.[LastBlockHeight] >= @fromHeight AND aa.[LastBlockHeight] <= @toHeight;";
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
@@ -179,8 +179,8 @@ namespace Nexplorer.Data.Query
 
             var sqlQ = $@"SELECT
                           COUNT(1)
-                          FROM AddressAggregate aa
-                          WHERE aa.Balance >= @min AND aa.Balance <= @max AND aa.LastBlockHeight >= @fromHeight AND aa.LastBlockHeight <= @toHeight;";
+                          FROM [dbo].[AddressAggregate] aa
+                          WHERE aa.[Balance] >= @min AND aa.[Balance] <= @max AND aa.[LastBlockHeight] >= @fromHeight AND aa.[LastBlockHeight] <= @toHeight;";
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
@@ -229,7 +229,7 @@ namespace Nexplorer.Data.Query
             switch (filter.OrderBy)
             {
                 case OrderAddressesBy.LowestBalance:
-                    sqlOrderBy += " aa.Balance";
+                    sqlOrderBy += " aa.[Balance]";
                     break;
                 case OrderAddressesBy.MostRecentlyActive:
                     sqlOrderBy += " LastBlockSeen DESC";
@@ -238,29 +238,29 @@ namespace Nexplorer.Data.Query
                     sqlOrderBy += " LastBlockSeen";
                     break;
                 default:
-                    sqlOrderBy += " aa.Balance DESC";
+                    sqlOrderBy += " aa.[Balance] DESC";
                     break;
             }
 
             var sqlQ = $@"SELECT
-                          a.AddressId,
-                          a.Hash,
-                          a.FirstBlockHeight AS FirstBlockSeen,
-                          aa.LastBlockHeight AS LastBlockSeen,
-                          aa.Balance
-                          FROM Address a
-                          LEFT JOIN AddressAggregate aa ON aa.AddressId = a.AddressId
-                          WHERE aa.Balance >= @min AND aa.Balance <= @max AND aa.LastBlockHeight >= @fromHeight AND aa.LastBlockHeight <= @toHeight 
+                          a.[AddressId],
+                          a.[Hash],
+                          a.[FirstBlockHeight] AS FirstBlockSeen,
+                          aa.[LastBlockHeight] AS LastBlockSeen,
+                          aa.[Balance]
+                          FROM [dbo].[Address] a
+                          LEFT JOIN [dbo].[AddressAggregate] aa ON aa.[AddressId] = a.[AddressId]
+                          WHERE aa.[Balance] >= @min AND aa.[Balance] <= @max AND aa.[LastBlockHeight] >= @fromHeight AND aa.[LastBlockHeight] <= @toHeight 
                           {sqlOrderBy}
                           OFFSET @start ROWS FETCH NEXT @count ROWS ONLY;";
 
             var sqlC = @"SELECT 
                          COUNT(*)
-                         FROM (SELECT TOP @maxResults
-                               1
-                               FROM Address a 
-                               LEFT JOIN AddressAggregate aa ON aa.AddressId = a.AddressId 
-                               WHERE aa.Balance >= @min AND aa.Balance <= @max AND aa.LastBlockHeight >= @fromHeight AND aa.LastBlockHeight <= @toHeight) AS resultCount;";
+                         FROM (SELECT TOP (@maxResults) 
+                               1 AS Cnt
+                               FROM [dbo].[Address] a 
+                               LEFT JOIN [dbo].[AddressAggregate] aa ON aa.[AddressId] = a.[AddressId]
+                               WHERE aa.[Balance] >= @min AND aa.[Balance] <= @max AND aa.[LastBlockHeight] >= @fromHeight AND aa.[LastBlockHeight] <= @toHeight) AS resultCount;";
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
@@ -272,7 +272,7 @@ namespace Nexplorer.Data.Query
                     using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
                     {
                         results.Addresses = (await multi.ReadAsync<AddressLiteDto>()).ToList();
-                        results.ResultCount = (int)(await multi.ReadAsync<long>()).FirstOrDefault();
+                        results.ResultCount = (int)(await multi.ReadAsync<int>()).FirstOrDefault();
                     }
                 }
                 else
@@ -300,49 +300,49 @@ namespace Nexplorer.Data.Query
                 case TransactionType.Input:
                     sqlQ += @"SELECT
                               1 AS TxType,
-                              t.BlockHeight,
-                              t.Hash AS TransactionHash,
-                              tIn.Amount,
-                              t.Timestamp
-                              FROM Transaction t
-                              INNER JOIN TransactionInput tIn ON tIn.TransactionId = t.TransactionId
-                              INNER JOIN Address a ON a.AddressId = tIn.AddressId
-                              WHERE a.AddressId = @addressId
-                              ORDER BY t.Timestamp DESC";
+                              t.[BlockHeight],
+                              t.[Hash] AS TransactionHash,
+                              tIn.[Amount],
+                              t.[Timestamp]
+                              FROM [dbo].[Transaction] t
+                              INNER JOIN [dbo].[TransactionInput] tIn ON tIn.[TransactionId] = t.[TransactionId]
+                              INNER JOIN [dbo].[Address] a ON a.[AddressId] = tIn.[AddressId]
+                              WHERE a.[AddressId] = @addressId
+                              ORDER BY t.[Timestamp] DESC";
                     break;
                 case TransactionType.Output:
                     sqlQ += @"SELECT
                               2 AS TxType,
-                              t.BlockHeight,
-                              t.Hash AS TransactionHash,
-                              tOut.Amount,
-                              t.Timestamp
-                              FROM Transaction t
-                              INNER JOIN TransactionOutput tOut ON tOut.TransactionId = t.TransactionId
-                              INNER JOIN Address a ON a.AddressId = tOut.AddressId
-                              WHERE a.AddressId = @addressId
-                              ORDER BY t.Timestamp DESC";
+                              t.[BlockHeight],
+                              t.[Hash] AS TransactionHash,
+                              tOut.[Amount],
+                              t.[Timestamp]
+                              FROM [dbo].[Transaction] t
+                              INNER JOIN [dbo].[TransactionOutput] tOut ON tOut.[TransactionId] = t.[TransactionId]
+                              INNER JOIN [dbo].[Address] a ON a.[AddressId] = tOut.[AddressId]
+                              WHERE a.[AddressId] = @addressId
+                              ORDER BY t.[Timestamp] DESC";
                     break;
                 case TransactionType.Both:
                     sqlQ += @"SELECT 
                               2 AS TxType,
-                              t.Hash AS TransactionHash,
-                              t.BlockHeight,
-                              tOut.Amount,
-                              t.Timestamp
-                              FROM TransactionOutput tOut
-                              INNER JOIN Transaction t On t.TransactionId = tOut.TransactionId
-                              WHERE tOut.AddressId = @addressId
+                              t.[Hash] AS TransactionHash,
+                              t.[BlockHeight],
+                              tOut.[Amount],
+                              t.[Timestamp]
+                              FROM [dbo].[TransactionOutput] tOut
+                              INNER JOIN [dbo].[Transaction] t On t.[TransactionId] = tOut.[TransactionId]
+                              WHERE tOut.[AddressId] = @addressId
                               UNION ALL                        
                               SELECT
                               1 AS TxType,
-                              t.Hash AS TransactionHash,
-                              t.BlockHeight,
-                              tIn.Amount,
-                              t.Timestamp
-                              FROM TransactionInput tIn
-                              INNER JOIN Transaction t On t.TransactionId = tIn.TransactionId
-                              WHERE tIn.AddressId = @addressId                         
+                              t.[Hash] AS TransactionHash,
+                              t.[BlockHeight],
+                              tIn.[Amount],
+                              t.[Timestamp]
+                              FROM [dbo].[TransactionInput] tIn
+                              INNER JOIN [dbo].[Transaction] t On t.[TransactionId] = tIn.[TransactionId]
+                              WHERE tIn.[AddressId] = @addressId                         
                               ORDER BY Timestamp DESC, TxType DESC";
                     break;
             }
@@ -371,14 +371,15 @@ namespace Nexplorer.Data.Query
                 if (dbStart < 0)
                     dbStart = 0;
 
-                var dbTxs = (await sqlCon.QueryAsync(sqlQ, new { addressId, start = dbStart, count = dbCount }))
-                    .Select(x => new AddressTransactionDto
+                var response = await sqlCon.QueryAsync(sqlQ, new { addressId, start = dbStart, count = dbCount });
+
+                var dbTxs = response.Select(x => new AddressTransactionDto
                     {
                         TxType = (TransactionType)x.TxType,
                         BlockHeight = x.BlockHeight,
                         TransactionHash = x.TransactionHash,
                         Amount = x.Amount,
-                        TimeUtc = x.TimeUtc
+                        TimeUtc = x.Timestamp
                     }).ToList();
 
                 return dbTxs
@@ -395,21 +396,21 @@ namespace Nexplorer.Data.Query
 
             const string sqlQ = @"SELECT 
                                   2 AS TxType,
-                                  tOut.Amount,
-                                  t.Timestamp
-                                  FROM TransactionOutput tOut
-                                  INNER JOIN Transaction t On t.TransactionId = tOut.TransactionId
-                                  WHERE tOut.AddressId = @addressId
-                                  AND t.Timestamp >= @fromDate                         
+                                  tOut.[Amount],
+                                  t.[Timestamp]
+                                  FROM [dbo].[TransactionOutput] tOut
+                                  INNER JOIN [dbo].[Transaction] t On t.[TransactionId] = tOut.[TransactionId]
+                                  WHERE tOut.[AddressId] = @addressId
+                                  AND t.[Timestamp] >= @fromDate                         
                                   UNION ALL
                                   SELECT
                                   1 AS TxType,
-                                  tIn.Amount,
-                                  t.Timestamp
-                                  FROM TransactionInput tIn
-                                  INNER JOIN Transaction t On t.TransactionId = tIn.TransactionId
-                                  WHERE tIn.AddressId = @addressId
-                                  AND t.Timestamp >= @fromDate                         
+                                  tIn.[Amount],
+                                  t.[Timestamp]
+                                  FROM [dbo].[TransactionInput] tIn
+                                  INNER JOIN [dbo].[Transaction] t On t.[TransactionId] = tIn.[TransactionId]
+                                  WHERE tIn.[AddressId] = @addressId
+                                  AND t.[Timestamp] >= @fromDate                         
                                   ORDER BY Timestamp, TxType DESC";
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
@@ -420,7 +421,7 @@ namespace Nexplorer.Data.Query
                 var dbBalances = (await sqlCon.QueryAsync(sqlQ, new { addressId, fromDate = DateTime.Now.AddDays(-days) }))
                     .Select(x => new
                     {
-                        ((DateTime)x.TimeUtc).Date,
+                        ((DateTime)x.Timestamp).Date,
                         Balance = (double)((int)x.TxType == 1 ? x.Amount : -x.Amount)
                     }).ToList();
                 
@@ -483,11 +484,14 @@ namespace Nexplorer.Data.Query
             return await _nexusDb.Addresses.CountAsync();
         }
 
-        public async Task<double> GetAverageBalanceAsync()
+        public async Task<double> GetAverageBalanceAsync(bool includeZeroBalance)
         {
-            const string sqlQ = @"SELECT
-                                  AVG(aa.Balance)
-                                  FROM AddressAggregate aa;";
+            var sqlQ = @"SELECT
+                            AVG(aa.[Balance])
+                            FROM [dbo].[AddressAggregate] aa";
+
+            if (includeZeroBalance)
+                sqlQ += " WHERE aa.[Balance] > 0";
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
