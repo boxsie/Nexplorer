@@ -132,11 +132,10 @@ namespace Nexplorer.Data.Cache.Block
         {
             var cache = new List<BlockDto>();
 
-            const string sqlQ = @"SELECT
+            const string sqlQ = @"SELECT TOP 1
                                   b.Height
                                   FROM Block b
-                                  ORDER BY b.Height DESC
-                                  LIMIT 1";
+                                  ORDER BY b.Height DESC";
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {

@@ -33,7 +33,7 @@ namespace Nexplorer.Data.Query
 
         //public async Task<BittrexSummaryDto> GetLatestBittrexSummaryAsync()
         //{
-        //    const string sqlQ = @"SELECT Volume, BaseVolume, Last, Bid, Ask, OpenBuyOrders, OpenSellOrders, TimeStamp FROM BittrexSummary ORDER BY BittrexSummaryId DESC LIMIT 1;";
+        //    const string sqlQ = @"SELECT TOP 1 Volume, BaseVolume, Last, Bid, Ask, OpenBuyOrders, OpenSellOrders, TimeStamp FROM BittrexSummary ORDER BY BittrexSummaryId DESC;";
 
         //    using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
         //    {

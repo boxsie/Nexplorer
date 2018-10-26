@@ -32,12 +32,12 @@ namespace Nexplorer.Data.Cache.Block
         {
             await _blockCache.Clear();
 
-            var syncedHeight = await _blockQuery.GetLastSyncedHeightAsync();
+            var nextHeight = (await _blockQuery.GetLastSyncedHeightAsync()) + 1;
 
             var blockCount = 0;
             var txCount = 0;
 
-            for (var i = syncedHeight; i <= syncedHeight + Settings.App.BlockCacheCount; i++)
+            for (var i = nextHeight; i < nextHeight + Settings.App.BlockCacheCount; i++)
             {
                 var block = await _nexusQuery.GetBlockAsync(i, true);
 

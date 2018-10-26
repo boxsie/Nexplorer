@@ -252,15 +252,15 @@ namespace Nexplorer.Data.Query
                           LEFT JOIN AddressAggregate aa ON aa.AddressId = a.AddressId
                           WHERE aa.Balance >= @min AND aa.Balance <= @max AND aa.LastBlockHeight >= @fromHeight AND aa.LastBlockHeight <= @toHeight 
                           {sqlOrderBy}
-                          LIMIT @start, @count;";
+                          OFFSET @start ROWS FETCH NEXT @count ROWS ONLY;";
 
             var sqlC = @"SELECT 
                          COUNT(*)
-                         FROM (SELECT 1
+                         FROM (SELECT TOP @maxResults
+                               1
                                FROM Address a 
                                LEFT JOIN AddressAggregate aa ON aa.AddressId = a.AddressId 
-                               WHERE aa.Balance >= @min AND aa.Balance <= @max AND aa.LastBlockHeight >= @fromHeight AND aa.LastBlockHeight <= @toHeight
-                               LIMIT @maxResults) AS resultCount;";
+                               WHERE aa.Balance >= @min AND aa.Balance <= @max AND aa.LastBlockHeight >= @fromHeight AND aa.LastBlockHeight <= @toHeight) AS resultCount;";
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
@@ -348,7 +348,7 @@ namespace Nexplorer.Data.Query
             }
 
             if (start.HasValue && count.HasValue)
-                sqlQ += " LIMIT @start, @count; ";
+                sqlQ += " OFFSET @start ROWS FETCH NEXT @count ROWS ONLY; ";
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {

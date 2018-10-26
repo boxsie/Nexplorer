@@ -128,10 +128,11 @@ namespace Nexplorer.Data.Command
 
                         await UpdateOrInsertAggregate(con, trans, txIoDto);
 
-                        LogProgress(i, txIoDtos.Count);
+                        LogProgress(i + 1, txIoDtos.Count);
                     }
 
                     trans.Commit();
+                    Console.WriteLine();
                 }
             }
         }
@@ -262,18 +263,22 @@ namespace Nexplorer.Data.Command
                         await InsertTransactionInputsAsync(con, trans, inputs);
                         await InsertTransactionOutputsAsync(con, trans, outputs);
 
-                        foreach (var tx in block.Transactions)
+                        for (var i = 0; i < block.Transactions.Count; i++)
                         {
+                            var tx = block.Transactions[i];
+
+                            tx.TransactionId = txIds[i];
                             tx.Inputs = inputs.Where(x => x.TransactionId == tx.TransactionId).ToList();
                             tx.Outputs = outputs.Where(x => x.TransactionId == tx.TransactionId).ToList();
                         }
 
                         blocks.Add(block);
 
-                        LogProgress(index, blockDtos.Count - 1);
+                        LogProgress(index + 1, blockDtos.Count);
                     }
 
                     trans.Commit();
+                    Console.WriteLine();
                 }
             }
 
