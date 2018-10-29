@@ -40,8 +40,7 @@ namespace Nexplorer.Data.Publish
         {
             var cache = await _blockCache.GetBlockLiteCacheAsync();
 
-            var lastNonOrphanBlockTime = cache.FirstOrDefault(x => x.Timestamp != new DateTime())?.Timestamp
-                ?? (await _blockQuery.GetLastBlockAsync()).Timestamp;
+            var lastNonOrphanBlockTime = cache.FirstOrDefault(x => x.Timestamp != new DateTime())?.Timestamp ?? DateTime.MinValue;
 
             return await _blockQuery.GetBlockCount(lastNonOrphanBlockTime, 1) + cache.Count;
         }

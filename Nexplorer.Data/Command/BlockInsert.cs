@@ -43,7 +43,7 @@ namespace Nexplorer.Data.Command
             FROM [dbo].[Address] a
             WHERE a.Hash = @Hash";
         
-        public static async Task<IEnumerable<Block>> InsertBlocksAsync(this List<BlockDto> blockDtos)
+        public static async Task<List<Block>> InsertBlocksAsync(this List<BlockDto> blockDtos)
         {
             var blocks = new List<Block>();
 

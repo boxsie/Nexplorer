@@ -1,65 +1,65 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Nexplorer.Config;
-using Nexplorer.Data.Cache;
-using Nexplorer.Data.Cache.Block;
-using Nexplorer.Data.Cache.Services;
-using Nexplorer.Data.Query;
-using Nexplorer.Sync.Core;
-using Quartz;
+//using System.Collections.Generic;
+//using System.Threading.Tasks;
+//using Microsoft.Extensions.Logging;
+//using Nexplorer.Config;
+//using Nexplorer.Data.Cache;
+//using Nexplorer.Data.Cache.Block;
+//using Nexplorer.Data.Cache.Services;
+//using Nexplorer.Data.Query;
+//using Nexplorer.Sync.Core;
+//using Quartz;
 
-namespace Nexplorer.Sync.Jobs
-{
-    public class BlockCacheJob : SyncJob
-    {
-        private readonly IBlockCache _blockCache;
-        private readonly NexusQuery _nexusQuery;
-        private readonly BlockQuery _blockQuery;
+//namespace Nexplorer.Sync.Jobs
+//{
+//    public class BlockCacheJob : SyncJob
+//    {
+//        private readonly IBlockCache _blockCache;
+//        private readonly NexusQuery _nexusQuery;
+//        private readonly BlockQuery _blockQuery;
 
-        public BlockCacheJob(IBlockCache blockCache, NexusQuery nexusQuery, BlockQuery blockQuery, ILogger<BlockCacheJob> logger) 
-            : base(logger, 120)
-        {
-            _blockCache = blockCache;
-            _nexusQuery = nexusQuery;
-            _blockQuery = blockQuery;
-        }
+//        public BlockCacheJob(IBlockCache blockCache, NexusQuery nexusQuery, BlockQuery blockQuery, ILogger<BlockCacheJob> logger) 
+//            : base(logger, 120)
+//        {
+//            _blockCache = blockCache;
+//            _nexusQuery = nexusQuery;
+//            _blockQuery = blockQuery;
+//        }
 
-        protected override async Task<string> ExecuteAsync()
-        {
-            var cache = await _blockCache.GetBlockCacheAsync();
+//        protected override async Task<string> ExecuteAsync()
+//        {
+//            var cache = await _blockCache.GetBlockCacheAsync();
 
-            if (cache == null)
-                return "Cache is null!";
+//            if (cache == null)
+//                return "Cache is null!";
 
-            var updates = new List<BlockCacheTransaction>();
+//            var updates = new List<BlockCacheTransaction>();
 
-            foreach (var block in cache)
-            {
-                foreach (var tx in block.Transactions)
-                {
-                    var latestTx = await _nexusQuery.GetTransactionAsync(tx.Hash, block.Height);
+//            foreach (var block in cache)
+//            {
+//                foreach (var tx in block.Transactions)
+//                {
+//                    var latestTx = await _nexusQuery.GetTransactionAsync(tx.Hash, block.Height);
 
-                    if (latestTx == null || tx.Confirmations == latestTx.Confirmations)
-                        continue;
+//                    if (latestTx == null || tx.Confirmations == latestTx.Confirmations)
+//                        continue;
 
-                    updates.Add(new BlockCacheTransaction
-                    {
-                        Height = block.Height,
-                        TxHash = tx.Hash,
-                        TransactionUpdate = new BlockCacheTransactionUpdate
-                        {
-                            Confirmations = latestTx.Confirmations
-                        }
-                    });
-                }
-            }
+//                    updates.Add(new BlockCacheTransaction
+//                    {
+//                        Height = block.Height,
+//                        TxHash = tx.Hash,
+//                        TransactionUpdate = new BlockCacheTransactionUpdate
+//                        {
+//                            Confirmations = latestTx.Confirmations
+//                        }
+//                    });
+//                }
+//            }
 
-            await _blockCache.UpdateTransactionsAsync(updates);
+//            await _blockCache.UpdateTransactionsAsync(updates);
 
-            await _blockCache.SaveAsync();
+//            await _blockCache.SaveAsync();
 
-            return $"{updates.Count} transactions updated from {cache.Count} blocks";
-        }
-    }
-}
+//            return $"{updates.Count} transactions updated from {cache.Count} blocks";
+//        }
+//    }
+//}

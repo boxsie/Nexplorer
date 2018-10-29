@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Dapper;
 using Microsoft.EntityFrameworkCore;
 using Nexplorer.Config;
 using Nexplorer.Core;
@@ -128,9 +130,19 @@ namespace Nexplorer.Data.Query
                 : new DateTime();
         }
 
-        public async Task<Block> GetLastBlockAsync()
+        public async Task<string> GetLastSyncedBlockHashAsync()
         {
-            return await _nexusDb.Blocks.LastAsync();
+            var sql = @"SELECT TOP 1 
+                            b.[Hash] 
+                        FROM [dbo].[Block] b
+                        ORDER BY b.[Height] DESC";
+
+            using (var con = new SqlConnection(Settings.Connection.NexusDb))
+            {
+                var response = await con.QueryAsync<string>(sql);
+
+                return response.FirstOrDefault();
+            }
         }
 
         public async Task<Transaction> GetLastTransaction()

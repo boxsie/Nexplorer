@@ -51,7 +51,32 @@ namespace Nexplorer.Sync.Jobs
 
             if (syncBlocks.Count > 0)
             {
-                await SyncBlocks(syncBlocks);
+                var newBlockDtos = new List<BlockDto>();
+                var orphanBlocks = new List<BlockDto>();
+
+                var lastSyncedBlockHash = await _blockQuery.GetLastSyncedBlockHashAsync();
+                var nextBlock = await _nexusQuery.GetBlockAsync(lastSyncedBlockHash, false);
+                var nextBlockHash = nextBlock.NextBlockHash;
+
+                for (var i = 0; i < syncBlocks.Count; i++)
+                {
+                    nextBlock = await _nexusQuery.GetBlockAsync(nextBlockHash, true);
+
+                    newBlockDtos.Add(nextBlock);
+
+                    nextBlockHash = nextBlock.NextBlockHash;
+                }
+
+                var newBlocks = await newBlockDtos.InsertBlocksAsync();
+
+                using (var addAgg = new AddressAggregator())
+                    await addAgg.AggregateAddresses(newBlocks);
+
+                await _nexusDb.OrphanBlocks.AddRangeAsync(syncBlocks
+                    .Where(x => newBlocks.All(y => y.Hash != x.Hash))
+                    .Select(x => _mapper.Map<OrphanBlock>(x)));
+
+                await _nexusDb.SaveChangesAsync();
 
                 await _blockCache.RemoveAllBelowAsync(await _blockQuery.GetLastSyncedHeightAsync());
             }
@@ -59,43 +84,6 @@ namespace Nexplorer.Sync.Jobs
             await _countPublisher.PublishRollingCountAsync();
 
             return "Block sync is up to date";
-        }
-
-        private async Task SyncBlocks(List<BlockDto> blockDtos)
-        {
-            var syncBlocks = new List<BlockDto>();
-            var orphanBlocks = new List<BlockDto>();
-
-            foreach (var blockDto in blockDtos)
-            {
-                var validateBlock = await _nexusQuery.GetBlockAsync(blockDto.Height, false);
-
-                BlockDto finalBlockDto;
-
-                if (validateBlock.Hash != blockDto.Hash)
-                {
-                    Logger.LogInformation($"Orphan block found {blockDto.Hash}");
-                    
-                    finalBlockDto = await _nexusQuery.GetBlockAsync(validateBlock.Hash, true);
-
-                    orphanBlocks.Add(blockDto);
-                }
-                else
-                    finalBlockDto = blockDto;
-
-                syncBlocks.Add(finalBlockDto);
-
-                Logger.LogInformation($"Syncing block {finalBlockDto.Height}");
-            }
-
-            var newBlocks = await blockDtos.InsertBlocksAsync();
-
-            using (var addAgg = new AddressAggregator())
-                await addAgg.AggregateAddresses(newBlocks);
-
-            var orphans = orphanBlocks.Select(x => _mapper.Map<OrphanBlock>(x));
-            await _nexusDb.OrphanBlocks.AddRangeAsync(orphans);
-            await _nexusDb.SaveChangesAsync();
         }
     }
 }

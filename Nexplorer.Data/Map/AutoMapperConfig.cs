@@ -19,8 +19,10 @@ namespace Nexplorer.Data.Map
         public IMapper GetMapper()
         {
             var config = new MapperConfiguration(x =>
-            { 
-                x.CreateMap<Block, BlockDto>();
+            {
+                x.CreateMap<Block, BlockDto>()
+                    .ForMember(d => d.NextBlockHash, o => o.Ignore())
+                    .ForMember(d => d.PreviousBlockHash, o => o.Ignore());
                 x.CreateMap<Transaction, TransactionDto>()
                     .ForMember(d => d.BlockHeight, o => o.MapFrom(s => s.Block.Height))
                     .ForMember(d => d.Confirmations, o => o.Ignore());

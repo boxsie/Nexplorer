@@ -42,6 +42,12 @@ namespace Nexplorer.Domain.Dtos
 
         [ProtoMember(12)]
         public List<TransactionDto> Transactions { get; set; }
+        
+        [ProtoMember(13)]
+        public string PreviousBlockHash { get; set; }
+
+        [ProtoMember(14)]
+        public string NextBlockHash { get; set; }
 
         public BlockDto()
         {

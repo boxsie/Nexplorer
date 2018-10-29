@@ -79,7 +79,7 @@ namespace Nexplorer.Sync
             services.AddSingleton<AutoMapperConfig>();
             services.AddSingleton(x => x.GetService<AutoMapperConfig>().GetMapper());
 
-            services.AddSingleton<IBlockCache, Data.Cache.Block.BlockCache>();
+            services.AddSingleton<IBlockCache, BlockCache>();
             services.AddSingleton<BlockCacheService>();
             services.AddSingleton<GeolocationService>();
 
@@ -98,7 +98,7 @@ namespace Nexplorer.Sync
             services.AddTransient<AddressAggregateCatchup>();
             services.AddTransient<BlockSyncJob>();
             services.AddTransient<BlockScanJob>();
-            services.AddTransient<BlockCacheJob>();
+            //services.AddTransient<BlockCacheJob>();
             services.AddTransient<BittrexSyncJob>();
             services.AddTransient<MiningStatsJob>();
             services.AddTransient<AddressStatsJob>();
