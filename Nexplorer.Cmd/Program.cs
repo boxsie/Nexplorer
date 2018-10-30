@@ -1,11 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Boxsie.DotNetNexusClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Nexplorer.Client;
-using Nexplorer.Client.Core;
 
 namespace Nexplorer.Cmd
 {
@@ -48,7 +47,7 @@ namespace Nexplorer.Cmd
         //    Console.WriteLine(JsonConvert.SerializeObject(await client.GetOrderBookAsync("btc-nxs")));
         //    Console.WriteLine(JsonConvert.SerializeObject(await client.GetTickerAsync("btc-nxs")));
 
-            var nxs = new NexusClient(_serviceProvider.GetService<ILogger<RpcClient>>(), "http://192.168.1.117:9336/", true);
+            var nxs = new NexusClient("http://192.168.1.117:9336/");
 
             //while (true)
             //{

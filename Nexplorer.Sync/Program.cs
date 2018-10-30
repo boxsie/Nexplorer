@@ -1,10 +1,10 @@
 ﻿using System;
+using Boxsie.DotNetNexusClient;
+using Boxsie.DotNetNexusClient.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Nexplorer.Client;
-using Nexplorer.Client.Core;
 using Nexplorer.Config;
 using Nexplorer.Core;
 using Nexplorer.Data.Cache.Block;
@@ -105,7 +105,7 @@ namespace Nexplorer.Sync
             services.AddTransient<AddressCacheJob>();
 
             services.AddTransient<INexusClient, NexusClient>();
-            services.AddTransient<INexusClient, NexusClient>(x => new NexusClient(x.GetService<ILogger<RpcClient>>(), configuration.GetConnectionString("Nexus")));
+            services.AddTransient<INexusClient, NexusClient>(x => new NexusClient(configuration.GetConnectionString("Nexus")));
             services.AddTransient<BittrexClient>();
             services.AddTransient<GeolocateIpClient>();
             

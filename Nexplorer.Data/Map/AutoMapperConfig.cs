@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
-using Nexplorer.Client.Response;
+using Boxsie.DotNetNexusClient.Response;
 using Nexplorer.Core;
 using Nexplorer.Data.Api;
 using Nexplorer.Domain.Criteria;

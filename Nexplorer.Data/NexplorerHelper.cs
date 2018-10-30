@@ -4,7 +4,8 @@ using System.Text;
 
 namespace Nexplorer.Data
 {
-    class NexplorerHelper
+    public class NexplorerHelper
     {
+
     }
 }

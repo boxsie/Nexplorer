@@ -22,7 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Nexplorer.Client\Nexplorer.Client.csproj" />
     <ProjectReference Include="..\Nexplorer.Config\Nexplorer.Config.csproj" />
     <ProjectReference Include="..\Nexplorer.Data\Nexplorer.Data.csproj" />
     <ProjectReference Include="..\Nexplorer.Domain\Nexplorer.Domain.csproj" />

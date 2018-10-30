@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -61,6 +62,11 @@ namespace Nexplorer.Sync.Jobs
                 for (var i = 0; i < syncBlocks.Count; i++)
                 {
                     nextBlock = await _nexusQuery.GetBlockAsync(nextBlockHash, true);
+
+                    if (!nextBlock.Transactions.Any() || nextBlock.Transactions.Any(x => x.Confirmations < 40))
+                    {
+                        throw new Exception("This block is probably an orphan!");
+                    }
 
                     newBlockDtos.Add(nextBlock);
 
