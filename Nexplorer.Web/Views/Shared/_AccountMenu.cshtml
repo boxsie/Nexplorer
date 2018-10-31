@@ -1,8 +1,13 @@
 @using Microsoft.AspNetCore.Identity
+@using Nexplorer.Config
 @using Nexplorer.Domain.Entity.User
+@using Nexplorer.Web.Enums
+@using Nexplorer.Web.Extensions
+@using Nexplorer.Web.Services.User
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
+@inject UserService UserService
 
 @model Nexplorer.Web.Models.AccountViewModels.LoginViewModel
 
@@ -17,6 +22,12 @@
                 <li>
                     <a asp-controller="favourites" asp-action="index">Favourites</a>
                 </li>
+                @if (User.UserHasAccessLevel(UserRoles.Admin))
+                {
+                    <li>
+                        <a asp-controller="admin" asp-action="index">Admin</a>
+                    </li>
+                }
                 <li>
                     <hr style="margin: 5px 0;"/>
                     <button type="submit" class="btn btn-link navbar-btn navbar-link">Log out</button>

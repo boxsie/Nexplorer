@@ -15,10 +15,12 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Nexplorer.Config;
 using Nexplorer.Core;
 using Nexplorer.Domain.Entity.User;
 using Nexplorer.Domain.Enums;
 using Nexplorer.Web.Controllers;
+using Nexplorer.Web.Enums;
 
 namespace Nexplorer.Web.Extensions
 {
@@ -117,6 +119,27 @@ namespace Nexplorer.Web.Extensions
                 .GetMember(enumValue.ToString())
                 .First()
                 .GetCustomAttribute<TAttribute>();
+        }
+
+        public static bool UserHasAccessLevel(this ClaimsPrincipal user, UserRoles accessRole)
+        {
+            if (user == null || !user.Identity.IsAuthenticated)
+                return false;
+
+            var accessIndex = (int) accessRole;
+            var roles = Enum.GetNames(typeof(UserRoles));
+
+            for (var i = 0; i < roles.Length; i++)
+            {
+                var role = (UserRoles) i;
+
+                if (i <= accessIndex && user.HasClaim(ClaimTypes.Role, role.ToString()))
+                    return true;
+                else
+                    continue;
+            }
+
+            return false;
         }
     }
 }

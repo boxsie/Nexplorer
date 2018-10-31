@@ -8,7 +8,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Nexplorer.Config;
+using Nexplorer.Config.Core;
 using Nexplorer.Domain.Entity.User;
+using Nexplorer.Web.Enums;
 using Nexplorer.Web.Extensions;
 using Nexplorer.Web.Models.AccountViewModels;
 using Nexplorer.Web.Services;
@@ -16,6 +19,15 @@ using Nexplorer.Web.Services.Email;
 
 namespace Nexplorer.Web.Controllers
 {
+    [Authorize(Policy = UserConfig.AdminUserPolicy)]
+    public class AdminController : WebControllerBase
+    {
+        public async Task<IActionResult> Index()
+        {
+            return View();
+        }
+    }
+
     [Authorize]
     public class AccountController : WebControllerBase
     {

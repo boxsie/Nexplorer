@@ -1,0 +1,10 @@
+﻿{
+  "UserConfig": {
+    "UserRoles": [
+      {
+        "Email": "dan@nexplorer.io",
+        "Role": "SuperUser"
+      }
+    ]
+  }
+}

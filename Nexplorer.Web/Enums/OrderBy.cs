@@ -12,4 +12,12 @@ namespace Nexplorer.Web.Enums
         Highest,
         Lowest
     }
+
+    public enum UserRoles
+    {
+        SuperUser,
+        Admin,
+        Editor,
+        User
+    }
 }

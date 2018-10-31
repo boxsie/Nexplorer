@@ -1,4 +1,0 @@
-﻿namespace Nexplorer.Config.Core
-{
-   
-}

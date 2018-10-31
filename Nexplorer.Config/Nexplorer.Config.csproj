@@ -8,16 +8,16 @@
     <None Remove="appSettings.json" />
     <None Remove="connectionStrings.debug.json" />
     <None Remove="connectionStrings.live.json" />
-    <None Remove="emailConfig.json" />
     <None Remove="redisKeys.json" />
+    <None Remove="userConfig.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="appSettings.json">
+    <Content Include="userConfig.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Include="emailConfig.json">
+    <Content Include="appSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
@@ -40,6 +40,10 @@
   <ItemGroup>
     <None Update="connectionStrings.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="emailConfig.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
   </ItemGroup>
 

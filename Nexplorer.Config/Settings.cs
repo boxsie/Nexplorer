@@ -13,6 +13,7 @@ namespace Nexplorer.Config
         public static ConnectionStrings Connection { get; private set; }
         public static RedisKeys Redis { get; private set; }
         public static EmailConfig EmailConfig { get; private set; }
+        public static UserConfig UserConfig { get; private set; }
 
         public static IConfigurationRoot BuildConfig(IServiceCollection services)
         {
@@ -21,12 +22,14 @@ namespace Nexplorer.Config
                 .AddJsonFile("connectionStrings.json", false)
                 .AddJsonFile("emailConfig.json", false)
                 .AddJsonFile("redisKeys.json", false)
+                .AddJsonFile("userConfig.json", false)
                 .Build();
 
             services.Configure<AppSettings>(config.GetSection("AppSettings"));
             services.Configure<ConnectionStrings>(config.GetSection("ConnectionStrings"));
             services.Configure<RedisKeys>(config.GetSection("RedisKeys"));
             services.Configure<EmailConfig>(config.GetSection("EmailConfig"));
+            services.Configure<UserConfig>(config.GetSection("UserConfig"));
 
             return config;
         }
@@ -37,6 +40,7 @@ namespace Nexplorer.Config
             Connection = provider.GetRequiredService<IOptions<ConnectionStrings>>().Value;
             Redis = provider.GetRequiredService<IOptions<RedisKeys>>().Value;
             EmailConfig = provider.GetRequiredService<IOptions<EmailConfig>>().Value;
+            UserConfig = provider.GetRequiredService<IOptions<UserConfig>>().Value;
         }
     }
 }

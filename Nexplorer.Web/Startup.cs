@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Nexplorer.Config;
+using Nexplorer.Config.Core;
 using Nexplorer.Core;
 using Nexplorer.Data.Cache;
 using Nexplorer.Data.Cache.Services;
@@ -21,10 +23,12 @@ using Nexplorer.Data.Map;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Entity.User;
 using Nexplorer.Infrastructure.Currency;
+using Nexplorer.Web.Enums;
 using Nexplorer.Web.Extensions;
 using Nexplorer.Web.Hubs;
 using Nexplorer.Web.Queries;
 using Nexplorer.Web.Services.Email;
+using Nexplorer.Web.Services.User;
 using NLog.Extensions.Logging;
 using StackExchange.Redis;
 using Swashbuckle.AspNetCore.Swagger;
@@ -51,6 +55,7 @@ namespace Nexplorer.Web
             services.AddDbContext<NexplorerDb>(x => x.UseSqlServer(config.GetConnectionString("NexplorerDb"), y => y.MigrationsAssembly("Nexplorer.Data")), ServiceLifetime.Transient);
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddRoleManager<RoleManager<IdentityRole>>()
                 .AddEntityFrameworkStores<NexplorerDb>()
                 .AddDefaultTokenProviders();
 
@@ -70,6 +75,16 @@ namespace Nexplorer.Web
                 options.Lockout.AllowedForNewUsers = true;
                 
                 options.User.RequireUniqueEmail = true;
+            });
+
+            services.AddAuthorization(options =>
+            {
+                var roles = Enum.GetNames(typeof(UserRoles));
+
+                options.AddPolicy(UserConfig.SuperUserPolicy, policy => policy.RequireRole(roles.Take(1)));
+                options.AddPolicy(UserConfig.AdminUserPolicy, policy => policy.RequireRole(roles.Take(2)));
+                options.AddPolicy(UserConfig.EditorUserPolicy, policy => policy.RequireRole(roles.Take(3)));
+                options.AddPolicy(UserConfig.UserPolicy, policy => policy.RequireRole(roles));
             });
 
             services.ConfigureApplicationCookie(options =>
@@ -98,6 +113,7 @@ namespace Nexplorer.Web
             services.AddTransient<AddressFavouriteCommand>();
             
             services.AddSingleton<BlockCacheService>();
+            services.AddScoped<UserService>();
 
             services.AddScoped<BlockQuery>();
             services.AddScoped<TransactionQuery>();
@@ -197,6 +213,7 @@ namespace Nexplorer.Web
             serviceProvider.GetService<AddressMessenger>();
 
             serviceProvider.GetService<NexplorerDb>().Database.Migrate();
+            serviceProvider.GetService<UserService>().CreateRoles().GetAwaiter().GetResult();
         }
     }
 }
