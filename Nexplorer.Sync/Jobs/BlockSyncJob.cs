@@ -61,12 +61,16 @@ namespace Nexplorer.Sync.Jobs
 
                 for (var i = 0; i < syncBlocks.Count; i++)
                 {
-                    nextBlock = await _nexusQuery.GetBlockAsync(nextBlockHash, true);
-
-                    if (!nextBlock.Transactions.Any() || nextBlock.Transactions.Any(x => x.Confirmations < 40))
+                    if (!await _nexusQuery.IsBlockHashOnChain(nextBlockHash))
                     {
-                        throw new Exception("This block is probably an orphan!");
+                        var msg = $"Orphan block found at height {nextBlock.Height + 1} with hash {nextBlockHash}";
+
+                        Logger.LogCritical(msg);
+
+                        throw new Exception(msg);
                     }
+
+                    nextBlock = await _nexusQuery.GetBlockAsync(nextBlockHash, true);
 
                     newBlockDtos.Add(nextBlock);
 

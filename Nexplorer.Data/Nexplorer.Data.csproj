@@ -24,6 +24,11 @@
     <Compile Remove="Migrations\20180506193140_RemoveFirstBlockRequired.cs" />
     <Compile Remove="Migrations\20180506193913_RemoveFirstBlockRequired.cs" />
     <Compile Remove="Migrations\20180506194155_RemoveFirstBlockRequired.cs" />
+    <Compile Remove="Migrations\20181101142017_RemovedOnDelete.cs" />
+    <Compile Remove="Migrations\20181101142344_RemovedRelationships.cs" />
+    <Compile Remove="Migrations\20181101142708_RemovedContraints.cs" />
+    <Compile Remove="Migrations\20181101142922_RemovedContraints.cs" />
+    <Compile Remove="Migrations\20181101143056_RemovedContraints.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,7 +39,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="7.0.1" />
-    <PackageReference Include="Boxsie.DotNetNexusClient" Version="1.0.2" />
+    <PackageReference Include="Boxsie.DotNetNexusClient" Version="1.0.5" />
     <PackageReference Include="Dapper" Version="1.50.5" />
     <PackageReference Include="StackExchange.Redis.StrongName" Version="1.2.6" />
   </ItemGroup>

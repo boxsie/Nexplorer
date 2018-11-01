@@ -31,6 +31,11 @@ namespace Nexplorer.Data.Query
             return await MapResponseToDto(blockResponse, includeTransactions);
         }
 
+        public Task<bool> IsBlockHashOnChain(string hash)
+        {
+            return _nxsClient.IsBlockHashOnChainAsync(hash);
+        }
+
         public async Task<BlockDto> GetBlockAsync(int? height, bool includeTransactions)
         {
             var blockHeight = height ?? await _nxsClient.GetBlockCountAsync();
