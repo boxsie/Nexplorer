@@ -32,6 +32,7 @@ namespace Nexplorer.Sync.Nexus
         private int _iterationCount;
         private bool _allowProgressUpdate;
         private int _streamCount;
+        private int _nexusHeight;
 
         public BlockSyncCatchup(NexusQuery nexusQuery, IServiceProvider serviceProvider, BlockQuery blockQuery, ILogger<BlockSyncCatchup> logger, RedisCommand redisCommand)
         {
@@ -48,35 +49,35 @@ namespace Nexplorer.Sync.Nexus
             await _redisCommand.SetAsync(Settings.Redis.NodeVersion, (await _nexusQuery.GetInfoAsync()).Version);
 
             var syncedHeight = await _blockQuery.GetLastSyncedHeightAsync();
-            var nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
+            _nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
 
-            while (nexusHeight == 0)
+            while (_nexusHeight == 0)
             {
                 _logger.LogWarning("Nexus node is unavailible at this time...");
 
                 Thread.Sleep(10000);
 
-                nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
+                _nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
             }
 
-            while(nexusHeight < syncedHeight)
+            while(_nexusHeight < syncedHeight)
             {
-                _logger.LogWarning($"Nexus database is {syncedHeight - nexusHeight} blocks behind. Waiting for Nexus to catchup...");
+                _logger.LogWarning($"Nexus database is {syncedHeight - _nexusHeight} blocks behind. Waiting for Nexus to catchup...");
 
                 Thread.Sleep(10000);
 
-                nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
+                _nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
             }
 
-            await StartStreamingNexusBlocks(syncedHeight + 1, nexusHeight);
+            await StartStreamingNexusBlocks(syncedHeight + 1);
 
             _stopwatch = new Stopwatch();
             _totalSeconds = 0;
             _iterationCount = 0;
 
-            while (syncedHeight + Settings.App.BlockCacheCount < nexusHeight)
+            while (syncedHeight + Settings.App.BlockCacheCount < _nexusHeight)
             {
-                var syncDelta = nexusHeight - syncedHeight;
+                var syncDelta = _nexusHeight - syncedHeight;
 
                 Console.WriteLine($"\nSync is {syncDelta:N0} blocks behind Nexus");
                 
@@ -91,7 +92,7 @@ namespace Nexplorer.Sync.Nexus
 
                 _stopwatch.Stop();
 
-                nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
+                _nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
                 syncedHeight = await _blockQuery.GetLastSyncedHeightAsync();
 
                 LogTimeTaken(syncDelta, _stopwatch.Elapsed);
@@ -138,7 +139,7 @@ namespace Nexplorer.Sync.Nexus
             _streamCount -= nexusBlocks.Count;
         }
 
-        private async Task StartStreamingNexusBlocks(int startingHeight, int nexusHeight)
+        private async Task StartStreamingNexusBlocks(int startingHeight)
         {
             _allowProgressUpdate = true;
 
@@ -153,7 +154,7 @@ namespace Nexplorer.Sync.Nexus
                     await _redisCommand.SetAsync(Settings.Redis.BlockSyncStreamCacheHeight, blockDto.Height);
                     
                     if (_allowProgressUpdate)
-                        Console.Write($"\rStreaming Nexus blocks... {LogProgress(blockDto.Height, nexusHeight, out var streamPct)} {streamPct:N4}% ({blockDto.Height:N0}/{nexusHeight:N0}) | Stream is {_streamCount} blocks ahead        ");
+                        Console.Write($"\rStreaming Nexus blocks... {LogProgress(blockDto.Height, _nexusHeight, out var streamPct)} {streamPct:N4}% ({blockDto.Height:N0}/{_nexusHeight:N0}) | Stream is {_streamCount} blocks ahead        ");
 
                     _streamCount++;
 
