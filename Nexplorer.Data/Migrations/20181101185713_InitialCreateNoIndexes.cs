@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Nexplorer.Data.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class InitialCreateNoIndexes : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -158,53 +158,27 @@ namespace Nexplorer.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TransactionInput",
+                name: "TransactionInputOutput",
                 columns: table => new
                 {
-                    TransactionInputId = table.Column<int>(nullable: false)
+                    TransactionInputOutputId = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     TransactionId = table.Column<int>(nullable: false),
+                    TransactionType = table.Column<int>(nullable: false),
                     AddressId = table.Column<int>(nullable: false),
                     Amount = table.Column<double>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TransactionInput", x => x.TransactionInputId);
+                    table.PrimaryKey("PK_TransactionInputOutput", x => x.TransactionInputOutputId);
                     table.ForeignKey(
-                        name: "FK_TransactionInput_Address_AddressId",
+                        name: "FK_TransactionInputOutput_Address_AddressId",
                         column: x => x.AddressId,
                         principalTable: "Address",
                         principalColumn: "AddressId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TransactionInput_Transaction_TransactionId",
-                        column: x => x.TransactionId,
-                        principalTable: "Transaction",
-                        principalColumn: "TransactionId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TransactionOutput",
-                columns: table => new
-                {
-                    TransactionOutputId = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    TransactionId = table.Column<int>(nullable: false),
-                    AddressId = table.Column<int>(nullable: false),
-                    Amount = table.Column<double>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TransactionOutput", x => x.TransactionOutputId);
-                    table.ForeignKey(
-                        name: "FK_TransactionOutput_Address_AddressId",
-                        column: x => x.AddressId,
-                        principalTable: "Address",
-                        principalColumn: "AddressId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_TransactionOutput_Transaction_TransactionId",
+                        name: "FK_TransactionInputOutput_Transaction_TransactionId",
                         column: x => x.TransactionId,
                         principalTable: "Transaction",
                         principalColumn: "TransactionId",
@@ -253,11 +227,6 @@ namespace Nexplorer.Data.Migrations
                 column: "FirstBlockHeight");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Address_Hash",
-                table: "Address",
-                column: "Hash");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_AddressAggregate_LastBlockHeight",
                 table: "AddressAggregate",
                 column: "LastBlockHeight");
@@ -273,23 +242,13 @@ namespace Nexplorer.Data.Migrations
                 column: "BlockHeight");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TransactionInput_AddressId",
-                table: "TransactionInput",
+                name: "IX_TransactionInputOutput_AddressId",
+                table: "TransactionInputOutput",
                 column: "AddressId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TransactionInput_TransactionId",
-                table: "TransactionInput",
-                column: "TransactionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TransactionOutput_AddressId",
-                table: "TransactionOutput",
-                column: "AddressId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TransactionOutput_TransactionId",
-                table: "TransactionOutput",
+                name: "IX_TransactionInputOutput_TransactionId",
+                table: "TransactionInputOutput",
                 column: "TransactionId");
 
             migrationBuilder.CreateIndex(
@@ -321,10 +280,7 @@ namespace Nexplorer.Data.Migrations
                 name: "OrphanTransaction");
 
             migrationBuilder.DropTable(
-                name: "TransactionInput");
-
-            migrationBuilder.DropTable(
-                name: "TransactionOutput");
+                name: "TransactionInputOutput");
 
             migrationBuilder.DropTable(
                 name: "TrustKey");

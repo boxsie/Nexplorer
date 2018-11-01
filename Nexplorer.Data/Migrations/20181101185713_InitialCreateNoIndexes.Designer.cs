@@ -10,8 +10,8 @@ using Nexplorer.Data.Context;
 namespace Nexplorer.Data.Migrations
 {
     [DbContext(typeof(NexusDb))]
-    [Migration("20181026133007_AddAggregateBalanceIndex")]
-    partial class AddAggregateBalanceIndex
+    [Migration("20181101185713_InitialCreateNoIndexes")]
+    partial class InitialCreateNoIndexes
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -37,8 +37,6 @@ namespace Nexplorer.Data.Migrations
 
                     b.HasIndex("FirstBlockHeight");
 
-                    b.HasIndex("Hash");
-
                     b.ToTable("Address");
                 });
 
@@ -61,8 +59,6 @@ namespace Nexplorer.Data.Migrations
                     b.Property<DateTime>("UpdatedOn");
 
                     b.HasKey("AddressId");
-
-                    b.HasIndex("Balance");
 
                     b.HasIndex("LastBlockHeight");
 
@@ -127,9 +123,9 @@ namespace Nexplorer.Data.Migrations
                     b.ToTable("Transaction");
                 });
 
-            modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.TransactionInput", b =>
+            modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.TransactionInputOutput", b =>
                 {
-                    b.Property<int>("TransactionInputId")
+                    b.Property<int>("TransactionInputOutputId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -139,34 +135,15 @@ namespace Nexplorer.Data.Migrations
 
                     b.Property<int>("TransactionId");
 
-                    b.HasKey("TransactionInputId");
+                    b.Property<int>("TransactionType");
+
+                    b.HasKey("TransactionInputOutputId");
 
                     b.HasIndex("AddressId");
 
                     b.HasIndex("TransactionId");
 
-                    b.ToTable("TransactionInput");
-                });
-
-            modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.TransactionOutput", b =>
-                {
-                    b.Property<int>("TransactionOutputId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("AddressId");
-
-                    b.Property<double>("Amount");
-
-                    b.Property<int>("TransactionId");
-
-                    b.HasKey("TransactionOutputId");
-
-                    b.HasIndex("AddressId");
-
-                    b.HasIndex("TransactionId");
-
-                    b.ToTable("TransactionOutput");
+                    b.ToTable("TransactionInputOutput");
                 });
 
             modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.TrustKey", b =>
@@ -299,7 +276,7 @@ namespace Nexplorer.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.TransactionInput", b =>
+            modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.TransactionInputOutput", b =>
                 {
                     b.HasOne("Nexplorer.Domain.Entity.Blockchain.Address", "Address")
                         .WithMany()
@@ -307,20 +284,7 @@ namespace Nexplorer.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Nexplorer.Domain.Entity.Blockchain.Transaction", "Transaction")
-                        .WithMany("Inputs")
-                        .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Restrict);
-                });
-
-            modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.TransactionOutput", b =>
-                {
-                    b.HasOne("Nexplorer.Domain.Entity.Blockchain.Address", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Nexplorer.Domain.Entity.Blockchain.Transaction", "Transaction")
-                        .WithMany("Outputs")
+                        .WithMany("InputOutputs")
                         .HasForeignKey("TransactionId")
                         .OnDelete(DeleteBehavior.Restrict);
                 });

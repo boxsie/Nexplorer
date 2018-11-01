@@ -11,6 +11,7 @@ using Nexplorer.Core;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Entity.Blockchain;
+using Nexplorer.Domain.Enums;
 
 namespace Nexplorer.Data.Command
 {
@@ -30,13 +31,9 @@ namespace Nexplorer.Data.Command
             VALUES (@Hash, @BlockHeight);
             SELECT CAST(SCOPE_IDENTITY() as int);";
 
-        private const string TxInInsertSql = @"
-            INSERT INTO [dbo].[TransactionInput] ([TransactionId], [AddressId], [Amount]) 
-            VALUES (@TransactionId, @AddressId, @Amount);";
-
-        private const string TxOutInsertSql = @"
-            INSERT INTO [dbo].[TransactionOutput] ([TransactionId], [AddressId], [Amount]) 
-            VALUES (@TransactionId, @AddressId, @Amount);";
+        private const string TxInOutInsertSql = @"
+            INSERT INTO [dbo].[TransactionInputOutput] ([TransactionId], [AddressId], [TransactionType], [Amount]) 
+            VALUES (@TransactionId, @AddressId, @TransactionType, @Amount);";
 
         private const string AddressSelectSql = @"
             SELECT a.AddressId
@@ -68,22 +65,17 @@ namespace Nexplorer.Data.Command
                         var addressesCache = await InsertAddressesAsync(con, trans, txInOutDtos, block.Height);
 
                         var txInsOuts = blockDto.Transactions
-                            .Select((x, i) => MapTransactionInputOutputs(x, addressesCache, txIds[i]))
+                            .SelectMany((x, i) => MapTransactionInputOutputs(x, addressesCache, txIds[i]))
                             .ToList();
-
-                        var inputs = txInsOuts.SelectMany(x => x.Item1).ToList();
-                        var outputs = txInsOuts.SelectMany(x => x.Item2).ToList();
-
-                        await InsertTransactionInputsAsync(con, trans, inputs);
-                        await InsertTransactionOutputsAsync(con, trans, outputs);
+                        
+                        await InsertTransactionInputOutputsAsync(con, trans, txInsOuts);
 
                         for (var i = 0; i < block.Transactions.Count; i++)
                         {
                             var tx = block.Transactions[i];
 
                             tx.TransactionId = txIds[i];
-                            tx.Inputs = inputs.Where(x => x.TransactionId == tx.TransactionId).ToList();
-                            tx.Outputs = outputs.Where(x => x.TransactionId == tx.TransactionId).ToList();
+                            tx.InputOutputs = txInsOuts.Where(x => x.TransactionId == tx.TransactionId).ToList();
                         }
 
                         blocks.Add(block);
@@ -182,22 +174,13 @@ namespace Nexplorer.Data.Command
             return addressCache;
         }
 
-        private static async Task InsertTransactionInputsAsync(IDbConnection sqlCon, IDbTransaction trans, IEnumerable<TransactionInput> txIns)
+        private static async Task InsertTransactionInputOutputsAsync(IDbConnection sqlCon, IDbTransaction trans, IEnumerable<TransactionInputOutput> txInOuts)
         {
-            await sqlCon.ExecuteAsync(TxInInsertSql, txIns.Select(x => new
+            await sqlCon.ExecuteAsync(TxInOutInsertSql, txInOuts.Select(x => new
             {
                 x.TransactionId,
                 x.AddressId,
-                x.Amount
-            }), trans);
-        }
-
-        private static async Task InsertTransactionOutputsAsync(IDbConnection sqlCon, IDbTransaction trans, IEnumerable<TransactionOutput> txOuts)
-        {
-            await sqlCon.ExecuteAsync(TxOutInsertSql, txOuts.Select(x => new
-            {
-                x.TransactionId,
-                x.AddressId,
+                x.TransactionType,
                 x.Amount
             }), trans);
         }
@@ -231,22 +214,23 @@ namespace Nexplorer.Data.Command
             });
         }
 
-        private static Tuple<IEnumerable<TransactionInput>, IEnumerable<TransactionOutput>> MapTransactionInputOutputs(
-            TransactionDto txDto, IReadOnlyDictionary<string, int> addressCache, int transactionId)
+        private static IEnumerable<TransactionInputOutput> MapTransactionInputOutputs(TransactionDto txDto, IReadOnlyDictionary<string, int> addressCache, int transactionId)
         {
-            return new Tuple<IEnumerable<TransactionInput>, IEnumerable<TransactionOutput>>(
-                txDto.Inputs.Select(y => new TransactionInput
+            return txDto.Inputs
+                .Select(y => new TransactionInputOutput
                 {
                     TransactionId = transactionId,
                     Amount = y.Amount,
+                    TransactionType = TransactionType.Input,
                     AddressId = addressCache[y.AddressHash]
-                }),
-                txDto.Outputs.Select(y => new TransactionOutput
-                {
-                    TransactionId = transactionId,
-                    Amount = y.Amount,
-                    AddressId = addressCache[y.AddressHash]
-                }));
+                }).Concat(txDto.Outputs
+                    .Select(y => new TransactionInputOutput
+                    {
+                        TransactionId = transactionId,
+                        Amount = y.Amount,
+                        TransactionType = TransactionType.Output,
+                        AddressId = addressCache[y.AddressHash]
+                    }));
         }
     }
 }

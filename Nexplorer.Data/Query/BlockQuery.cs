@@ -68,10 +68,7 @@ namespace Nexplorer.Data.Query
             
             var block = await _nexusDb.Blocks.Where(x => x.Height == height)
                 .Include(x => x.Transactions)
-                    .ThenInclude(x => x.Inputs)
-                        .ThenInclude(x => x.Address)
-                .Include(x => x.Transactions)
-                    .ThenInclude(x => x.Outputs)
+                    .ThenInclude(x => x.InputOutputs)
                         .ThenInclude(x => x.Address)
                 .FirstOrDefaultAsync();
 
@@ -87,17 +84,12 @@ namespace Nexplorer.Data.Query
             
             var block = await _nexusDb.Blocks.Where(x => x.Hash == hash)
                 .Include(x => x.Transactions)
-                    .ThenInclude(x => x.Inputs)
+                    .ThenInclude(x => x.InputOutputs)
                     .ThenInclude(x => x.Address)
                 .Include(x => x.Transactions)
-                    .ThenInclude(x => x.Outputs)
-                    .ThenInclude(x => x.Address)
                 .FirstOrDefaultAsync() ?? await _nexusDb.Blocks.Where(x => x.Hash.StartsWith(hash))
                     .Include(x => x.Transactions)
-                        .ThenInclude(x => x.Inputs)
-                        .ThenInclude(x => x.Address)
-                    .Include(x => x.Transactions)
-                        .ThenInclude(x => x.Outputs)
+                        .ThenInclude(x => x.InputOutputs)
                         .ThenInclude(x => x.Address)
                     .FirstOrDefaultAsync();
 

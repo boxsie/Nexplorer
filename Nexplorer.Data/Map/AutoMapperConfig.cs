@@ -26,9 +26,7 @@ namespace Nexplorer.Data.Map
                 x.CreateMap<Transaction, TransactionDto>()
                     .ForMember(d => d.BlockHeight, o => o.MapFrom(s => s.Block.Height))
                     .ForMember(d => d.Confirmations, o => o.Ignore());
-                x.CreateMap<TransactionInput, TransactionInputOutputLiteDto>()
-                    .ForMember(d => d.AddressHash, o => o.MapFrom(s => s.Address.Hash));
-                x.CreateMap<TransactionOutput, TransactionInputOutputLiteDto>()
+                x.CreateMap<TransactionInputOutput, TransactionInputOutputLiteDto>()
                     .ForMember(d => d.AddressHash, o => o.MapFrom(s => s.Address.Hash));
 
                 x.CreateMap<BlockDto, OrphanBlock>()

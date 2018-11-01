@@ -29,7 +29,6 @@ namespace Nexplorer.Domain.Entity.Blockchain
         [ForeignKey("BlockHeight")]
         public Block Block { get; set; }
 
-        public List<TransactionInput> Inputs { get; set; }
-        public List<TransactionOutput> Outputs { get; set; }
+        public List<TransactionInputOutput> InputOutputs { get; set; }
     }
 }

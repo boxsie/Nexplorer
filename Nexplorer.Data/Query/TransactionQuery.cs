@@ -40,9 +40,7 @@ namespace Nexplorer.Data.Query
             
             var tx = await _nexusDb.Transactions
                 .Where(x => x.Hash == txHash)
-                .Include(x => x.Inputs)
-                .ThenInclude(x => x.Address)
-                .Include(x => x.Outputs)
+                .Include(x => x.InputOutputs)
                 .ThenInclude(x => x.Address)
                 .Include(x => x.Block)
                 .FirstOrDefaultAsync();
@@ -70,20 +68,17 @@ namespace Nexplorer.Data.Query
             var toDate = filter.UtcTo ?? DateTime.MaxValue;
 
             var tables = _nexusDb.Transactions
-                .Include(x => x.Inputs)
-                .ThenInclude(x => x.Address)
-                .Include(x => x.Outputs)
+                .Include(x => x.InputOutputs)
                 .ThenInclude(x => x.Address)
                 .Include(x => x.Block);
 
-            Expression<Func<Transaction, bool>> query = x => 
+            Expression<Func<Transaction, bool>> query = x =>
                 x.Amount >= min && x.Amount <= max &&
                 x.Block.Height >= fromHeight &&
                 x.BlockHeight <= toHeight &&
                 x.Timestamp >= fromDate &&
                 x.Timestamp <= toDate &&
-                MatchAddressHash(x.Inputs.Select(y => y.Address.Hash).ToArray(), filter.FromAddressHashes) &&
-                MatchAddressHash(x.Outputs.Select(y => y.Address.Hash).ToArray(), filter.ToAddressHashes);
+                MatchAddressHash(x.InputOutputs.Select(y => y.Address.Hash).ToArray(), filter.FromAddressHashes);
 
             var resultCount = countResults 
                 ? await tables.CountAsync(query)

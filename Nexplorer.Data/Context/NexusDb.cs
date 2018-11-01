@@ -9,8 +9,7 @@ namespace Nexplorer.Data.Context
     {
         public DbSet<Block> Blocks { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
-        public DbSet<TransactionInput> TransactionInput { get; set; }
-        public DbSet<TransactionOutput> TransactionOutput { get; set; }
+        public DbSet<TransactionInputOutput> TransactionInputOutput { get; set; }
         public DbSet<Address> Addresses { get; set; }
         public DbSet<AddressAggregate> AddressAggregates { get; set; }
         public DbSet<TrustKey> TrustKeys { get; set; }
@@ -28,29 +27,24 @@ namespace Nexplorer.Data.Context
         {
             // Indexes
 
-            modelBuilder.Entity<Block>()
-                .HasIndex(x => x.Hash);
+            //modelBuilder.Entity<Block>()
+            //    .HasIndex(x => x.Hash);
 
-            modelBuilder.Entity<Transaction>()
-                .HasIndex(x => x.Hash);
+            //modelBuilder.Entity<Transaction>()
+            //    .HasIndex(x => x.Hash);
 
-            modelBuilder.Entity<Address>()
-                .HasIndex(x => x.Hash);
+            //modelBuilder.Entity<Address>()
+            //    .HasIndex(x => x.Hash);
 
-            modelBuilder.Entity<AddressAggregate>()
-                .HasIndex(x => x.Balance);
+            //modelBuilder.Entity<AddressAggregate>()
+            //    .HasIndex(x => x.Balance);
 
 
             // Relationships
 
-            modelBuilder.Entity<TransactionInput>()
+            modelBuilder.Entity<TransactionInputOutput>()
                 .HasOne(x => x.Transaction)
-                .WithMany(x => x.Inputs)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<TransactionOutput>()
-                .HasOne(x => x.Transaction)
-                .WithMany(x => x.Outputs)
+                .WithMany(x => x.InputOutputs)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<AddressAggregate>()

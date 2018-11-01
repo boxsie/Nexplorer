@@ -1,18 +1,22 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Nexplorer.Domain.Enums;
 using ProtoBuf;
 
 namespace Nexplorer.Domain.Entity.Blockchain
 {
-    [Table("TransactionInput")]
-    public class TransactionInput
+    [Table("TransactionInputOutput")]
+    public class TransactionInputOutput
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int TransactionInputId { get; set; }
+        public int TransactionInputOutputId { get; set; }
 
         [Required]
         public int TransactionId { get; set; }
+
+        [Required]
+        public TransactionType TransactionType { get; set; }
 
         [Required]
         public int AddressId { get; set; }

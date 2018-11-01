@@ -107,10 +107,7 @@ namespace Nexplorer.Data.Command
                 {
                     var txIoDtos = blocks
                         .SelectMany(x => x.Transactions
-                            .SelectMany(y => y.Inputs
-                                .Select(z => new { TxType = TransactionType.Input, z.AddressId, z.Amount })
-                                .Concat(y.Outputs
-                                    .Select(z => new { TxType = TransactionType.Output, z.AddressId, z.Amount}))
+                            .SelectMany(y => y.InputOutputs.Select(z => new { TxType = z.TransactionType, z.AddressId, z.Amount })
                                 .Select(z => new TransactionInputOutputDto
                                 {
                                     AddressId = z.AddressId,

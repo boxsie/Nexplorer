@@ -29,6 +29,8 @@
     <Compile Remove="Migrations\20181101142708_RemovedContraints.cs" />
     <Compile Remove="Migrations\20181101142922_RemovedContraints.cs" />
     <Compile Remove="Migrations\20181101143056_RemovedContraints.cs" />
+    <Compile Remove="Migrations\20181101184855_InitialCreateNoIndexes.cs" />
+    <Compile Remove="Migrations\20181101185559_InitialCreateNoIndexes.cs" />
   </ItemGroup>
 
   <ItemGroup>
