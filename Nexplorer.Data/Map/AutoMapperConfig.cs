@@ -10,6 +10,7 @@ using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Entity.Blockchain;
 using Nexplorer.Domain.Entity.Orphan;
 using Nexplorer.Domain.Entity.User;
+using Nexplorer.Domain.Enums;
 using Nexplorer.Infrastructure.Geolocate;
 
 namespace Nexplorer.Data.Map
@@ -25,7 +26,9 @@ namespace Nexplorer.Data.Map
                     .ForMember(d => d.PreviousBlockHash, o => o.Ignore());
                 x.CreateMap<Transaction, TransactionDto>()
                     .ForMember(d => d.BlockHeight, o => o.MapFrom(s => s.Block.Height))
-                    .ForMember(d => d.Confirmations, o => o.Ignore());
+                    .ForMember(d => d.Confirmations, o => o.Ignore())
+                    .ForMember(d => d.Inputs, o => o.MapFrom(s => s.InputOutputs.Where(y => y.TransactionType == TransactionType.Input)))
+                    .ForMember(d => d.Outputs, o => o.MapFrom(s => s.InputOutputs.Where(y => y.TransactionType == TransactionType.Output)));
                 x.CreateMap<TransactionInputOutput, TransactionInputOutputLiteDto>()
                     .ForMember(d => d.AddressHash, o => o.MapFrom(s => s.Address.Hash));
 
