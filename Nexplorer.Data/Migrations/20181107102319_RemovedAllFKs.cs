@@ -7,6 +7,10 @@ namespace Nexplorer.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
+                name: "FK_AddressAggregate_Address_AddressId",
+                table: "AddressAggregate");
+
+            migrationBuilder.DropForeignKey(
                 name: "FK_AddressAggregate_Block_LastBlockHeight",
                 table: "AddressAggregate");
 
@@ -30,10 +34,28 @@ namespace Nexplorer.Data.Migrations
                 name: "IX_TrustKey_AddressId",
                 table: "TrustKey");
 
+            migrationBuilder.AddColumn<int>(
+                name: "AddressId1",
+                table: "AddressAggregate",
+                nullable: true);
+
             migrationBuilder.CreateIndex(
                 name: "IX_TrustKey_AddressId",
                 table: "TrustKey",
                 column: "AddressId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AddressAggregate_AddressId1",
+                table: "AddressAggregate",
+                column: "AddressId1");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_AddressAggregate_Address_AddressId1",
+                table: "AddressAggregate",
+                column: "AddressId1",
+                principalTable: "Address",
+                principalColumn: "AddressId",
+                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_AddressAggregate_Block_LastBlockHeight",
@@ -79,6 +101,10 @@ namespace Nexplorer.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
+                name: "FK_AddressAggregate_Address_AddressId1",
+                table: "AddressAggregate");
+
+            migrationBuilder.DropForeignKey(
                 name: "FK_AddressAggregate_Block_LastBlockHeight",
                 table: "AddressAggregate");
 
@@ -102,11 +128,27 @@ namespace Nexplorer.Data.Migrations
                 name: "IX_TrustKey_AddressId",
                 table: "TrustKey");
 
+            migrationBuilder.DropIndex(
+                name: "IX_AddressAggregate_AddressId1",
+                table: "AddressAggregate");
+
+            migrationBuilder.DropColumn(
+                name: "AddressId1",
+                table: "AddressAggregate");
+
             migrationBuilder.CreateIndex(
                 name: "IX_TrustKey_AddressId",
                 table: "TrustKey",
                 column: "AddressId",
                 unique: true);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_AddressAggregate_Address_AddressId",
+                table: "AddressAggregate",
+                column: "AddressId",
+                principalTable: "Address",
+                principalColumn: "AddressId",
+                onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_AddressAggregate_Block_LastBlockHeight",

@@ -42,6 +42,8 @@ namespace Nexplorer.Data.Migrations
                 {
                     b.Property<int>("AddressId");
 
+                    b.Property<int?>("AddressId1");
+
                     b.Property<double>("Balance");
 
                     b.Property<int>("LastBlockHeight");
@@ -57,6 +59,8 @@ namespace Nexplorer.Data.Migrations
                     b.Property<DateTime>("UpdatedOn");
 
                     b.HasKey("AddressId");
+
+                    b.HasIndex("AddressId1");
 
                     b.HasIndex("LastBlockHeight");
 
@@ -256,8 +260,7 @@ namespace Nexplorer.Data.Migrations
                 {
                     b.HasOne("Nexplorer.Domain.Entity.Blockchain.Address", "Address")
                         .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("AddressId1");
 
                     b.HasOne("Nexplorer.Domain.Entity.Blockchain.Block", "LastBlock")
                         .WithMany()

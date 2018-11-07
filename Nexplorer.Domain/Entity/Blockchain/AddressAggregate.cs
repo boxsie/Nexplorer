@@ -33,10 +33,10 @@ namespace Nexplorer.Domain.Entity.Blockchain
         [Required]
         public DateTime UpdatedOn { get; set; }
 
-        [ForeignKey("AddressId")]
+        //[ForeignKey("AddressId")]
         public Address Address { get; set; }
 
-        [ForeignKey("LastBlockHeight")]
+        //[ForeignKey("LastBlockHeight")]
         public Block LastBlock { get; set; }
 
         public void ModifyAggregateProperties(TransactionType txType, double amount, int blockHeight)
