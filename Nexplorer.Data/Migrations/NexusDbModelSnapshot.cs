@@ -42,8 +42,6 @@ namespace Nexplorer.Data.Migrations
                 {
                     b.Property<int>("AddressId");
 
-                    b.Property<int?>("AddressId1");
-
                     b.Property<double>("Balance");
 
                     b.Property<int>("LastBlockHeight");
@@ -59,8 +57,6 @@ namespace Nexplorer.Data.Migrations
                     b.Property<DateTime>("UpdatedOn");
 
                     b.HasKey("AddressId");
-
-                    b.HasIndex("AddressId1");
 
                     b.HasIndex("LastBlockHeight");
 
@@ -170,7 +166,8 @@ namespace Nexplorer.Data.Migrations
 
                     b.HasKey("TrustKeyId");
 
-                    b.HasIndex("AddressId");
+                    b.HasIndex("AddressId")
+                        .IsUnique();
 
                     b.HasIndex("GenesisHeight");
 
@@ -260,12 +257,13 @@ namespace Nexplorer.Data.Migrations
                 {
                     b.HasOne("Nexplorer.Domain.Entity.Blockchain.Address", "Address")
                         .WithMany()
-                        .HasForeignKey("AddressId1");
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Nexplorer.Domain.Entity.Blockchain.Block", "LastBlock")
                         .WithMany()
                         .HasForeignKey("LastBlockHeight")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.Transaction", b =>
@@ -286,25 +284,25 @@ namespace Nexplorer.Data.Migrations
                     b.HasOne("Nexplorer.Domain.Entity.Blockchain.Transaction", "Transaction")
                         .WithMany("InputOutputs")
                         .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Nexplorer.Domain.Entity.Blockchain.TrustKey", b =>
                 {
                     b.HasOne("Nexplorer.Domain.Entity.Blockchain.Address", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .WithOne()
+                        .HasForeignKey("Nexplorer.Domain.Entity.Blockchain.TrustKey", "AddressId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Nexplorer.Domain.Entity.Blockchain.Block", "GenesisBlock")
                         .WithMany()
                         .HasForeignKey("GenesisHeight")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Nexplorer.Domain.Entity.Blockchain.Transaction", "Transaction")
                         .WithMany()
                         .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Nexplorer.Domain.Entity.Orphan.OrphanTransaction", b =>

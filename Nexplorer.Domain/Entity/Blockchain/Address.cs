@@ -18,7 +18,7 @@ namespace Nexplorer.Domain.Entity.Blockchain
         [Required]
         public int FirstBlockHeight { get; set; }
         
-        //[ForeignKey("FirstBlockHeight")]
+        [ForeignKey("FirstBlockHeight")]
         public Block FirstBlock { get; set; }
     }
 }

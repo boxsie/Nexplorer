@@ -31,7 +31,6 @@
     <Compile Remove="Migrations\20181101143056_RemovedContraints.cs" />
     <Compile Remove="Migrations\20181101184855_InitialCreateNoIndexes.cs" />
     <Compile Remove="Migrations\20181101185559_InitialCreateNoIndexes.cs" />
-    <Compile Remove="Migrations\20181107101923_RemovedAllFKs.cs" />
   </ItemGroup>
 
   <ItemGroup>
