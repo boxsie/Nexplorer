@@ -44,12 +44,12 @@ namespace Nexplorer.Sync
             LogManager.LoadConfiguration("nlog.config");
             
             // Clear Redis
-            var endpoints = serviceProvider.GetService<ConnectionMultiplexer>().GetEndPoints(true);
-            foreach (var endpoint in endpoints)
-            {
-                var server = serviceProvider.GetService<ConnectionMultiplexer>().GetServer(endpoint);
-                server.FlushAllDatabases();
-            }
+            //var endpoints = serviceProvider.GetService<ConnectionMultiplexer>().GetEndPoints(true);
+            //foreach (var endpoint in endpoints)
+            //{
+            //    var server = serviceProvider.GetService<ConnectionMultiplexer>().GetServer(endpoint);
+            //    server.FlushAllDatabases();
+            //}
 
             // Migrate EF
             serviceProvider.GetService<NexusDb>().Database.Migrate();

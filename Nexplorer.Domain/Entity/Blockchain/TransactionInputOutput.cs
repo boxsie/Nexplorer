@@ -24,10 +24,10 @@ namespace Nexplorer.Domain.Entity.Blockchain
         [Required]
         public double Amount { get; set; }
 
-        [ForeignKey("TransactionId")]
+        //[ForeignKey("TransactionId")]
         public Transaction Transaction { get; set; }
 
-        [ForeignKey("AddressId")]
+        //[ForeignKey("AddressId")]
         public Address Address { get; set; }
     }
 }

@@ -42,28 +42,28 @@ namespace Nexplorer.Data.Context
 
             // Relationships
 
-            modelBuilder.Entity<TransactionInputOutput>()
-                .HasOne(x => x.Transaction)
-                .WithMany(x => x.InputOutputs)
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<TransactionInputOutput>()
+            //    .HasOne(x => x.Transaction)
+            //    .WithMany(x => x.InputOutputs)
+            //    .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<AddressAggregate>()
-                .HasOne(x => x.LastBlock)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<AddressAggregate>()
+            //    .HasOne(x => x.LastBlock)
+            //    .WithMany()
+            //    .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<TrustKey>()
-                .HasOne(x => x.GenesisBlock)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<TrustKey>()
-                .HasOne(x => x.Transaction)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<TrustKey>()
-                .HasOne(x => x.Address)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<TrustKey>()
+            //    .HasOne(x => x.GenesisBlock)
+            //    .WithMany()
+            //    .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<TrustKey>()
+            //    .HasOne(x => x.Transaction)
+            //    .WithMany()
+            //    .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<TrustKey>()
+            //    .HasOne(x => x.Address)
+            //    .WithOne()
+            //    .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
