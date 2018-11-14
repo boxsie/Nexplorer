@@ -290,59 +290,20 @@ namespace Nexplorer.Data.Query
 
         public async Task<List<AddressTransactionDto>> GetAddressTransactionsInOutAsync(TransactionType txType, int addressId, string addressHash, int? start = null, int? count = null)
         {
-            var sqlQ = "";
+            var sqlQ = @"SELECT
+                         1 AS TxType,
+                         t.[BlockHeight],
+                         t.[Hash] AS TransactionHash,
+                         tInOut.[Amount],
+                         t.[Timestamp]
+                         FROM [dbo].[Transaction] t
+                         INNER JOIN [dbo].[TransactionInputOutput] tInOut ON tInOut.[TransactionId] = t.[TransactionId]
+                         WHERE a.[AddressId] = @addressId";
 
-            switch (txType)
-            {
-                case TransactionType.Input:
-                    sqlQ += @"SELECT
-                              1 AS TxType,
-                              t.[BlockHeight],
-                              t.[Hash] AS TransactionHash,
-                              tIn.[Amount],
-                              t.[Timestamp]
-                              FROM [dbo].[Transaction] t
-                              INNER JOIN [dbo].[TransactionInput] tIn ON tIn.[TransactionId] = t.[TransactionId]
-                              INNER JOIN [dbo].[Address] a ON a.[AddressId] = tIn.[AddressId]
-                              WHERE a.[AddressId] = @addressId
-                              ORDER BY t.[Timestamp] DESC";
-                    break;
-                case TransactionType.Output:
-                    sqlQ += @"SELECT
-                              2 AS TxType,
-                              t.[BlockHeight],
-                              t.[Hash] AS TransactionHash,
-                              tOut.[Amount],
-                              t.[Timestamp]
-                              FROM [dbo].[Transaction] t
-                              INNER JOIN [dbo].[TransactionOutput] tOut ON tOut.[TransactionId] = t.[TransactionId]
-                              INNER JOIN [dbo].[Address] a ON a.[AddressId] = tOut.[AddressId]
-                              WHERE a.[AddressId] = @addressId
-                              ORDER BY t.[Timestamp] DESC";
-                    break;
-                case TransactionType.Both:
-                    sqlQ += @"SELECT 
-                              2 AS TxType,
-                              t.[Hash] AS TransactionHash,
-                              t.[BlockHeight],
-                              tOut.[Amount],
-                              t.[Timestamp]
-                              FROM [dbo].[TransactionOutput] tOut
-                              INNER JOIN [dbo].[Transaction] t On t.[TransactionId] = tOut.[TransactionId]
-                              WHERE tOut.[AddressId] = @addressId
-                              UNION ALL                        
-                              SELECT
-                              1 AS TxType,
-                              t.[Hash] AS TransactionHash,
-                              t.[BlockHeight],
-                              tIn.[Amount],
-                              t.[Timestamp]
-                              FROM [dbo].[TransactionInput] tIn
-                              INNER JOIN [dbo].[Transaction] t On t.[TransactionId] = tIn.[TransactionId]
-                              WHERE tIn.[AddressId] = @addressId                         
-                              ORDER BY Timestamp DESC, TxType DESC";
-                    break;
-            }
+            if (txType != TransactionType.Both)
+                sqlQ += " AND tInOut.TransactionType = @txType";
+
+            sqlQ += " ORDER BY t.[Timestamp] DESC";
 
             if (start.HasValue && count.HasValue)
                 sqlQ += " OFFSET @start ROWS FETCH NEXT @count ROWS ONLY; ";

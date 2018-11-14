@@ -150,6 +150,8 @@ namespace Nexplorer.Sync.Nexus
             {
                 while (blockDto != null)
                 {
+                    _cancelBlockStream.Token.ThrowIfCancellationRequested();
+
                     await _redisCommand.SetAsync(CreateStreamKey(blockDto.Height), blockDto);
                     await _redisCommand.SetAsync(Settings.Redis.BlockSyncStreamCacheHeight, blockDto.Height);
                     

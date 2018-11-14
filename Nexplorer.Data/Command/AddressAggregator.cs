@@ -16,24 +16,13 @@ namespace Nexplorer.Data.Command
     {
         private const string BlockTxSelectSql = @"
             SELECT
-	            1 AS TxType,
+	            txInOut.[TransactionType],
 	            t.[BlockHeight],
-	            txIn.[Amount],
-	            txIn.[AddressId]
-            FROM [dbo].[TransactionInput] txIn
-            INNER JOIN [dbo].[Address] a ON a.AddressId = txIn.AddressId
-            INNER JOIN [dbo].[Transaction] t ON t.TransactionId = txIn.TransactionId
-            INNER JOIN [dbo].[Block] b ON b.Height = t.BlockHeight
-            WHERE b.[Height] = @BlockHeight
-            UNION ALL
-            SELECT
-	            2 AS TxType,
-	            t.[BlockHeight],
-	            txOut.[Amount],	
-	            txOut.[AddressId]
-            FROM [dbo].[TransactionOutput] txOut
-            INNER JOIN [dbo].[Address] a ON a.AddressId = txOut.AddressId
-            INNER JOIN [dbo].[Transaction] t ON t.TransactionId = txOut.TransactionId
+	            txInOut.[Amount],	
+	            txInOut.[AddressId]
+            FROM [dbo].[TransactionInputOutput] txInOut
+            INNER JOIN [dbo].[Address] a ON a.AddressId = txInOut.AddressId
+            INNER JOIN [dbo].[Transaction] t ON t.TransactionId = txInOut.TransactionId
             INNER JOIN [dbo].[Block] b ON b.Height = t.BlockHeight
             WHERE b.[Height] = @BlockHeight";
 
@@ -107,13 +96,13 @@ namespace Nexplorer.Data.Command
                 {
                     var txIoDtos = blocks
                         .SelectMany(x => x.Transactions
-                            .SelectMany(y => y.InputOutputs.Select(z => new { TxType = z.TransactionType, z.AddressId, z.Amount })
+                            .SelectMany(y => y.InputOutputs.Select(z => new { TransactionType = z.TransactionType, z.AddressId, z.Amount })
                                 .Select(z => new TransactionInputOutputDto
                                 {
                                     AddressId = z.AddressId,
                                     Amount = z.Amount,
                                     BlockHeight = x.Height,
-                                    TxType = z.TxType
+                                    TransactionType = z.TransactionType
                                 })))
                         .ToList();
 
@@ -140,7 +129,7 @@ namespace Nexplorer.Data.Command
             {
                 addAgg = _addressAggregates[txIo.AddressId];
 
-                addAgg.ModifyAggregateProperties(txIo.TxType, txIo.Amount, txIo.BlockHeight);
+                addAgg.ModifyAggregateProperties(txIo.TransactionType, txIo.Amount, txIo.BlockHeight);
 
                 await UpdateOrInsertAggregate(sqlCon, trans, addAgg, false);
             }
@@ -154,7 +143,7 @@ namespace Nexplorer.Data.Command
                     ? new AddressAggregate { AddressId = txIo.AddressId }
                     : response.First();
 
-                addAgg.ModifyAggregateProperties(txIo.TxType, txIo.Amount, txIo.BlockHeight);
+                addAgg.ModifyAggregateProperties(txIo.TransactionType, txIo.Amount, txIo.BlockHeight);
 
                 await UpdateOrInsertAggregate(sqlCon, trans, addAgg, isNew);
 
