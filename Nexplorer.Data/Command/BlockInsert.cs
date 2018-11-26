@@ -22,8 +22,8 @@ namespace Nexplorer.Data.Command
             VALUES (@Height, @Bits, @Channel, @Difficulty, @Hash, @MerkleRoot, @Mint, @Nonce, @Size, @Timestamp, @Version);";
 
         private const string TxInsertSql = @"
-            INSERT INTO [dbo].[Transaction] ([Amount], [BlockHeight], [Hash], [Timestamp]) 
-            VALUES (@Amount, @BlockHeight, @Hash, @Timestamp);
+            INSERT INTO [dbo].[Transaction] ([Amount], [BlockHeight], [Hash], [Timestamp], [RewardType]) 
+            VALUES (@Amount, @BlockHeight, @Hash, @Timestamp, @RewardType);
             SELECT CAST(SCOPE_IDENTITY() as int);";
 
         private const string AddressInsertSql = @"
@@ -57,7 +57,7 @@ namespace Nexplorer.Data.Command
                         var block = MapBlock(blockDto);
                         await InsertBlockAsync(con, trans, block);
 
-                        block.Transactions = MapTransactions(blockDto.Transactions).ToList();
+                        block.Transactions = MapTransactions(blockDto.Transactions, (BlockChannels)block.Channel).ToList();
                         var txIds = await InsertTransactionsAsync(con, trans, block.Transactions);
 
                         var txInOutDtos = blockDto.Transactions.SelectMany(x => x.Inputs.Concat(x.Outputs)).ToList();
@@ -141,7 +141,8 @@ namespace Nexplorer.Data.Command
                     tx.Amount,
                     tx.BlockHeight,
                     tx.Hash,
-                    TimeStamp = timestamp
+                    TimeStamp = timestamp,
+                    tx.RewardType
                 }, trans);
 
                 txIds.Add(result.Single());
@@ -203,14 +204,15 @@ namespace Nexplorer.Data.Command
             };
         }
 
-        private static IEnumerable<Transaction> MapTransactions(IEnumerable<TransactionDto> txDtos)
+        private static IEnumerable<Transaction> MapTransactions(IEnumerable<TransactionDto> txDtos, BlockChannels blockChannel)
         {
-            return txDtos.Select(x => new Transaction
+            return txDtos.Select((x, i) => new Transaction
             {
                 Amount = x.Amount,
                 BlockHeight = x.BlockHeight,
                 Hash = x.Hash,
-                Timestamp = x.Timestamp
+                Timestamp = x.Timestamp,
+                RewardType = i == 0 ? blockChannel == BlockChannels.PoS ? BlockRewardType.Staking : BlockRewardType.Mining : BlockRewardType.Mining
             });
         }
 

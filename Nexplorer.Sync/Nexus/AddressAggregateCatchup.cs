@@ -26,15 +26,8 @@ namespace Nexplorer.Sync.Nexus
         private double _totalSeconds;
         private int _iterationCount;
 
-        private readonly string _nullRewardSelectSqlQ = $@"
-            SELECT TOP {Settings.App.BulkSaveCount}
-            t.[BlockHeight]
-            FROM [dbo].[Transaction] t
-            WHERE t.[RewardType] IS NULL";
-
         private const string BlockSelectSqlQ = @"
-            SELECT 
-            TOP 1
+            SELECT
             b.[Channel],
             t.[TransactionId]
             FROM [dbo].[Block] b
@@ -60,10 +53,10 @@ namespace Nexplorer.Sync.Nexus
             _totalSeconds = 0;
             _iterationCount = 0;
 
-            var totalNulls = await _nexusDb.Transactions.CountAsync(x => x.RewardType == null);
-            var nullsReplaced = 0;
+            var dbHeight = await _nexusDb.Blocks.CountAsync();
+            var currentHeight = 1;
 
-            while (nullsReplaced < totalNulls)
+            while (currentHeight <= (dbHeight - Settings.App.BlockCacheCount))
             {
                 _stopwatch.Restart();
 
@@ -73,40 +66,40 @@ namespace Nexplorer.Sync.Nexus
 
                     using (var trans = con.BeginTransaction())
                     {
-                        var nullRewards = (await con.QueryAsync(_nullRewardSelectSqlQ, null, trans)).ToList();
-
-                        _logger.LogInformation($"Updating reward type for {nullRewards.Count} transactions");
-
-                        foreach (var tx in nullRewards)
+                        for (var i = currentHeight; i < (currentHeight + Settings.App.BulkSaveCount); i++)
                         {
-                            var txId = (await con.QueryAsync(BlockSelectSqlQ, new {tx.BlockHeight}, trans)).FirstOrDefault();
+                            var txs = (await con.QueryAsync(BlockSelectSqlQ, new {BlockHeight = i}, trans)).ToList();
 
-                            if (txId == null)
-                                throw new NullReferenceException();
-
-                            var rewardType = BlockRewardType.None;
-
-                            if (txId.TransactionId == tx.TransactionId)
+                            for (var o = 0; o < txs.Count; o++)
                             {
-                                rewardType = ((BlockChannels)txId.Channel) == BlockChannels.PoS
-                                    ? BlockRewardType.Staking
-                                    : BlockRewardType.Mining;
+                                var tx = txs[o];
+
+                                var rewardType = BlockRewardType.None;
+
+                                if (o == 0)
+                                {
+                                    rewardType = ((BlockChannels)tx.Channel) == BlockChannels.PoS
+                                        ? BlockRewardType.Staking
+                                        : BlockRewardType.Mining;
+                                }
+
+                                await con.ExecuteAsync(TxUpdateSql, new { tx.TransactionId, RewardType = rewardType }, trans);
+
                             }
 
-                            await con.ExecuteAsync(TxUpdateSql, new {txId.TransactionId, RewardType = rewardType}, trans);
-
-                            nullsReplaced++;
-
-                            Console.Write($"\rUpdating reward txs... {LogProgress(nullsReplaced, totalNulls, out var blockPct)} {blockPct:N4}% ({nullsReplaced:N0}/{totalNulls:N0})");
+                            Console.Write($"\rUpdating block #{i} reward tx... {LogProgress(i, dbHeight, out var blockPct)} {blockPct:N4}% ({i:N0}/{dbHeight:N0})");
                         }
-
+                        
                         trans.Commit();
 
                         Console.WriteLine();
 
-                        LogTimeTaken(totalNulls - nullRewards.Count, _stopwatch.Elapsed);
+                        LogTimeTaken(dbHeight - currentHeight, _stopwatch.Elapsed);
+
+                        currentHeight += Settings.App.BulkSaveCount;
                     }
                 }
+                
             }
         }
 
