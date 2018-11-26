@@ -96,6 +96,7 @@ namespace Nexplorer.Sync
 
             services.AddTransient<BlockSyncCatchup>();
             services.AddTransient<AddressAggregateCatchup>();
+            services.AddTransient<BlockRewardCatchup>();
             services.AddTransient<BlockSyncJob>();
             services.AddTransient<BlockScanJob>();
             //services.AddTransient<BlockCacheJob>();

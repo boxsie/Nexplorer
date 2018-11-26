@@ -14,6 +14,114 @@ using Nexplorer.Domain.Enums;
 
 namespace Nexplorer.Sync.Nexus
 {
+    public class BlockRewardCatchup
+    {
+        private readonly NexusDb _nexusDb;
+        private readonly BlockQuery _blockQuery;
+        private readonly ILogger<BlockRewardCatchup> _logger;
+
+        private Stopwatch _stopwatch;
+        private double _totalSeconds;
+        private int _iterationCount;
+
+        public BlockRewardCatchup(ILogger<BlockRewardCatchup> logger, NexusDb nexusDb, BlockQuery blockQuery)
+        {
+            _logger = logger;
+            _nexusDb = nexusDb;
+            _blockQuery = blockQuery;
+        }
+
+        public async Task Catchup()
+        {
+            _stopwatch = new Stopwatch();
+            _totalSeconds = 0;
+            _iterationCount = 0;
+
+            var totalNulls = await _nexusDb.Transactions.CountAsync(x => x.RewardType == null);
+            var nullsReplaced = 0;
+            var nullRewards = await GetNullRewardTransactions();
+
+            while (nullRewards.Any())
+            {
+                _logger.LogInformation($"Updating reward type for {nullRewards.Count} transactions");
+
+                _stopwatch.Restart();
+
+                foreach (var tx in nullRewards)
+                {
+                    var block = await _blockQuery.GetBlockAsync(tx.BlockHeight);
+
+                    var firstTx = block.Transactions.First();
+
+                    var rewardType = BlockRewardType.None;
+
+                    if (firstTx.TransactionId == tx.TransactionId)
+                    {
+                        rewardType = ((BlockChannels) block.Channel) == BlockChannels.PoS
+                            ? BlockRewardType.Staking
+                            : BlockRewardType.Mining;
+                    }
+
+                    tx.RewardType = rewardType;
+                    
+                    _nexusDb.Update(tx);
+
+                    nullsReplaced++;
+
+                    Console.Write($"\rUpdating reward txs... {LogProgress(nullsReplaced, totalNulls, out var blockPct)} {blockPct:N4}% ({nullsReplaced:N0}/{totalNulls:N0})");
+                }
+
+                Console.WriteLine();
+
+                await _nexusDb.SaveChangesAsync();
+
+                LogTimeTaken(totalNulls - nullRewards.Count, _stopwatch.Elapsed);
+
+                nullRewards = await GetNullRewardTransactions();
+            }
+        }
+
+        private async Task<List<Transaction>> GetNullRewardTransactions()
+        {
+            return await _nexusDb.Transactions
+                .Where(x => x.RewardType == null)
+                .Take(Settings.App.BulkSaveCount)
+                .ToListAsync();
+        }
+
+        private void LogTimeTaken(int syncDelta, TimeSpan timeTaken)
+        {
+            _iterationCount++;
+
+            _totalSeconds += timeTaken.TotalSeconds;
+
+            var avgSeconds = _totalSeconds / _iterationCount;
+            var estRemainingIterations = syncDelta / Settings.App.BulkSaveCount;
+
+            var remainingTime = TimeSpan.FromSeconds(estRemainingIterations * avgSeconds);
+
+            Console.WriteLine($"\nSave complete. Iteration took { timeTaken }");
+            Console.WriteLine($"Estimated remaining sync time: { remainingTime }");
+        }
+
+        private static string LogProgress(int i, int total, out double pct)
+        {
+            pct = ((double)i / total) * 100;
+
+            var progress = Math.Floor((double)pct / 5);
+            var bar = "";
+
+            for (var o = 0; o < 20; o++)
+            {
+                bar += progress > o
+                    ? '#'
+                    : ' ';
+            }
+
+            return $"[{bar}]";
+        }
+    }
+
     public class AddressAggregateCatchup
     {
         private readonly NexusDb _nexusDb;

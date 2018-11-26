@@ -36,6 +36,8 @@ namespace Nexplorer.Data.Context
                 .HasIndex(x => x.Timestamp);
             modelBuilder.Entity<Transaction>()
                 .HasIndex(x => x.Amount);
+            modelBuilder.Entity<Transaction>()
+                .HasIndex(x => x.RewardType);
 
             modelBuilder.Entity<TransactionInputOutput>()
                 .HasIndex(x => x.TransactionType);

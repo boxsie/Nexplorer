@@ -18,15 +18,17 @@ namespace Nexplorer.Sync
         private readonly IServiceProvider _serviceProvider;
         private readonly BlockSyncCatchup _blockCatchup;
         private readonly AddressAggregateCatchup _addressAggregateCatchup;
+        private readonly BlockRewardCatchup _blockRewardCatchup;
         private readonly BlockCacheBuild _blockCacheBuild;
 
         public App(ILogger<App> logger, IServiceProvider serviceProvider, BlockSyncCatchup blockCatchup, 
-            AddressAggregateCatchup addressAggregateCatchup, BlockCacheBuild blockCacheBuild)
+            AddressAggregateCatchup addressAggregateCatchup, BlockRewardCatchup blockRewardCatchup, BlockCacheBuild blockCacheBuild)
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
             _blockCatchup = blockCatchup;
             _addressAggregateCatchup = addressAggregateCatchup;
+            _blockRewardCatchup = blockRewardCatchup;
             _blockCacheBuild = blockCacheBuild;
         }
 
@@ -34,6 +36,7 @@ namespace Nexplorer.Sync
         {
             await _blockCatchup.Catchup();
             await _addressAggregateCatchup.Catchup();
+            await _blockRewardCatchup.Catchup();
             await _blockCacheBuild.BuildAsync();
 
             await StartJobs();

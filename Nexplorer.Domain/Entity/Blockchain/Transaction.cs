@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Nexplorer.Domain.Enums;
 using ProtoBuf;
 
 namespace Nexplorer.Domain.Entity.Blockchain
@@ -25,6 +26,8 @@ namespace Nexplorer.Domain.Entity.Blockchain
 
         [Required]
         public double Amount { get; set; }
+
+        public BlockRewardType? RewardType { get; set; }
 
         [ForeignKey("BlockHeight")]
         public Block Block { get; set; }
