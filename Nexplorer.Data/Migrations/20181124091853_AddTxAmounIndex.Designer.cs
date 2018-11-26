@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Nexplorer.Data.Context;
 
 namespace Nexplorer.Data.Migrations
 {
     [DbContext(typeof(NexusDb))]
-    partial class NexusDbModelSnapshot : ModelSnapshot
+    [Migration("20181124091853_AddTxAmounIndex")]
+    partial class AddTxAmounIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

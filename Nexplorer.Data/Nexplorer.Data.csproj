@@ -31,6 +31,8 @@
     <Compile Remove="Migrations\20181101143056_RemovedContraints.cs" />
     <Compile Remove="Migrations\20181101184855_InitialCreateNoIndexes.cs" />
     <Compile Remove="Migrations\20181101185559_InitialCreateNoIndexes.cs" />
+    <Compile Remove="Migrations\20181124144225_AddBlockRewardTable.cs" />
+    <Compile Remove="Migrations\20181124150230_AddBlockRewardColumn.cs" />
   </ItemGroup>
 
   <ItemGroup>

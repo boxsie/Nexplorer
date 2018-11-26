@@ -291,7 +291,7 @@ namespace Nexplorer.Data.Query
         public async Task<List<AddressTransactionDto>> GetAddressTransactionsInOutAsync(TransactionType txType, int addressId, string addressHash, int? start = null, int? count = null)
         {
             var sqlQ = @"SELECT
-                         1 AS TxType,
+                         tInOut.[TransactionType],
                          t.[BlockHeight],
                          t.[Hash] AS TransactionHash,
                          tInOut.[Amount],
@@ -301,7 +301,7 @@ namespace Nexplorer.Data.Query
                          WHERE a.[AddressId] = @addressId";
 
             if (txType != TransactionType.Both)
-                sqlQ += " AND tInOut.TransactionType = @txType";
+                sqlQ += " AND tInOut.[TransactionType] = @txType";
 
             sqlQ += " ORDER BY t.[Timestamp] DESC";
 
@@ -333,7 +333,7 @@ namespace Nexplorer.Data.Query
 
                 var dbTxs = response.Select(x => new AddressTransactionDto
                     {
-                        TxType = (TransactionType)x.TxType,
+                        TxType = (TransactionType)x.TransactionType,
                         BlockHeight = x.BlockHeight,
                         TransactionHash = x.TransactionHash,
                         Amount = x.Amount,
@@ -353,23 +353,13 @@ namespace Nexplorer.Data.Query
             var addressId = await GetAddressIdAsync(addressHash);
 
             const string sqlQ = @"SELECT 
-                                  2 AS TxType,
-                                  tOut.[Amount],
+                                  tInOut.TransactionType,
+                                  tInOut.[Amount],
                                   t.[Timestamp]
-                                  FROM [dbo].[TransactionOutput] tOut
-                                  INNER JOIN [dbo].[Transaction] t On t.[TransactionId] = tOut.[TransactionId]
-                                  WHERE tOut.[AddressId] = @addressId
-                                  AND t.[Timestamp] >= @fromDate                         
-                                  UNION ALL
-                                  SELECT
-                                  1 AS TxType,
-                                  tIn.[Amount],
-                                  t.[Timestamp]
-                                  FROM [dbo].[TransactionInput] tIn
-                                  INNER JOIN [dbo].[Transaction] t On t.[TransactionId] = tIn.[TransactionId]
-                                  WHERE tIn.[AddressId] = @addressId
-                                  AND t.[Timestamp] >= @fromDate                         
-                                  ORDER BY Timestamp, TxType DESC";
+                                  FROM [dbo].[TransactionInputOutput] tInOut
+                                  INNER JOIN [dbo].[Transaction] t On t.[TransactionId] = tInOut.[TransactionId]
+                                  WHERE tInOut.[AddressId] = @addressId                         
+                                  ORDER BY t.[Timestamp], tInOut.[TransactionType] DESC";
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
@@ -380,14 +370,14 @@ namespace Nexplorer.Data.Query
                     .Select(x => new
                     {
                         ((DateTime)x.Timestamp).Date,
-                        Balance = (double)((int)x.TxType == 1 ? x.Amount : -x.Amount)
+                        Balance = (double)((int)x.TransactionType == (int)TransactionType.Input ? x.Amount : -x.Amount)
                     }).ToList();
                 
                 var cacheBalances = (await _blockCache.GetAddressTransactions(addressHash))
                     .Select(x => new
                     {
                         x.TimeUtc.Date,
-                        Balance = (int)x.TxType == 1 ? x.Amount : -x.Amount
+                        Balance = (int)x.TxType == (int)TransactionType.Input ? x.Amount : -x.Amount
                     }).ToList();
                 
                 var allBalances = dbBalances

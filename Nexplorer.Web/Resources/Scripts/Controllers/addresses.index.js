@@ -2,14 +2,13 @@
 import Vue from 'vue';
 import { HubConnectionBuilder, LogLevel } from '@aspnet/signalr';
 import moment from 'moment';
-import dt from 'datatables.net-bs4';
 
-import swiperVue from '../Library/swiperVue.js';
-import swiperVueSlide from '../Library/swiperVueSlide.js';
-import doughnutChart from '../Library/doughnutChartVue.js';
+import swiperVue from '../Library/swiperVue';
+import swiperVueSlide from '../Library/swiperVueSlide';
+import doughnutChart from '../Library/doughnutChartVue';
+import dataTableVue from '../Library/dataTableVue';
 
 import '../../Style/addresses.index.scss';
-import 'datatables.net-bs4/css/dataTables.bootstrap4.css'; 
 
 export class AddressIndexViewModel {
     constructor(options) {
@@ -25,8 +24,6 @@ export class AddressIndexViewModel {
                 percentageDormant: ' - ',
                 zeroBalance: ' - ',
                 currentFilter: 'all',
-                dataTable: null,
-                showDataTable: true,
                 filterCriteria: {
                     minBalance: null,
                     maxBalance: null,
@@ -36,6 +33,46 @@ export class AddressIndexViewModel {
                     isNexus: false,
                     orderBy: 0
                 },
+                addressTableAjaxUrl: '/addresses/getaddresses',
+                addressTableColumns: [
+                    {
+                        title: '',
+                        data: 'i',
+                        render: (data, type, row) => {
+                            return `<strong>${data}</strong>`;
+                        }
+                    },
+                    {
+                        title: '<span class="fa fa-hashtag"></span>',
+                        data: 'hash',
+                        render: (data, type, row) => {
+                            return `<a class="hidden-xs hidden-sm" href="/addresses/${data}">${data}</a>
+                                            <a class="visible-sm" href="/addresses/${data}">${this.vm.truncateHash(data, 32)}</a>
+                                            <a class="visible-xs" href="/addresses/${data}">${this.vm.truncateHash(data, 8)}</a>`;
+                        }
+                    },
+                    {
+                        title: '<span class="fa fa-bolt"></span>',
+                        data: 'interestRate',
+                        render: (data, type, row) => {
+                            return data ? `${data.toFixed(3).toLocaleString()}%` : '';
+                        }
+                    },
+                    {
+                        title: '<span class="fa fa-cube"></span>',
+                        data: 'lastBlockSeen',
+                        render: (data, type, row) => {
+                            return `<a href="/blocks/${data}">#${data}</a>`;
+                        }
+                    },
+                    {
+                        title: '<span class="fa fa-balance-scale"></span>',
+                        data: 'balance',
+                        render: (data, type, row) => {
+                            return `<strong>${parseFloat(data.toFixed(2)).toLocaleString()}</strong> <small>NXS</small>`;
+                        }
+                    }
+                ],
                 nxsDistributionChartData: {
                     labels: options.distributionBandData.map(function (x) {
                         return options.distributionBands[x.distributionBand];
@@ -95,7 +132,8 @@ export class AddressIndexViewModel {
                 Swiper: swiperVue,
                 SwiperSlide: swiperVueSlide,
                 NxsDistributionChart: doughnutChart,
-                AddressDistributionChart: doughnutChart
+                AddressDistributionChart: doughnutChart,
+                AddressTable: dataTableVue('all')
             },
             methods: {
                 updateStats(statDtoJson) {
@@ -116,15 +154,12 @@ export class AddressIndexViewModel {
                 changeFilter(newFilter) {
                     this.currentFilter = newFilter;
 
-                    if (this.currentFilter === 'custom') {
-                        this.showDataTable = false;
-                    } else {
-                        this.dataTable.ajax.reload();
-                        this.showDataTable = true;
+                    if (this.currentFilter !== 'custom') {
+                        this.reloadData();
                     }
                 },
-                filterCustom() {
-                    this.dataTable.ajax.reload();
+                reloadData() {
+                    this.$refs.addressTable.dataReload(this.currentFilter, this.filterCriteria);
                 },
                 truncateHash(hash, len) {
                     const start = hash.substring(0, len);
@@ -142,90 +177,6 @@ export class AddressIndexViewModel {
 
                 this.connection.start().then(() => {
                     this.connection.invoke('getLatestAddressStats').then((statsJson) => this.updateStats(statsJson));
-                });
-
-                $(() => {
-                    self.dataTable = $('#addressTable').DataTable({
-                        dom: '<"top"f>rt<"bottom"lp><"clear">',
-                        searching: false,
-                        ordering: false,
-                        responsive: true,
-                        serverSide: true,
-                        info: true,
-                        pagingType: "full",
-                        ajax: {
-                            url: 'addresses/getaddresses',
-                            type: 'POST',
-                            data: (data) => {
-                                data.filter = self.currentFilter;
-
-                                if (self.currentFilter === 'custom') {
-                                    data.filterCriteria = self.filterCriteria;
-                                }
-
-                                return data; 
-                            },
-                            dataFilter: (data) => {
-                                const obj = JSON.parse(data);
-                                const pageInfo = self.dataTable.page.info();
-
-                                if (!obj.data) {
-                                    return data;
-                                }
-
-                                if (self.currentFilter === 'custom') {
-                                    self.showDataTable = true;
-                                }
-
-                                for (let i = 0; i < obj.data.length; i++) {
-                                    obj.data[i].i = (i + 1) + (pageInfo.page * pageInfo.length);
-                                }
-
-                                return JSON.stringify(obj);
-                            },
-                            dataType: 'json'
-                        },
-                        order: [[2, 'dsc']],
-                        columns: [
-                            {
-                                title: '',
-                                data: 'i',
-                                render: (data, type, row) => {
-                                    return `<strong>${data}</strong>`;
-                                }
-                            },
-                            {
-                                title: '<span class="fa fa-hashtag"></span>',
-                                data: 'hash',
-                                render: (data, type, row) => {
-                                    return `<a class="hidden-xs hidden-sm" href="/addresses/${data}">${data}</a>
-                                            <a class="visible-sm" href="/addresses/${data}">${self.truncateHash(data, 32)}</a>
-                                            <a class="visible-xs" href="/addresses/${data}">${self.truncateHash(data, 8)}</a>`;
-                                }
-                            },
-                            {
-                                title: '<span class="fa fa-bolt"></span>',
-                                data: 'interestRate',
-                                render: (data, type, row) => {
-                                    return data ? `${data.toFixed(3).toLocaleString()}%` : '';
-                                }
-                            },
-                            {
-                                title: '<span class="fa fa-cube"></span>',
-                                data: 'lastBlockSeen',
-                                render: (data, type, row) => {
-                                    return `<a href="/blocks/${data}">#${data}</a>`;
-                                }
-                            },
-                            {
-                                title: '<span class="fa fa-balance-scale"></span>',
-                                data: 'balance',
-                                render: (data, type, row) => {
-                                    return `<strong>${parseFloat(data.toFixed(2)).toLocaleString()}</strong> <small>NXS</small>`;
-                                }
-                            }
-                        ]
-                    });
                 });
             }
         });

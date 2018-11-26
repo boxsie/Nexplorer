@@ -85,11 +85,11 @@
             <div class="row">
                 <div class="col-sm-4">
                     <h3>Received</h3>
-                    <p class="val">@Model.Address.ReceivedCount.ToString("N0")</p>
+                    <p class="val">@Model.Address.ReceivedCount.ToString("N2")</p>
                     <h3>Sent</h3>
-                    <p class="val">@Model.Address.SentCount.ToString("N0")</p>
+                    <p class="val">@Model.Address.SentCount.ToString("N2")</p>
                     <h3>Total</h3>
-                    <p class="val">@((Model.Address.ReceivedCount + Model.Address.SentCount).ToString("N0"))</p>
+                    <p class="val">@((Model.Address.ReceivedCount + Model.Address.SentCount).ToString("N2"))</p>
                 </div>
                 <div class="col-sm-8">
                     <h3>Received</h3>
@@ -178,36 +178,40 @@
         </div>
     </div>
 
-    <div id="sentReceiveButtons" class="form-group">
-        <div class="text-toggle">
-            <a href="#" v-on:click.prevent.stop="onScreenTxType = @((int) TransactionType.Both)" 
-                        v-bind:class="onScreenTxType == @((int) TransactionType.Both) ? 'active-link' : ''">Sent / Rec<span class="hidden-xs">eived</span></a>
-            <span class="toggle-seperator fa fa-ellipsis-v"></span>
-            <a href="#" v-on:click.prevent.stop="onScreenTxType = @((int) TransactionType.Input)" 
-                        v-bind:class="onScreenTxType == @((int) TransactionType.Input) ? 'active-link' : ''">Sent</a>
-            <span class="toggle-seperator fa fa-ellipsis-v"></span>
-            <a href="#" v-on:click.prevent.stop="onScreenTxType = @((int) TransactionType.Output)" 
-                        v-bind:class="onScreenTxType == @((int) TransactionType.Output) ? 'active-link' : ''">Received</a>
+    <div class="row">
+        <div class="col-sm-5">
+            <div id="sentReceiveButtons" class="form-group">
+                <div class="text-toggle">
+                    <a href="#" v-on:click.prevent.stop="getHistory(@((int) TransactionType.Both))"
+                       v-bind:class="currentFilter == @((int) TransactionType.Both) ? 'active-link' : ''">Sent / Rec<span class="hidden-xs">eived</span></a>
+                    <span class="toggle-seperator fa fa-ellipsis-v"></span>
+                    <a href="#" v-on:click.prevent.stop="getHistory(@((int) TransactionType.Input))"
+                       v-bind:class="currentFilter == @((int) TransactionType.Input) ? 'active-link' : ''">Sent</a>
+                    <span class="toggle-seperator fa fa-ellipsis-v"></span>
+                    <a href="#" v-on:click.prevent.stop="getHistory(@((int) TransactionType.Output))"
+                       v-bind:class="currentFilter == @((int) TransactionType.Output) ? 'active-link' : ''">Received</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-7 text-right-sm">
+            <form id="txFilter">
+                <div class="form-group">
+                    <h3>ORDER BY </h3>
+                    <select asp-items="Html.GetEnumSelectList<OrderTransactionsBy>()" v-on:change="reloadData()" class="form-control" v-model="filterCriteria.orderBy"></select>
+                    <br />
+                    <label for="isStaking">
+                        <input class="big-checkbox" type="checkbox" value="" id="isStaking" v-on:change="reloadData()" v-model="filterCriteria.isStakeReward">
+                        Include rewards
+                    </label>
+                </div>
+            </form>
         </div>
     </div>
 
-    <both-address-txs v-bind:address-hash="'@Model.Address.Hash'"
-                      v-bind:tx-type="@((int) TransactionType.Both)"
-                      v-bind:page-count="@Model.TxSentReceivedPageCount"
-                      v-bind:tx-per-page="@Model.TxPerPage"
-                      v-bind:on-screen-tx-type="onScreenTxType"></both-address-txs>
-
-    <sent-address-txs v-bind:address-hash="'@Model.Address.Hash'"
-                      v-bind:tx-type="@((int) TransactionType.Input)"
-                      v-bind:page-count="@Model.TxSentPageCount"
-                      v-bind:tx-per-page="@Model.TxPerPage"
-                      v-bind:on-screen-tx-type="onScreenTxType"></sent-address-txs>
-
-    <received-address-txs v-bind:address-hash="'@Model.Address.Hash'"
-                          v-bind:tx-type="@((int) TransactionType.Output)"
-                          v-bind:page-count="@Model.TxReceivedPageCount"
-                          v-bind:tx-per-page="@Model.TxPerPage"
-                          v-bind:on-screen-tx-type="onScreenTxType"></received-address-txs>
+    <transaction-table id="addressTxs" ref="txTable"
+                       :ajax-url="transactionTableAjaxUrl"
+                       :columns="transactionTableColumns"
+                       v-on:row-click="selectTransaction"></transaction-table>
 </div>
 
 @section Modals {

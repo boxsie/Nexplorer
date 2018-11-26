@@ -3,6 +3,13 @@ using Nexplorer.Domain.Enums;
 
 namespace Nexplorer.Domain.Dtos
 {
+    public class TransactionAddressDto
+    {
+        public TransactionType TransactionType { get; set; }
+        public string AddressHash { get; set; }
+        public int TransactionId { get; set; }
+    }
+
     public class TransactionInputOutputDto
     {
         public TransactionType TransactionType { get; set; }

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Nexplorer.Data.Context;
 
 namespace Nexplorer.Data.Migrations
 {
     [DbContext(typeof(NexusDb))]
-    partial class NexusDbModelSnapshot : ModelSnapshot
+    [Migration("20181116100429_AddIndexes")]
+    partial class AddIndexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -122,13 +124,9 @@ namespace Nexplorer.Data.Migrations
 
                     b.HasKey("TransactionId");
 
-                    b.HasIndex("Amount");
-
                     b.HasIndex("BlockHeight");
 
                     b.HasIndex("Hash");
-
-                    b.HasIndex("Timestamp");
 
                     b.ToTable("Transaction");
                 });
@@ -151,11 +149,7 @@ namespace Nexplorer.Data.Migrations
 
                     b.HasIndex("AddressId");
 
-                    b.HasIndex("Amount");
-
                     b.HasIndex("TransactionId");
-
-                    b.HasIndex("TransactionType");
 
                     b.ToTable("TransactionInputOutput");
                 });

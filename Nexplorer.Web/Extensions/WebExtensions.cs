@@ -90,7 +90,7 @@ namespace Nexplorer.Web.Extensions
             var minus = isNegative ? "-" : "";
 
             return val > 0 
-                ? $"{minus}{val:##,###.########}" 
+                ? $"{minus}{val:##,###.####}" 
                 : "0";
         }
 

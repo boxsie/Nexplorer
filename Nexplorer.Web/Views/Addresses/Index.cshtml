@@ -190,7 +190,7 @@
                                 All fields are optional, 1000 results maximum.
                             </small>
                             <br/>
-                            <button type="submit" class="btn btn-primary" v-on:click.prevent.stop="filterCustom">GO</button>
+                            <button type="submit" class="btn btn-primary" v-on:click.prevent.stop="reloadData">GO</button>
                         </div>
                     </div>
                 </form>
@@ -198,9 +198,9 @@
         </div>
     </div>
     
-    <div class="address-table" v-show="showDataTable">
-        <table id="addressTable" class="table table-striped" style="width:100%"></table>
-    </div>
+    <address-table ref="addressTable" class="address-table"
+                   :ajax-url="addressTableAjaxUrl"
+                   :columns="addressTableColumns"></address-table>
 </div>
 
 @section Scripts {

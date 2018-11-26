@@ -104,26 +104,6 @@ namespace Nexplorer.Web.Controllers
 
             return View(viewModel);
         }
-        
-        [HttpGet]
-        public async Task<IActionResult> GetAddressTxs(DataTablePostModel<TransactionFilterCriteria> model)
-        {
-            var count = model.Length > MaxAddressesPerFilterPage
-                ? MaxAddressesPerFilterPage
-                : model.Length;
-
-            var data = await _transactionQuery.GetTransactionsFilteredAsync(model.FilterCriteria, model.Start, count, false);
-
-            var response = new
-            {
-                Draw = model.Draw,
-                RecordsTotal = 0,
-                RecordsFiltered = data.ResultCount,
-                Data = data.Results
-            };
-
-            return Ok(response);
-        }
 
         [HttpGet]
         public async Task<IActionResult> GetAddressBalance(string addressHash, int days)
@@ -132,6 +112,58 @@ namespace Nexplorer.Web.Controllers
                 return BadRequest($"Amount of days ({days}) is not valid. It must be greater than 0 and less than 28");
 
             return Ok(await _addressQuery.GetAddressBalance(addressHash, days));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetAddressTxs(DataTablePostModel<TransactionFilterCriteria> model)
+        {
+            var txType = (TransactionType)int.Parse(model.Filter);
+
+            var count = model.Length > MaxAddressesPerFilterPage
+                ? MaxAddressesPerFilterPage
+                : model.Length;
+
+            var filterCriteria = model.FilterCriteria ?? new TransactionFilterCriteria();
+
+            var data = await _transactionQuery.GetTransactionsFilteredAsync(txType, filterCriteria, model.Start, count, true);
+
+            var txAddressHashes = await _transactionQuery.GetTransactionAddresses(data.Results.Select(x => x.TransactionId));
+
+            var response = new
+            {
+                Draw = model.Draw,
+                RecordsTotal = 0,
+                RecordsFiltered = data.ResultCount,
+                Data = data.Results.Select(x =>
+                {
+                    var inputOutputs = x.Inputs.Concat(x.Outputs).ToList();
+                    var addressHashes = txAddressHashes[x.TransactionId];
+                    var oppositeAddresses = addressHashes
+                        .Where(y => y.TransactionType != inputOutputs.First().TransactionType)
+                        .GroupBy(y => y.AddressHash)
+                        .Select(y => y.First())
+                        .ToList();
+                    
+                    return new
+                    {
+                        x.Hash,
+                        x.BlockHeight,
+                        x.Timestamp,
+                        x.Amount,
+                        InputOutputs = inputOutputs.Select(y => new
+                        {
+                            y.AddressHash,
+                            y.Amount,
+                            y.TransactionType,
+                            IsStakeReward = oppositeAddresses.Any(z => z.AddressHash == model.FilterCriteria.AddressHashes.First()),
+                            IsBlockReward = addressHashes.All(z => z.TransactionType != TransactionType.Input)
+                        }),
+                        OppositeAddresses = oppositeAddresses.Where(y => y.AddressHash != model.FilterCriteria.AddressHashes.First()),
+                    };
+                })
+            };
+
+            return Ok(response);
         }
 
         [HttpPost]

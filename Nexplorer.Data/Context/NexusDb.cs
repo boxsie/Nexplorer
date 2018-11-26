@@ -27,18 +27,26 @@ namespace Nexplorer.Data.Context
         {
             // Indexes
 
-            //modelBuilder.Entity<Block>()
-            //    .HasIndex(x => x.Hash);
+            modelBuilder.Entity<Block>()
+                .HasIndex(x => x.Hash);
 
-            //modelBuilder.Entity<Transaction>()
-            //    .HasIndex(x => x.Hash);
+            modelBuilder.Entity<Transaction>()
+                .HasIndex(x => x.Hash);
+            modelBuilder.Entity<Transaction>()
+                .HasIndex(x => x.Timestamp);
+            modelBuilder.Entity<Transaction>()
+                .HasIndex(x => x.Amount);
 
-            //modelBuilder.Entity<Address>()
-            //    .HasIndex(x => x.Hash);
+            modelBuilder.Entity<TransactionInputOutput>()
+                .HasIndex(x => x.TransactionType);
+            modelBuilder.Entity<TransactionInputOutput>()
+                .HasIndex(x => x.Amount);
 
-            //modelBuilder.Entity<AddressAggregate>()
-            //    .HasIndex(x => x.Balance);
+            modelBuilder.Entity<Address>()
+                .HasIndex(x => x.Hash);
 
+            modelBuilder.Entity<AddressAggregate>()
+                .HasIndex(x => x.Balance);
 
             // Relationships
 

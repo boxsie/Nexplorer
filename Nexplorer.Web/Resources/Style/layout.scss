@@ -543,12 +543,42 @@ body, h1, h2, h3, h4, h5, h6, p {
         vertical-align: middle;
     }
 }
+/**/
+
+
+/* Collapsable read more */
+.read-more {
+    ul.collapse:not(.show) {
+        height: 40px !important;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    ul.collapsing {
+        min-height: 40px !important;
+    }
+
+    .expand-link {
+        &.collapsed:after {
+            position: relative;
+            content: '+ Show more';
+        }
+
+        &:not(.collapsed):after {
+            position: relative;
+            content: '- Show Less';
+        }
+    }
+}
+/**/
 
 @media(min-width: 768px) {
     .text-right-xs {
         text-align: left;
     }
-    
+
     .text-right-sm {
         text-align: right;
     }
@@ -720,7 +750,6 @@ body, h1, h2, h3, h4, h5, h6, p {
         }
     }
 }
-
 /*Animations*/
 .animated-single {
     animation-fill-mode: both;

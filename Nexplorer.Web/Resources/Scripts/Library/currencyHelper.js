@@ -9,36 +9,39 @@
     },
     computed: {
         currencyOutput() {
-            return this.currencySymbol + this.currencyValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const val = this.currencyValue.toLocaleString(undefined,
+                { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            return `${this.currencySymbol} ${val}`;
         }
     },
     methods: {
         setCurrency() {
             switch (this.currencyIndex) {
-                case 'USD':
-                    this.currencySymbol = '$';
-                    this.currencyClass = '';
-                    break;
-                case 'GBP':
-                    this.currencySymbol = '£';
-                    this.currencyClass = '';
-                    break;
-                case 'EUR':
-                    this.currencySymbol = '€';
-                    this.currencyClass = '';
-                    break;
-                case 'AUD':
-                    this.currencySymbol = '$';
-                    this.currencyClass = '';
-                    break;
-                case 'BTC':
-                    this.currencySymbol = '';
-                    this.currencyClass = 'fa fa-btc';
-                    break;
-                default:
-                    this.currencySymbol = '$';
-                    this.currencyClass = '';
-                    break;
+            case 'USD':
+                this.currencySymbol = '$';
+                this.currencyClass = '';
+                break;
+            case 'GBP':
+                this.currencySymbol = '£';
+                this.currencyClass = '';
+                break;
+            case 'EUR':
+                this.currencySymbol = '€';
+                this.currencyClass = '';
+                break;
+            case 'AUD':
+                this.currencySymbol = '$';
+                this.currencyClass = '';
+                break;
+            case 'BTC':
+                this.currencySymbol = '';
+                this.currencyClass = 'fa fa-btc';
+                break;
+            default:
+                this.currencySymbol = '$';
+                this.currencyClass = '';
+                break;
             }
         }
     },

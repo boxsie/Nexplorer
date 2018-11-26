@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
 using Nexplorer.Data.Command;
 using Nexplorer.Data.Context;
+using Nexplorer.Data.Query;
+using Nexplorer.Domain.Entity.Blockchain;
 using Nexplorer.Domain.Enums;
 
 namespace Nexplorer.Sync.Nexus

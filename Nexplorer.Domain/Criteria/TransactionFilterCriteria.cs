@@ -30,11 +30,8 @@ namespace Nexplorer.Domain.Criteria
         [JsonProperty("isMiningReward")]
         public bool IsBlockReward { get; set; }
 
-        [JsonProperty("fromAddressHashes")]
-        public string[] FromAddressHashes { get; set; }
-
-        [JsonProperty("toAddressHashes")]
-        public string[] ToAddressHashes { get; set; }
+        [JsonProperty("addressHashes")]
+        public string[] AddressHashes { get; set; }
 
         [JsonProperty("fromAddress")]
         public OrderTransactionsBy OrderBy { get; set; }

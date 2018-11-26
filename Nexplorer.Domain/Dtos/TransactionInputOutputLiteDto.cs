@@ -1,3 +1,4 @@
+using Nexplorer.Domain.Enums;
 using ProtoBuf;
 
 namespace Nexplorer.Domain.Dtos
@@ -10,5 +11,8 @@ namespace Nexplorer.Domain.Dtos
 
         [ProtoMember(2)]
         public double Amount { get; set; }
+
+        [ProtoMember(3)]
+        public TransactionType TransactionType { get; set; }
     }
 }
