@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Dapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
@@ -24,6 +26,27 @@ namespace Nexplorer.Sync.Nexus
         private double _totalSeconds;
         private int _iterationCount;
 
+        private readonly string _nullRewardSelectSqlQ = $@"
+            SELECT TOP {Settings.App.BulkSaveCount}
+            t.[BlockHeight]
+            FROM [dbo].[Transaction] t
+            WHERE t.[RewardType] IS NULL";
+
+        private const string BlockSelectSqlQ = @"
+            SELECT 
+            TOP 1
+            b.[Channel],
+            t.[TransactionId]
+            FROM [dbo].[Block] b
+            INNER JOIN [dbo].[Transaction] t ON t.BlockHeight = b.Height
+            WHERE b.[Height] = @BlockHeight";
+
+        private const string TxUpdateSql = @"
+            UPDATE [dbo].[Transaction]  
+            SET
+            [RewardType] = @RewardType
+            WHERE [TransactionId] = @TransactionId";
+
         public BlockRewardCatchup(ILogger<BlockRewardCatchup> logger, NexusDb nexusDb, BlockQuery blockQuery)
         {
             _logger = logger;
@@ -39,54 +62,52 @@ namespace Nexplorer.Sync.Nexus
 
             var totalNulls = await _nexusDb.Transactions.CountAsync(x => x.RewardType == null);
             var nullsReplaced = 0;
-            var nullRewards = await GetNullRewardTransactions();
 
-            while (nullRewards.Any())
+            while (nullsReplaced < totalNulls)
             {
-                _logger.LogInformation($"Updating reward type for {nullRewards.Count} transactions");
-
                 _stopwatch.Restart();
 
-                foreach (var tx in nullRewards)
+                using (var con = new SqlConnection(Settings.Connection.NexusDb))
                 {
-                    var block = await _blockQuery.GetBlockAsync(tx.BlockHeight);
+                    await con.OpenAsync();
 
-                    var firstTx = block.Transactions.First();
-
-                    var rewardType = BlockRewardType.None;
-
-                    if (firstTx.TransactionId == tx.TransactionId)
+                    using (var trans = con.BeginTransaction())
                     {
-                        rewardType = ((BlockChannels) block.Channel) == BlockChannels.PoS
-                            ? BlockRewardType.Staking
-                            : BlockRewardType.Mining;
+                        var nullRewards = (await con.QueryAsync(_nullRewardSelectSqlQ, null, trans)).ToList();
+
+                        _logger.LogInformation($"Updating reward type for {nullRewards.Count} transactions");
+
+                        foreach (var tx in nullRewards)
+                        {
+                            var txId = (await con.QueryAsync(BlockSelectSqlQ, new {tx.BlockHeight}, trans)).FirstOrDefault();
+
+                            if (txId == null)
+                                throw new NullReferenceException();
+
+                            var rewardType = BlockRewardType.None;
+
+                            if (txId.TransactionId == tx.TransactionId)
+                            {
+                                rewardType = ((BlockChannels)txId.Channel) == BlockChannels.PoS
+                                    ? BlockRewardType.Staking
+                                    : BlockRewardType.Mining;
+                            }
+
+                            await con.ExecuteAsync(TxUpdateSql, new {txId.TransactionId, RewardType = rewardType}, trans);
+
+                            nullsReplaced++;
+
+                            Console.Write($"\rUpdating reward txs... {LogProgress(nullsReplaced, totalNulls, out var blockPct)} {blockPct:N4}% ({nullsReplaced:N0}/{totalNulls:N0})");
+                        }
+
+                        trans.Commit();
+
+                        Console.WriteLine();
+
+                        LogTimeTaken(totalNulls - nullRewards.Count, _stopwatch.Elapsed);
                     }
-
-                    tx.RewardType = rewardType;
-                    
-                    _nexusDb.Update(tx);
-
-                    nullsReplaced++;
-
-                    Console.Write($"\rUpdating reward txs... {LogProgress(nullsReplaced, totalNulls, out var blockPct)} {blockPct:N4}% ({nullsReplaced:N0}/{totalNulls:N0})");
                 }
-
-                Console.WriteLine();
-
-                await _nexusDb.SaveChangesAsync();
-
-                LogTimeTaken(totalNulls - nullRewards.Count, _stopwatch.Elapsed);
-
-                nullRewards = await GetNullRewardTransactions();
             }
-        }
-
-        private async Task<List<Transaction>> GetNullRewardTransactions()
-        {
-            return await _nexusDb.Transactions
-                .Where(x => x.RewardType == null)
-                .Take(Settings.App.BulkSaveCount)
-                .ToListAsync();
         }
 
         private void LogTimeTaken(int syncDelta, TimeSpan timeTaken)
