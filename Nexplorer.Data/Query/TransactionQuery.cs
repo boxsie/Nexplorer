@@ -97,12 +97,13 @@ namespace Nexplorer.Data.Query
                           t.[BlockHeight],
                           t.[Timestamp],
                           t.[Amount] AS Total,
+                          t.[RewardType],
                           tInOut.[TransactionType],
                           tInOut.[Amount] AS InputOutputAmount,
                           a.[Hash] AS AddressHash
                           {from}
-                          {where}                    
-                          {sqlOrderBy}
+                          {where}                                          
+                          {sqlOrderBy}                           
                           OFFSET @start ROWS FETCH NEXT @count ROWS ONLY;";
 
             var sqlC = $@"SELECT 
@@ -170,6 +171,7 @@ namespace Nexplorer.Data.Query
                         Amount = (double)rawTx.Total,
                         BlockHeight = (int)rawTx.BlockHeight,
                         Timestamp = (DateTime)rawTx.Timestamp,
+                        RewardType = (BlockRewardType)rawTx.RewardType,
                         Inputs = new List<TransactionInputOutputLiteDto>(),
                         Outputs = new List<TransactionInputOutputLiteDto>()
                     };
@@ -265,6 +267,21 @@ namespace Nexplorer.Data.Query
                 var addressHashes = filter.AddressHashes;
                 param.Add(nameof(addressHashes), addressHashes);
                 whereClause.Append("AND a.[Hash] IN @addressHashes ");
+            }
+            
+            if (filter.IsStakeReward.HasValue || filter.IsMiningReward.HasValue)
+            {
+                var isMiningOp = filter.IsMiningReward.HasValue ? (filter.IsMiningReward.Value ? "=" : "<>") : "";
+                var isStakingOp = filter.IsStakeReward.HasValue ? (filter.IsStakeReward.Value ? "=" : "<>") : "";
+
+                if (filter.IsStakeReward.HasValue && filter.IsMiningReward.HasValue)
+                {
+                    whereClause.Append($@"AND (t.[RewardType] {isMiningOp} {(int) BlockRewardType.Mining} {(filter.IsStakeReward.Value && filter.IsMiningReward.Value ? "OR" : "AND")} t.[RewardType] {isStakingOp} {(int) BlockRewardType.Staking}) ");
+                }
+                else if (filter.IsStakeReward.HasValue)
+                    whereClause.Append($"AND t.[RewardType] {isStakingOp} {(int)BlockRewardType.Mining} ");
+                else
+                    whereClause.Append($"AND t.[RewardType] {isMiningOp} {(int)BlockRewardType.Staking} ");
             }
 
             return whereClause.ToString();

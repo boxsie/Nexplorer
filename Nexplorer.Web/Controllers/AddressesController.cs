@@ -150,13 +150,13 @@ namespace Nexplorer.Web.Controllers
                         x.BlockHeight,
                         x.Timestamp,
                         x.Amount,
+                        IsStakingReward = x.RewardType == BlockRewardType.Staking,
+                        IsMiningReward = x.RewardType == BlockRewardType.Mining,
                         InputOutputs = inputOutputs.Select(y => new
                         {
                             y.AddressHash,
                             y.Amount,
-                            y.TransactionType,
-                            IsStakeReward = oppositeAddresses.Any(z => z.AddressHash == model.FilterCriteria.AddressHashes.First()),
-                            IsBlockReward = addressHashes.All(z => z.TransactionType != TransactionType.Input)
+                            y.TransactionType
                         }),
                         OppositeAddresses = oppositeAddresses.Where(y => y.AddressHash != model.FilterCriteria.AddressHashes.First()),
                     };

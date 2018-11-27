@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Nexplorer.Domain.Enums;
 using ProtoBuf;
 
 namespace Nexplorer.Domain.Dtos
@@ -26,9 +27,12 @@ namespace Nexplorer.Domain.Dtos
         public double Amount { get; set; }
 
         [ProtoMember(7)]
-        public List<TransactionInputOutputLiteDto> Inputs { get; set; }
+        public BlockRewardType RewardType { get; set; }
 
         [ProtoMember(8)]
+        public List<TransactionInputOutputLiteDto> Inputs { get; set; }
+
+        [ProtoMember(9)]
         public List<TransactionInputOutputLiteDto> Outputs { get; set; }
 
         public TransactionDto()

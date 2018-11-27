@@ -136,15 +136,15 @@
             padding-left: 5px;
         }
 
-        label {
-            margin-top: 5px;
-            margin-left: 10px;
-            font-weight: 400;
+        .reward-radios {
+        }
 
-            input {
-                position: relative;
-                top: 2px;
-            }
+        label {
+            font-weight: 400;
+            margin-right: 10px;
+            margin-top: 10px;
+            position: relative;
+            top: -2px;
         }
     }
 }

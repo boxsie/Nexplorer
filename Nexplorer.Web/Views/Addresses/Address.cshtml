@@ -199,10 +199,12 @@
                     <h3>ORDER BY </h3>
                     <select asp-items="Html.GetEnumSelectList<OrderTransactionsBy>()" v-on:change="reloadData()" class="form-control" v-model="filterCriteria.orderBy"></select>
                     <br />
-                    <label for="isStaking">
-                        <input class="big-checkbox" type="checkbox" value="" id="isStaking" v-on:change="reloadData()" v-model="filterCriteria.isStakeReward">
-                        Include rewards
-                    </label>
+                    <input v-on:change="reloadData()" type="radio" id="includeRewardsBoth" value="0" v-model="includeRewards">
+                    <label for="includeRewardsBoth">All</label>
+                    <input v-on:change="reloadData()" type="radio" id="includeRewardsOnly" value="1" v-model="includeRewards">
+                    <label for="includeRewardsOnly">Only rewards</label>
+                    <input v-on:change="reloadData()" type="radio" id="includeRewardsNone" value="2" v-model="includeRewards">
+                    <label for="includeRewardsNone">Only transactions</label>
                 </div>
             </form>
         </div>

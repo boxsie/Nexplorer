@@ -48,7 +48,8 @@ namespace Nexplorer.Data.Map
                     .ForMember(d => d.Inputs, o => o.MapFrom(s => MapTxInOutDto(s.Inputs)))
                     .ForMember(d => d.Outputs, o => o.MapFrom(s => MapTxInOutDto(s.Outputs)))
                     .ForMember(d => d.TransactionId, o => o.Ignore())
-                    .ForMember(d => d.BlockHeight, o => o.Ignore());
+                    .ForMember(d => d.BlockHeight, o => o.Ignore())
+                    .ForMember(d => d.RewardType, o => o.Ignore());
 
                 x.CreateMap<InfoResponse, NexusInfoDto>()
                     .ForMember(d => d.TimeStampUtc, o => o.MapFrom(s => Helpers.ToDateTime(s.TimeStamp)));

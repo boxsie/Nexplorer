@@ -21,8 +21,8 @@ export class AddressViewModel {
             heightTo: null,
             utcFrom: null,
             utcTo: null,
-            isStakeReward: false,
-            isMiningReward: false,
+            isStakeReward: null,
+            isMiningReward: null,
             addressHashes: [options.addressHash],
             orderBy: 0
         };
@@ -43,6 +43,7 @@ export class AddressViewModel {
                 waitingForFavouriteResponse: false,
                 currentFilter: defaultFilter,
                 filterCriteria: defaultCriteria,
+                includeRewards: 0,
                 transactionTableAjaxUrl: '/addresses/getaddresstxs',
                 transactionTableColumns: [
                     {
@@ -102,14 +103,14 @@ export class AddressViewModel {
                         title: '<span class="fa fa-exchange"></span>',
                         className: 'in-out-col',
                         data: 'inputOutputs',
-                        width: '5',
+                        width: '5%',
                         render: (data, type, row) => {
                             var dataFirst = data[0];
                             var icon = '';
 
-                            if (dataFirst.isStakeReward) {
+                            if (row.isStakingReward) {
                                 icon = 'fa-bolt stake';
-                            } else if (dataFirst.isBlockReward) {
+                            } else if (row.IsMiningReward) {
                                 icon = 'fa-cube mining';
                             } else if (dataFirst.transactionType === 1) {
                                 icon = 'fa-arrow-left red';
@@ -117,7 +118,7 @@ export class AddressViewModel {
                                 icon = 'fa-arrow-right green';
                             }
 
-                            const txCount = !dataFirst.isStakeReward && !dataFirst.isBlockReward && data.length > 1 ? `<span>(${data.length})</span>` : ' ';
+                            const txCount = !row.isStakingReward && !row.IsMiningReward && data.length > 1 ? `<span>(${data.length})</span>` : ' ';
 
                             return `<span class="fa ${icon} tx-type-icon"></span> ${txCount}`;
                         }
@@ -131,9 +132,9 @@ export class AddressViewModel {
                             var amounts = '<ul class="list">';
                             var dFirst = data[0];
 
-                            if (dFirst.isStakeReward) {
+                            if (row.isStakingReward) {
                                 amounts += `<li><strong>+${parseFloat((data[1].amount - dFirst.amount).toFixed(4)).toLocaleString()}</strong> <small>NXS</small></li>`;
-                            } else if (dFirst.isBlockReward) {
+                            } else if (row.IsMiningReward) {
                                 amounts += `<li><strong>${parseFloat(dFirst.amount.toFixed(4)).toLocaleString()}</strong> <small>NXS</small></li>`;
                             } else {
                                 const sub = dFirst.transactionType === 1 ? '-' : '';
@@ -188,7 +189,21 @@ export class AddressViewModel {
                     }
                 },
                 reloadData() {
-                    console.log(this.filterCriteria);
+                    switch (this.includeRewards) {
+                        case '0':
+                            this.filterCriteria.isStakeReward = null;
+                            this.filterCriteria.isMiningReward = null;
+                            break;
+                        case '1':
+                            this.filterCriteria.isStakeReward = true;
+                            this.filterCriteria.isMiningReward = true;
+                            break;
+                        case '2':
+                            this.filterCriteria.isStakeReward = false;
+                            this.filterCriteria.isMiningReward = false;
+                            break;
+                    }
+
                     this.$refs.txTable.dataReload(this.currentFilter, this.filterCriteria);
                 },
                 truncateHash(hash, len) {

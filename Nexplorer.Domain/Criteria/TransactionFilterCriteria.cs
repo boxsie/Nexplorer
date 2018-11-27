@@ -25,10 +25,10 @@ namespace Nexplorer.Domain.Criteria
         public DateTime? UtcTo { get; set; }
 
         [JsonProperty("isStakeReward")]
-        public bool IsStakeReward { get; set; }
+        public bool? IsStakeReward { get; set; }
         
         [JsonProperty("isMiningReward")]
-        public bool IsBlockReward { get; set; }
+        public bool? IsMiningReward { get; set; }
 
         [JsonProperty("addressHashes")]
         public string[] AddressHashes { get; set; }
