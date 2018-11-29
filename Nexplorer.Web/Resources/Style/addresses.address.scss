@@ -150,11 +150,15 @@
 }
 
 #addressTxs {
-    tbody tr {
-        cursor: pointer;
+    #dataTable {
+        tbody {
+            tr {
+                cursor: pointer;
 
-        &:hover {
-            background-color: lighten($primary, 37%);
+                &:hover {
+                    background-color: lighten($primary, 37%);
+                }
+            }
         }
     }
 

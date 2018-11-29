@@ -63,7 +63,7 @@ namespace Nexplorer.Sync.Nexus
             var dbHeight = await _nexusDb.Blocks.CountAsync();
             var currentHeight = 1;
 
-            while (currentHeight <= (dbHeight - Settings.App.BlockCacheCount))
+            while (currentHeight <= dbHeight)
             {
                 _stopwatch.Restart();
 
