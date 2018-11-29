@@ -39,7 +39,7 @@ namespace Nexplorer.Data.Command
             SELECT a.AddressId
             FROM [dbo].[Address] a
             WHERE a.Hash = @Hash";
-        
+
         public static async Task<List<Block>> InsertBlocksAsync(this List<BlockDto> blockDtos)
         {
             var blocks = new List<Block>();
@@ -57,17 +57,18 @@ namespace Nexplorer.Data.Command
                         var block = MapBlock(blockDto);
                         await InsertBlockAsync(con, trans, block);
 
-                        block.Transactions = MapTransactions(blockDto.Transactions, (BlockChannels)block.Channel).ToList();
-                        var txIds = await InsertTransactionsAsync(con, trans, block.Transactions);
+                        block.Transactions = MapTransactions(blockDto.Transactions).ToList();
 
                         var txInOutDtos = blockDto.Transactions.SelectMany(x => x.Inputs.Concat(x.Outputs)).ToList();
-
                         var addressesCache = await InsertAddressesAsync(con, trans, txInOutDtos, block.Height);
+                        var txIds = await InsertTransactionsAsync(con, trans, block.Transactions);
+
+                        SetTransactionRewardTypes(blockDto.Transactions, (BlockChannels)blockDto.Channel);
 
                         var txInsOuts = blockDto.Transactions
                             .SelectMany((x, i) => MapTransactionInputOutputs(x, addressesCache, txIds[i]))
                             .ToList();
-                        
+
                         await InsertTransactionInputOutputsAsync(con, trans, txInsOuts);
 
                         for (var i = 0; i < block.Transactions.Count; i++)
@@ -93,9 +94,9 @@ namespace Nexplorer.Data.Command
 
         private static void LogProgress(int i, int total)
         {
-            var pct = ((double)i / total) * 100;
+            var pct = ((double) i / total) * 100;
 
-            var progress = Math.Floor((double)pct / 5);
+            var progress = Math.Floor((double) pct / 5);
             var bar = "";
 
             for (var o = 0; o < 20; o++)
@@ -126,7 +127,8 @@ namespace Nexplorer.Data.Command
             }, trans);
         }
 
-        private static async Task<List<int>> InsertTransactionsAsync(IDbConnection sqlCon, IDbTransaction trans, IEnumerable<Transaction> txs)
+        private static async Task<List<int>> InsertTransactionsAsync(IDbConnection sqlCon, IDbTransaction trans,
+            IEnumerable<Transaction> txs)
         {
             var txIds = new List<int>();
 
@@ -151,20 +153,22 @@ namespace Nexplorer.Data.Command
             return txIds;
         }
 
-        private static async Task<Dictionary<string, int>> InsertAddressesAsync(IDbConnection sqlCon, IDbTransaction trans, IEnumerable<TransactionInputOutputLiteDto> txInOuts, int blockHeight)
+        private static async Task<Dictionary<string, int>> InsertAddressesAsync(IDbConnection sqlCon,
+            IDbTransaction trans, IEnumerable<TransactionInputOutputLiteDto> txInOuts, int blockHeight)
         {
             var addressCache = new Dictionary<string, int>();
             var addressHashes = txInOuts.Select(y => y.AddressHash).Distinct();
 
             foreach (var addressHash in addressHashes)
             {
-                var selectResult = await sqlCon.QueryAsync<int>(AddressSelectSql, new { Hash = addressHash }, trans);
+                var selectResult = await sqlCon.QueryAsync<int>(AddressSelectSql, new {Hash = addressHash}, trans);
 
                 var id = selectResult.FirstOrDefault();
 
                 if (id == 0)
                 {
-                    var insertResult = await sqlCon.QueryAsync<int>(AddressInsertSql, new { Hash = addressHash, BlockHeight = blockHeight }, trans);
+                    var insertResult = await sqlCon.QueryAsync<int>(AddressInsertSql,
+                        new {Hash = addressHash, BlockHeight = blockHeight}, trans);
 
                     id = insertResult.Single();
                 }
@@ -175,7 +179,8 @@ namespace Nexplorer.Data.Command
             return addressCache;
         }
 
-        private static async Task InsertTransactionInputOutputsAsync(IDbConnection sqlCon, IDbTransaction trans, IEnumerable<TransactionInputOutput> txInOuts)
+        private static async Task InsertTransactionInputOutputsAsync(IDbConnection sqlCon, IDbTransaction trans,
+            IEnumerable<TransactionInputOutput> txInOuts)
         {
             await sqlCon.ExecuteAsync(TxInOutInsertSql, txInOuts.Select(x => new
             {
@@ -204,23 +209,19 @@ namespace Nexplorer.Data.Command
             };
         }
 
-        private static IEnumerable<Transaction> MapTransactions(IEnumerable<TransactionDto> txDtos, BlockChannels blockChannel)
+        private static IEnumerable<Transaction> MapTransactions(IEnumerable<TransactionDto> txDtos)
         {
             return txDtos.Select((x, i) => new Transaction
             {
                 Amount = x.Amount,
                 BlockHeight = x.BlockHeight,
                 Hash = x.Hash,
-                Timestamp = x.Timestamp,
-                RewardType = i == 0 
-                    ? blockChannel == BlockChannels.PoS 
-                        ? BlockRewardType.Staking 
-                        : BlockRewardType.Mining 
-                    : BlockRewardType.None
+                Timestamp = x.Timestamp
             });
         }
 
-        private static IEnumerable<TransactionInputOutput> MapTransactionInputOutputs(TransactionDto txDto, IReadOnlyDictionary<string, int> addressCache, int transactionId)
+        private static IEnumerable<TransactionInputOutput> MapTransactionInputOutputs(TransactionDto txDto,
+            IReadOnlyDictionary<string, int> addressCache, int transactionId)
         {
             return txDto.Inputs
                 .Select(y => new TransactionInputOutput
@@ -237,6 +238,32 @@ namespace Nexplorer.Data.Command
                         TransactionType = TransactionType.Output,
                         AddressId = addressCache[y.AddressHash]
                     }));
+        }
+
+        private static void SetTransactionRewardTypes(IReadOnlyList<TransactionDto> txs, BlockChannels channel)
+        {
+            for (var i = 0; i < txs.Count; i++)
+            {
+                var tx = txs[i];
+
+                switch (i)
+                {
+                    case 0 when channel == BlockChannels.PoS:
+                        if (tx.Inputs.Any() && tx.Outputs.Any() && tx.Outputs.Count == 1)
+                        {
+                            if (tx.Inputs.Any(x => tx.Outputs.First().AddressHash == x.AddressHash))
+                                tx.RewardType = BlockRewardType.Staking;
+                        }
+
+                        break;
+                    case 0:
+                        tx.RewardType = BlockRewardType.Mining;
+                        break;
+                    default:
+                        tx.RewardType = BlockRewardType.None;
+                        break;
+                }
+            }
         }
     }
 }

@@ -142,7 +142,7 @@ export class AddressViewModel {
                             } else if (row.IsMiningReward) {
                                 amounts += `<li><strong>${parseFloat(dFirst.amount.toFixed(4)).toLocaleString()}</strong> <small>NXS</small></li>`;
                             } else {
-                                const sub = dFirst.transactionType === 1 ? '-' : '';
+                                const sub = dFirst.transactionType === 1 ? '-' : '+';
                                 amounts += `<li><strong>${sub}${parseFloat(data.reduce((a, b) => +a + +b.amount.toFixed(4), 0)).toLocaleString()}</strong> <small>NXS</small></li>`;
                             }
 
