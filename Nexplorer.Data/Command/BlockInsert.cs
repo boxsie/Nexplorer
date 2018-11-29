@@ -212,7 +212,11 @@ namespace Nexplorer.Data.Command
                 BlockHeight = x.BlockHeight,
                 Hash = x.Hash,
                 Timestamp = x.Timestamp,
-                RewardType = i == 0 ? blockChannel == BlockChannels.PoS ? BlockRewardType.Staking : BlockRewardType.Mining : BlockRewardType.Mining
+                RewardType = i == 0 
+                    ? blockChannel == BlockChannels.PoS 
+                        ? BlockRewardType.Staking 
+                        : BlockRewardType.Mining 
+                    : BlockRewardType.None
             });
         }
 

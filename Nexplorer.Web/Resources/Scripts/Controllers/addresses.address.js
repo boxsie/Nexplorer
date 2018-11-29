@@ -95,7 +95,9 @@ export class AddressViewModel {
 
                                 return txAddressHashes;
                             } else {
-                                return '<span>Reward transaction</span>';
+                                const rewardName = row.isMiningReward ? 'Coinbase' : 'Coinstake';
+
+                                return `<span>${rewardName} reward</span>`;
                             }
                         }
                     },
@@ -110,7 +112,7 @@ export class AddressViewModel {
 
                             if (row.isStakingReward) {
                                 icon = 'fa-bolt stake';
-                            } else if (row.IsMiningReward) {
+                            } else if (row.isMiningReward) {
                                 icon = 'fa-cube mining';
                             } else if (dataFirst.transactionType === 1) {
                                 icon = 'fa-arrow-left red';
