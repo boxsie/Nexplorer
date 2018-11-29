@@ -120,7 +120,7 @@ export class AddressViewModel {
                                 icon = 'fa-arrow-right green';
                             }
 
-                            const txCount = !row.isStakingReward && !row.IsMiningReward && data.length > 1 ? `<span>(${data.length})</span>` : ' ';
+                            const txCount = data.length > 1 ? `<span>(${data.length})</span>` : ' ';
 
                             return `<span class="fa ${icon} tx-type-icon"></span> ${txCount}`;
                         }
@@ -135,7 +135,10 @@ export class AddressViewModel {
                             var dFirst = data[0];
 
                             if (row.isStakingReward) {
-                                amounts += `<li><strong>+${parseFloat((data[1].amount - dFirst.amount).toFixed(4)).toLocaleString()}</strong> <small>NXS</small></li>`;
+                                const stakeAmount = data[1] ? (parseFloat(data[1].amount) - parseFloat(dFirst.amount)) : parseFloat(dFirst.amount);
+                                const addOrSub = this.vm.currentFilter === 1 ? '-' : '+';
+
+                                amounts += `<li><strong>${addOrSub}${stakeAmount.toLocaleString()}</strong> <small>NXS</small></li>`;
                             } else if (row.IsMiningReward) {
                                 amounts += `<li><strong>${parseFloat(dFirst.amount.toFixed(4)).toLocaleString()}</strong> <small>NXS</small></li>`;
                             } else {

@@ -85,11 +85,11 @@
             <div class="row">
                 <div class="col-sm-4">
                     <h3>Received</h3>
-                    <p class="val">@Model.Address.ReceivedCount.ToString("N2")</p>
+                    <p class="val">@Model.Address.ReceivedCount.ToString("N0")</p>
                     <h3>Sent</h3>
-                    <p class="val">@Model.Address.SentCount.ToString("N2")</p>
+                    <p class="val">@Model.Address.SentCount.ToString("N0")</p>
                     <h3>Total</h3>
-                    <p class="val">@((Model.Address.ReceivedCount + Model.Address.SentCount).ToString("N2"))</p>
+                    <p class="val">@((Model.Address.ReceivedCount + Model.Address.SentCount).ToString("N0"))</p>
                 </div>
                 <div class="col-sm-8">
                     <h3>Received</h3>
