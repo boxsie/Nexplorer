@@ -41,6 +41,7 @@ export default (defaultFilter, defaultCriteria, pagingType) => {
                     serverSide: true,
                     info: true,
                     pagingType: pagingType,
+                    lengthMenu: [10, 30, 50, 100],
                     ajax: {
                         url: self.ajaxUrl,
                         type: 'POST',

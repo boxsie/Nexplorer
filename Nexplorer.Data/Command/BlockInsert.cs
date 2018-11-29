@@ -63,7 +63,7 @@ namespace Nexplorer.Data.Command
                         var addressesCache = await InsertAddressesAsync(con, trans, txInOutDtos, block.Height);
                         var txIds = await InsertTransactionsAsync(con, trans, block.Transactions);
 
-                        SetTransactionRewardTypes(blockDto.Transactions, (BlockChannels)blockDto.Channel);
+                        SetTransactionRewardTypes(block.Transactions, blockDto.Transactions, (BlockChannels)blockDto.Channel);
 
                         var txInsOuts = blockDto.Transactions
                             .SelectMany((x, i) => MapTransactionInputOutputs(x, addressesCache, txIds[i]))
@@ -240,18 +240,19 @@ namespace Nexplorer.Data.Command
                     }));
         }
 
-        private static void SetTransactionRewardTypes(IReadOnlyList<TransactionDto> txs, BlockChannels channel)
+        private static void SetTransactionRewardTypes(IReadOnlyList<Transaction> txs, IReadOnlyList<TransactionDto> txDtos, BlockChannels channel)
         {
             for (var i = 0; i < txs.Count; i++)
             {
                 var tx = txs[i];
+                var txDto = txDtos[i];
 
                 switch (i)
                 {
                     case 0 when channel == BlockChannels.PoS:
-                        if (tx.Inputs.Any() && tx.Outputs.Any() && tx.Outputs.Count == 1)
+                        if (txDto.Inputs.Any() && txDto.Outputs.Any() && txDto.Outputs.Count == 1)
                         {
-                            if (tx.Inputs.Any(x => tx.Outputs.First().AddressHash == x.AddressHash))
+                            if (txDto.Inputs.Any(x => txDto.Outputs.First().AddressHash == x.AddressHash))
                                 tx.RewardType = BlockRewardType.Staking;
                         }
 
