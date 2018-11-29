@@ -81,11 +81,28 @@ namespace Nexplorer.Sync.Nexus
                             {
                                 var tx = txs[o];
 
-                                var rewardType = o == 0
-                                    ? (BlockChannels) tx.Channel == BlockChannels.PoS
-                                        ? BlockRewardType.Staking
-                                        : BlockRewardType.Mining
-                                    : BlockRewardType.None;
+                                var rewardType = BlockRewardType.None;
+
+                                if (o == 0)
+                                {
+                                    var channel = (BlockChannels) tx.Channel;
+
+                                    if (channel == BlockChannels.PoS)
+                                    {
+                                        var insOuts = (await con.QueryAsync(TxInOutSelectSql, new { tx.TransactionId }, trans)).ToList();
+
+                                        var ins = insOuts.Where(x => x.TransactionType == (int)TransactionType.Input).ToList();
+                                        var outs = insOuts.Where(x => x.TransactionType == (int)TransactionType.Output).ToList();
+
+                                        if (ins.Any() && outs.Any() && outs.Count == 1)
+                                        {
+                                            if (ins.Any(x => outs.First().AddressId == x.AddressId))
+                                                rewardType = BlockRewardType.Staking;
+                                        }
+                                    }
+                                    else
+                                        rewardType = BlockRewardType.Mining;
+                                }
 
                                 await con.ExecuteAsync(TxUpdateSql, new { tx.TransactionId, RewardType = rewardType }, trans);
 
