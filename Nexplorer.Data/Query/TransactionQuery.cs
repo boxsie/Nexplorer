@@ -116,22 +116,39 @@ namespace Nexplorer.Data.Query
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
                 var results = new FilterResult<TransactionDto>();
-                
-                param.Add(nameof(start), start);
+
+                var cacheTxs = FilterCacheBlocks(await _cache.GetBlocksAsync(), txType, filter)
+                    .Skip(start)
+                    .ToList();
+
+                var cacheCount = cacheTxs.Sum(x => x.Inputs.Concat(x.Outputs).Count());
+
                 param.Add(nameof(count), count);
+                param.Add(nameof(start), start);
                 param.Add(nameof(maxResults), maxResults ?? int.MaxValue);
 
                 if (countResults)
                 {
-                    using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
+                    if (cacheCount >= count)
                     {
-                        results.Results = MapTransactions(await multi.ReadAsync());
-                        results.ResultCount = (int)(await multi.ReadAsync<int>()).FirstOrDefault();
+                        results.Results = cacheTxs.Take(count).ToList();
+                        results.ResultCount = cacheCount + (int)(await sqlCon.QueryAsync<int>(sqlC, param)).FirstOrDefault();
+                    }
+                    else
+                    {
+                        using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
+                        {
+                            results.Results = cacheTxs.Concat(MapTransactions(await multi.ReadAsync())).ToList();
+                            results.ResultCount = cacheCount + (int)(await multi.ReadAsync<int>()).FirstOrDefault();
+                        }
                     }
                 }
                 else
                 {
-                    results.Results = MapTransactions(await sqlCon.QueryAsync(sqlQ, param));
+                    results.Results = cacheCount >= count 
+                        ? cacheTxs.Take(count).ToList() 
+                        : cacheTxs.Concat(MapTransactions(await sqlCon.QueryAsync(sqlQ, param))).ToList();
+
                     results.ResultCount = -1;
                 }
 
@@ -139,19 +156,37 @@ namespace Nexplorer.Data.Query
             }
         }
 
-        public async Task<Dictionary<int, List<TransactionAddressDto>>> GetTransactionAddresses(IEnumerable<int> transactionIds)
+        public async Task<Dictionary<string, List<TransactionAddressDto>>> GetTransactionAddresses(List<TransactionDto> transactions)
         {
-            return await _nexusDb.TransactionInputOutput
-                .Include(x => x.Transaction)
-                .Include(x => x.Address)
-                .Where(x => transactionIds.Any(y => y == x.Transaction.TransactionId))
-                .GroupBy(x => x.TransactionId, x => new TransactionAddressDto
+            var txAdds = new Dictionary<string, List<TransactionAddressDto>>();
+
+            foreach (var txDto in transactions)
+            {
+                var tx = txDto.TransactionId == 0 
+                    ? await _cache.GetTransactionAsync(txDto.Hash)
+                    : await _nexusDb.Transactions
+                        .Include(x => x.InputOutputs)
+                        .ThenInclude(x => x.Address)
+                        .Where(x => x.TransactionId == txDto.TransactionId)
+                        .Select(x => _mapper.Map<Transaction, TransactionDto>(x))
+                        .FirstOrDefaultAsync();
+
+                if (tx == null)
+                    throw new NullReferenceException();
+
+                var txIos = tx.Inputs.Concat(tx.Outputs).Select(x => new TransactionAddressDto
                 {
-                    AddressHash = x.Address.Hash,
-                    TransactionId = x.TransactionId,
+                    AddressHash = x.AddressHash,
                     TransactionType = x.TransactionType
-                })
-                .ToDictionaryAsync(x => x.Key, x => x.Select(y => y).ToList());
+                }).ToList();
+
+                if (txAdds.ContainsKey(tx.Hash))
+                    txAdds[tx.Hash].AddRange(txIos);
+                else
+                    txAdds.Add(tx.Hash, txIos);
+            }
+
+            return txAdds;
         }
 
         private static List<TransactionDto> MapTransactions(IEnumerable<dynamic> dataset)
@@ -208,6 +243,40 @@ namespace Nexplorer.Data.Query
             return hashesOne.Any(x => hashesTwo.Any(y => y == x));
         }
 
+        private static List<TransactionDto> FilterCacheBlocks(IEnumerable<BlockDto> blocks, TransactionType txType, TransactionFilterCriteria filter)
+        {
+            var txs = blocks.SelectMany(x => x.Transactions
+                .Where(y => (!filter.MinAmount.HasValue || y.Amount >= filter.MinAmount) &&
+                            (!filter.MaxAmount.HasValue || y.Amount <= filter.MaxAmount) &&
+                            (!filter.HeightFrom.HasValue || y.BlockHeight >= filter.HeightFrom) &&
+                            (!filter.HeightTo.HasValue || y.BlockHeight <= filter.HeightTo) &&
+                            (!filter.UtcFrom.HasValue || y.Timestamp >= filter.UtcFrom) &&
+                            (!filter.UtcTo.HasValue || y.Timestamp <= filter.UtcTo) &&
+                            (!filter.IsStakeReward.HasValue || y.RewardType == BlockRewardType.Staking) &&
+                            (!filter.IsMiningReward.HasValue || y.RewardType == BlockRewardType.Mining))).ToList();
+
+            if (txType != TransactionType.Both)
+            {
+                foreach (var tx in txs)
+                {
+                    switch (txType)
+                    {
+                        case TransactionType.Input:
+                            tx.Outputs = new List<TransactionInputOutputLiteDto>();
+                            break;
+                        case TransactionType.Output:
+                            tx.Inputs = new List<TransactionInputOutputLiteDto>();
+                            break;
+                    }
+                }
+            }
+
+            if (filter.AddressHashes.Any())
+                txs = txs.Where(x => x.Inputs.Concat(x.Outputs).Any(y => filter.AddressHashes.Any(z => z == y.AddressHash))).ToList();
+
+            return txs.ToList();
+        }
+
         private static string BuildWhereClause(TransactionType txType, TransactionFilterCriteria filter, out DynamicParameters param)
         {
             param = new DynamicParameters();
@@ -252,7 +321,6 @@ namespace Nexplorer.Data.Query
                 var fromDate = filter.UtcFrom.Value;
                 param.Add(nameof(fromDate), fromDate);
                 whereClause.Append($"AND t.[Timestamp] <= @fromDate ");
-
             }
 
             if (filter.UtcTo.HasValue)

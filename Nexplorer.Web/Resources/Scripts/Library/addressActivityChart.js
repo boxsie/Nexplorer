@@ -74,7 +74,7 @@ export default {
 
                                     return x.balance;
                                 }),
-                                lineTension: 0.2
+                                lineTension: 0
                             }
                         ]
                     };

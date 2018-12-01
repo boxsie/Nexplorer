@@ -61,8 +61,6 @@ namespace Nexplorer.Data.Command
 
                         var txInOutDtos = blockDto.Transactions.SelectMany(x => x.Inputs.Concat(x.Outputs)).ToList();
                         var addressesCache = await InsertAddressesAsync(con, trans, txInOutDtos, block.Height);
-
-                        SetTransactionRewardTypes(block.Transactions, blockDto.Transactions, (BlockChannels)blockDto.Channel);
                         var txIds = await InsertTransactionsAsync(con, trans, block.Transactions);
 
                         var txInsOuts = blockDto.Transactions
@@ -238,33 +236,6 @@ namespace Nexplorer.Data.Command
                         TransactionType = TransactionType.Output,
                         AddressId = addressCache[y.AddressHash]
                     }));
-        }
-
-        private static void SetTransactionRewardTypes(IReadOnlyList<Transaction> txs, IReadOnlyList<TransactionDto> txDtos, BlockChannels channel)
-        {
-            for (var i = 0; i < txs.Count; i++)
-            {
-                var tx = txs[i];
-                var txDto = txDtos[i];
-
-                switch (i)
-                {
-                    case 0 when channel == BlockChannels.PoS:
-                        if (txDto.Inputs.Any() && txDto.Outputs.Any() && txDto.Outputs.Count == 1)
-                        {
-                            if (txDto.Inputs.Any(x => txDto.Outputs.First().AddressHash == x.AddressHash))
-                                tx.RewardType = BlockRewardType.Staking;
-                        }
-
-                        break;
-                    case 0:
-                        tx.RewardType = BlockRewardType.Mining;
-                        break;
-                    default:
-                        tx.RewardType = BlockRewardType.None;
-                        break;
-                }
-            }
         }
     }
 }

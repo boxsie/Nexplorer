@@ -43,6 +43,11 @@ namespace Nexplorer.Data.Cache.Services
             return (await GetBlockAsync(height))?.Hash;
         }
 
+        public async Task<List<BlockDto>> GetBlocksAsync()
+        {
+            return await GetCacheAsync();
+        }
+
         public async Task<TransactionDto> GetTransactionAsync(string hash)
         {
             var cache = await GetCacheAsync();

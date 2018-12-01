@@ -7,7 +7,6 @@ namespace Nexplorer.Domain.Dtos
     {
         public TransactionType TransactionType { get; set; }
         public string AddressHash { get; set; }
-        public int TransactionId { get; set; }
     }
 
     public class TransactionInputOutputDto

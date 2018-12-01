@@ -108,7 +108,7 @@ namespace Nexplorer.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAddressBalance(string addressHash, int days)
         {
-            if (days == 0 || days > 28)
+            if (days == 0 || days > 180)
                 return BadRequest($"Amount of days ({days}) is not valid. It must be greater than 0 and less than 28");
 
             return Ok(await _addressQuery.GetAddressBalance(addressHash, days));
@@ -127,7 +127,7 @@ namespace Nexplorer.Web.Controllers
 
             var data = await _transactionQuery.GetTransactionsFilteredAsync(txType, filterCriteria, model.Start, count, true);
 
-            var txAddressHashes = await _transactionQuery.GetTransactionAddresses(data.Results.Select(x => x.TransactionId));
+            var txAddressHashes = await _transactionQuery.GetTransactionAddresses(data.Results);
 
             var response = new
             {
@@ -137,7 +137,7 @@ namespace Nexplorer.Web.Controllers
                 Data = data.Results.Select(x =>
                 {
                     var inputOutputs = x.Inputs.Concat(x.Outputs).ToList();
-                    var addressHashes = txAddressHashes[x.TransactionId];
+                    var addressHashes = txAddressHashes[x.Hash];
                     var oppositeAddresses = addressHashes
                         .Where(y => y.TransactionType != inputOutputs.First().TransactionType)
                         .GroupBy(y => y.AddressHash)

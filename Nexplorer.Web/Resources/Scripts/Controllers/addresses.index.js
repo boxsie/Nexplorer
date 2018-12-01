@@ -48,7 +48,7 @@ export class AddressIndexViewModel {
                         render: (data, type, row) => {
                             return `<a class="hidden-xs hidden-sm" href="/addresses/${data}">${data}</a>
                                             <a class="visible-sm" href="/addresses/${data}">${this.vm.truncateHash(data, 32)}</a>
-                                            <a class="visible-xs" href="/addresses/${data}">${this.vm.truncateHash(data, 8)}</a>`;
+                                            <a class="visible-xs" href="/addresses/${data}">${this.vm.truncateHash(data, 4)}</a>`;
                         }
                     },
                     {
@@ -133,7 +133,7 @@ export class AddressIndexViewModel {
                 SwiperSlide: swiperVueSlide,
                 NxsDistributionChart: doughnutChart,
                 AddressDistributionChart: doughnutChart,
-                AddressTable: dataTableVue('all')
+                AddressTable: dataTableVue('all', this.currentFilter, 'full')
             },
             methods: {
                 updateStats(statDtoJson) {

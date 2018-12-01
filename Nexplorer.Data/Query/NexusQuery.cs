@@ -8,6 +8,7 @@ using Boxsie.DotNetNexusClient.Response;
 using Nexplorer.Data.Cache;
 using Nexplorer.Data.Cache.Services;
 using Nexplorer.Domain.Dtos;
+using Nexplorer.Domain.Enums;
 
 namespace Nexplorer.Data.Query
 {
@@ -159,6 +160,35 @@ namespace Nexplorer.Data.Query
                 blockDto.Transactions = txs
                     .Select(x => _mapper.Map<TransactionDto>(x))
                     .ToList();
+
+                for (var i = 0; i < txs.Count; i++)
+                {
+                    var tx = txs[i];
+
+                    foreach (var txI in tx.Inputs)
+                        txI.TransactionType = TransactionType.Input;
+
+                    foreach (var txI in tx.Outputs)
+                        txI.TransactionType = TransactionType.Output;
+
+                    switch (i)
+                    {
+                        case 0 when blockDto.Channel == (int)BlockChannels.PoS:
+                            if (tx.Inputs.Any() && tx.Outputs.Any() && tx.Outputs.Count == 1)
+                            {
+                                if (tx.Inputs.Any(x => tx.Outputs.First().AddressHash == x.AddressHash))
+                                    tx.RewardType = BlockRewardType.Staking;
+                            }
+
+                            break;
+                        case 0:
+                            tx.RewardType = BlockRewardType.Mining;
+                            break;
+                        default:
+                            tx.RewardType = BlockRewardType.None;
+                            break;
+                    }
+                }
             }
 
             return blockDto;

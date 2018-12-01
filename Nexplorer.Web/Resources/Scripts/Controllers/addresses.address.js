@@ -70,7 +70,11 @@ export class AddressViewModel {
                         data: 'oppositeAddresses',
                         width: '60%',
                         render: (data, type, row) => {
-                            if (data.length > 0) {
+                            if (row.isMiningReward) {
+                                return `<span>Coinbase reward</span>`;
+                            } else if (row.isStakingReward) {
+                                return `<span>Coinstake reward</span>`;
+                            } else if (data.length > 0) {
                                 const id = `addTx${row.i}`;
                                 const collapse = data.length > 2;
 
@@ -94,11 +98,9 @@ export class AddressViewModel {
                                 txAddressHashes += '</div>';
 
                                 return txAddressHashes;
-                            } else {
-                                const rewardName = row.isMiningReward ? 'Coinbase' : 'Coinstake';
-
-                                return `<span>${rewardName} reward</span>`;
                             }
+
+                            return 'Unknown';
                         }
                     },
                     {
@@ -114,14 +116,15 @@ export class AddressViewModel {
                                 icon = 'fa-bolt stake';
                             } else if (row.isMiningReward) {
                                 icon = 'fa-cube mining';
-                            } else if (dataFirst.transactionType === 1) {
-                                icon = 'fa-arrow-left red';
-                            } else if (dataFirst.transactionType === 2) {
-                                icon = 'fa-arrow-right green';
+                            } else {
+                                if(dataFirst.transactionType === 1) {
+                                    icon = 'fa-arrow-left red';
+                                } else if (dataFirst.transactionType === 2) {
+                                    icon = 'fa-arrow-right green';
+                                }
                             }
 
-                            const txCount = data.length > 1 ? `<span>(${data.length})</span>` : ' ';
-
+                            var txCount = data.length > 1 ? `<span>(${data.length})</span>` : ' ';
                             return `<span class="fa ${icon} tx-type-icon"></span> ${txCount}`;
                         }
                     },
@@ -154,7 +157,7 @@ export class AddressViewModel {
                 ]
             },
             components: {
-                TransactionTable: dataTableVue(defaultFilter, defaultCriteria, 'full_numbers'),
+                TransactionTable: dataTableVue(defaultFilter, defaultCriteria, 'first_last_numbers'),
                 CurrencyHelper: currencyHelper,
                 ActivityChart: activityChart
             },
