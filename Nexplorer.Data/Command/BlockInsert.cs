@@ -61,9 +61,9 @@ namespace Nexplorer.Data.Command
 
                         var txInOutDtos = blockDto.Transactions.SelectMany(x => x.Inputs.Concat(x.Outputs)).ToList();
                         var addressesCache = await InsertAddressesAsync(con, trans, txInOutDtos, block.Height);
-                        var txIds = await InsertTransactionsAsync(con, trans, block.Transactions);
 
                         SetTransactionRewardTypes(block.Transactions, blockDto.Transactions, (BlockChannels)blockDto.Channel);
+                        var txIds = await InsertTransactionsAsync(con, trans, block.Transactions);
 
                         var txInsOuts = blockDto.Transactions
                             .SelectMany((x, i) => MapTransactionInputOutputs(x, addressesCache, txIds[i]))

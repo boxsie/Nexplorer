@@ -61,7 +61,7 @@ namespace Nexplorer.Sync.Nexus
             _iterationCount = 0;
 
             var dbHeight = await _nexusDb.Blocks.CountAsync();
-            var currentHeight = 1;
+            var currentHeight = 2335002;
 
             while (currentHeight <= dbHeight)
             {
