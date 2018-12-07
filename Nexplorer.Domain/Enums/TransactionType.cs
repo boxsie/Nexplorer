@@ -2,8 +2,10 @@
 {
     public enum TransactionType
     {
-        Both,
-        Input,
-        Output
+        CoinbaseHash,
+        CoinbasePrime,
+        Coinstake,
+        CoinstakeGenesis,
+        User
     }
 }

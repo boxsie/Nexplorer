@@ -22,8 +22,8 @@ namespace Nexplorer.Data.Command
             VALUES (@Height, @Bits, @Channel, @Difficulty, @Hash, @MerkleRoot, @Mint, @Nonce, @Size, @Timestamp, @Version);";
 
         private const string TxInsertSql = @"
-            INSERT INTO [dbo].[Transaction] ([Amount], [BlockHeight], [Hash], [Timestamp], [RewardType]) 
-            VALUES (@Amount, @BlockHeight, @Hash, @Timestamp, @RewardType);
+            INSERT INTO [dbo].[Transaction] ([Amount], [BlockHeight], [Hash], [Timestamp], [TransactionType]) 
+            VALUES (@Amount, @BlockHeight, @Hash, @Timestamp, @TransactionType);
             SELECT CAST(SCOPE_IDENTITY() as int);";
 
         private const string AddressInsertSql = @"
@@ -32,8 +32,8 @@ namespace Nexplorer.Data.Command
             SELECT CAST(SCOPE_IDENTITY() as int);";
 
         private const string TxInOutInsertSql = @"
-            INSERT INTO [dbo].[TransactionInputOutput] ([TransactionId], [AddressId], [TransactionType], [Amount]) 
-            VALUES (@TransactionId, @AddressId, @TransactionType, @Amount);";
+            INSERT INTO [dbo].[TransactionInputOutput] ([TransactionId], [AddressId], [TransactionInputOutputType], [Amount]) 
+            VALUES (@TransactionId, @AddressId, @TransactionInputOutputType, @Amount);";
 
         private const string AddressSelectSql = @"
             SELECT a.AddressId
@@ -142,7 +142,7 @@ namespace Nexplorer.Data.Command
                     tx.BlockHeight,
                     tx.Hash,
                     TimeStamp = timestamp,
-                    tx.RewardType
+                    tx.TransactionType
                 }, trans);
 
                 txIds.Add(result.Single());
@@ -184,7 +184,7 @@ namespace Nexplorer.Data.Command
             {
                 x.TransactionId,
                 x.AddressId,
-                x.TransactionType,
+                x.TransactionInputOutputType,
                 x.Amount
             }), trans);
         }
@@ -214,7 +214,8 @@ namespace Nexplorer.Data.Command
                 Amount = x.Amount,
                 BlockHeight = x.BlockHeight,
                 Hash = x.Hash,
-                Timestamp = x.Timestamp
+                Timestamp = x.Timestamp,
+                TransactionType = x.TransactionType
             });
         }
 
@@ -226,14 +227,14 @@ namespace Nexplorer.Data.Command
                 {
                     TransactionId = transactionId,
                     Amount = y.Amount,
-                    TransactionType = TransactionType.Input,
+                    TransactionInputOutputType = TransactionInputOutputType.Input,
                     AddressId = addressCache[y.AddressHash]
                 }).Concat(txDto.Outputs
                     .Select(y => new TransactionInputOutput
                     {
                         TransactionId = transactionId,
                         Amount = y.Amount,
-                        TransactionType = TransactionType.Output,
+                        TransactionInputOutputType = TransactionInputOutputType.Output,
                         AddressId = addressCache[y.AddressHash]
                     }));
         }

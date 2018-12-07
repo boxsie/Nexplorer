@@ -99,7 +99,7 @@ export class AddressViewModel {
 
                                 return txAddressHashes;
                             }
-
+                            console.log(data);
                             return 'Unknown';
                         }
                     },
@@ -124,7 +124,7 @@ export class AddressViewModel {
                                 }
                             }
 
-                            var txCount = data.length > 1 ? `<span>(${data.length})</span>` : ' ';
+                            var txCount = !row.isStakingReward && !row.isMiningReward && data.length > 1 ? `<span>(${data.length})</span>` : ' ';
                             return `<span class="fa ${icon} tx-type-icon"></span> ${txCount}`;
                         }
                     },

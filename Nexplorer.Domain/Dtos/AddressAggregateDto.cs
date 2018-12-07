@@ -28,15 +28,15 @@ namespace Nexplorer.Domain.Dtos
         [ProtoMember(7)]
         public int SentCount { get; set; }
 
-        public void ModifyAggregateProperties(TransactionType txType, double amount, int lastBlockHeight)
+        public void ModifyAggregateProperties(TransactionInputOutputType txIoType, double amount, int lastBlockHeight)
         {
-            switch (txType)
+            switch (txIoType)
             {
-                case TransactionType.Input:
+                case TransactionInputOutputType.Input:
                     SentAmount = Math.Round(SentAmount + amount, 8);
                     SentCount++;
                     break;
-                case TransactionType.Output:
+                case TransactionInputOutputType.Output:
                     ReceivedAmount = Math.Round(ReceivedAmount + amount, 8);
                     ReceivedCount++;
                     break;

@@ -27,7 +27,7 @@ namespace Nexplorer.Domain.Entity.Blockchain
         [Required]
         public double Amount { get; set; }
 
-        public BlockRewardType? RewardType { get; set; }
+        public TransactionType? TransactionType { get; set; }
 
         [ForeignKey("BlockHeight")]
         public Block Block { get; set; }

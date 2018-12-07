@@ -223,14 +223,14 @@ namespace Nexplorer.Data.Cache.Block
             foreach (var txDto in block.Transactions)
             {
                 foreach (var txIn in txDto.Inputs)
-                    AddAddressTransaction(txIn.AddressHash, block.Height, txDto.Timestamp, txDto.Hash, txIn.Amount, TransactionType.Input);
+                    AddAddressTransaction(txIn.AddressHash, block.Height, txDto.Timestamp, txDto.Hash, txIn.Amount, TransactionInputOutputType.Input);
 
                 foreach (var txOut in txDto.Outputs)
-                    AddAddressTransaction(txOut.AddressHash, block.Height, txDto.Timestamp, txDto.Hash, txOut.Amount, TransactionType.Output);
+                    AddAddressTransaction(txOut.AddressHash, block.Height, txDto.Timestamp, txDto.Hash, txOut.Amount, TransactionInputOutputType.Output);
             }
         }
 
-        private void AddAddressTransaction(string addressHash, int blockHeight, DateTime date, string txHash, double amount, TransactionType txType)
+        private void AddAddressTransaction(string addressHash, int blockHeight, DateTime date, string txHash, double amount, TransactionInputOutputType txIoType)
         {
             var existingAddress = _addressCache.ContainsKey(addressHash);
 
@@ -244,7 +244,7 @@ namespace Nexplorer.Data.Cache.Block
                     AddressTransactions = new List<AddressTransactionDto>()
                 };
 
-            address.Aggregate.ModifyAggregateProperties(txType, amount, blockHeight);
+            address.Aggregate.ModifyAggregateProperties(txIoType, amount, blockHeight);
 
             address.AddressTransactions.Add(new AddressTransactionDto
             {
@@ -252,7 +252,7 @@ namespace Nexplorer.Data.Cache.Block
                 TimeUtc = date,
                 TransactionHash = txHash,
                 Amount = amount,
-                TxType = txType
+                TxIoType = txIoType
             });
 
             if (!existingAddress)

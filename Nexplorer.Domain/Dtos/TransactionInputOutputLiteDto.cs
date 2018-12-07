@@ -13,6 +13,6 @@ namespace Nexplorer.Domain.Dtos
         public double Amount { get; set; }
 
         [ProtoMember(3)]
-        public TransactionType TransactionType { get; set; }
+        public TransactionInputOutputType TransactionInputOutputType { get; set; }
     }
 }

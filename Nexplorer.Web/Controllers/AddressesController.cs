@@ -117,7 +117,7 @@ namespace Nexplorer.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> GetAddressTxs(DataTablePostModel<TransactionFilterCriteria> model)
         {
-            var txType = (TransactionType)int.Parse(model.Filter);
+            var txType = (TransactionInputOutputType)int.Parse(model.Filter);
 
             var count = model.Length > MaxAddressesPerFilterPage
                 ? MaxAddressesPerFilterPage
@@ -139,7 +139,7 @@ namespace Nexplorer.Web.Controllers
                     var inputOutputs = x.Inputs.Concat(x.Outputs).ToList();
                     var addressHashes = txAddressHashes[x.Hash];
                     var oppositeAddresses = addressHashes
-                        .Where(y => y.TransactionType != inputOutputs.First().TransactionType)
+                        .Where(y => y.TransactionInputOutputType != inputOutputs.First().TransactionInputOutputType)
                         .GroupBy(y => y.AddressHash)
                         .Select(y => y.First())
                         .ToList();
@@ -150,13 +150,12 @@ namespace Nexplorer.Web.Controllers
                         x.BlockHeight,
                         x.Timestamp,
                         x.Amount,
-                        IsStakingReward = x.RewardType == BlockRewardType.Staking,
-                        IsMiningReward = x.RewardType == BlockRewardType.Mining,
+                        x.TransactionType,
                         InputOutputs = inputOutputs.Select(y => new
                         {
                             y.AddressHash,
                             y.Amount,
-                            y.TransactionType
+                            TransactionIoType = y.TransactionInputOutputType
                         }),
                         OppositeAddresses = oppositeAddresses.Where(y => y.AddressHash != model.FilterCriteria.AddressHashes.First()),
                     };

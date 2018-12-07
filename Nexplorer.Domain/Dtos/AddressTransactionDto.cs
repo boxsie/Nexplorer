@@ -8,7 +8,7 @@ namespace Nexplorer.Domain.Dtos
     public class AddressTransactionDto
     {
         [ProtoMember(1)]
-        public TransactionType TxType { get; set; }
+        public TransactionInputOutputType TxIoType { get; set; }
 
         [ProtoMember(2)]
         public int BlockHeight { get; set; }

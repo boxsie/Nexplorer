@@ -16,7 +16,7 @@ namespace Nexplorer.Data.Command
     {
         private const string BlockTxSelectSql = @"
             SELECT
-	            txInOut.[TransactionType],
+	            txInOut.[TransactionInputOutputType],
 	            t.[BlockHeight],
 	            txInOut.[Amount],	
 	            txInOut.[AddressId]
@@ -96,13 +96,13 @@ namespace Nexplorer.Data.Command
                 {
                     var txIoDtos = blocks
                         .SelectMany(x => x.Transactions
-                            .SelectMany(y => y.InputOutputs.Select(z => new { TransactionType = z.TransactionType, z.AddressId, z.Amount })
+                            .SelectMany(y => y.InputOutputs.Select(z => new { TransactionIoType = z.TransactionInputOutputType, z.AddressId, z.Amount })
                                 .Select(z => new TransactionInputOutputDto
                                 {
                                     AddressId = z.AddressId,
                                     Amount = z.Amount,
                                     BlockHeight = x.Height,
-                                    TransactionType = z.TransactionType
+                                    TransactionInputOutputType = z.TransactionIoType
                                 })))
                         .ToList();
 
@@ -129,7 +129,7 @@ namespace Nexplorer.Data.Command
             {
                 addAgg = _addressAggregates[txIo.AddressId];
 
-                addAgg.ModifyAggregateProperties(txIo.TransactionType, txIo.Amount, txIo.BlockHeight);
+                addAgg.ModifyAggregateProperties(txIo.TransactionInputOutputType, txIo.Amount, txIo.BlockHeight);
 
                 await UpdateOrInsertAggregate(sqlCon, trans, addAgg, false);
             }
@@ -143,7 +143,7 @@ namespace Nexplorer.Data.Command
                     ? new AddressAggregate { AddressId = txIo.AddressId }
                     : response.First();
 
-                addAgg.ModifyAggregateProperties(txIo.TransactionType, txIo.Amount, txIo.BlockHeight);
+                addAgg.ModifyAggregateProperties(txIo.TransactionInputOutputType, txIo.Amount, txIo.BlockHeight);
 
                 await UpdateOrInsertAggregate(sqlCon, trans, addAgg, isNew);
 

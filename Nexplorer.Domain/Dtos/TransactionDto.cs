@@ -27,7 +27,7 @@ namespace Nexplorer.Domain.Dtos
         public double Amount { get; set; }
 
         [ProtoMember(7)]
-        public BlockRewardType RewardType { get; set; }
+        public TransactionType TransactionType { get; set; }
 
         [ProtoMember(8)]
         public List<TransactionInputOutputLiteDto> Inputs { get; set; }

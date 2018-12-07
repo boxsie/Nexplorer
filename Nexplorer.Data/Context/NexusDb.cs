@@ -37,10 +37,10 @@ namespace Nexplorer.Data.Context
             modelBuilder.Entity<Transaction>()
                 .HasIndex(x => x.Amount);
             modelBuilder.Entity<Transaction>()
-                .HasIndex(x => x.RewardType);
+                .HasIndex(x => x.TransactionType);
 
             modelBuilder.Entity<TransactionInputOutput>()
-                .HasIndex(x => x.TransactionType);
+                .HasIndex(x => x.TransactionInputOutputType);
             modelBuilder.Entity<TransactionInputOutput>()
                 .HasIndex(x => x.Amount);
 

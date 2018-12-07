@@ -182,14 +182,14 @@
         <div class="col-sm-5">
             <div id="sentReceiveButtons" class="form-group">
                 <div class="text-toggle">
-                    <a href="#" v-on:click.prevent.stop="getHistory(@((int) TransactionType.Both))"
-                       v-bind:class="currentFilter == @((int) TransactionType.Both) ? 'active-link' : ''">Sent / Rec<span class="hidden-xs">eived</span></a>
+                    <a href="#" v-on:click.prevent.stop="getHistory(@((int) TransactionInputOutputType.Input))"
+                       v-bind:class="currentFilter == @((int) TransactionInputOutputType.Input) ? 'active-link' : ''">Sent / Rec<span class="hidden-xs">eived</span></a>
                     <span class="toggle-seperator fa fa-ellipsis-v"></span>
-                    <a href="#" v-on:click.prevent.stop="getHistory(@((int) TransactionType.Input))"
-                       v-bind:class="currentFilter == @((int) TransactionType.Input) ? 'active-link' : ''">Sent</a>
+                    <a href="#" v-on:click.prevent.stop="getHistory(@((int) TransactionInputOutputType.Input))"
+                       v-bind:class="currentFilter == @((int) TransactionInputOutputType.Input) ? 'active-link' : ''">Sent</a>
                     <span class="toggle-seperator fa fa-ellipsis-v"></span>
-                    <a href="#" v-on:click.prevent.stop="getHistory(@((int) TransactionType.Output))"
-                       v-bind:class="currentFilter == @((int) TransactionType.Output) ? 'active-link' : ''">Received</a>
+                    <a href="#" v-on:click.prevent.stop="getHistory(@((int) TransactionInputOutputType.Output))"
+                       v-bind:class="currentFilter == @((int) TransactionInputOutputType.Output) ? 'active-link' : ''">Received</a>
                 </div>
             </div>
         </div>
@@ -251,11 +251,6 @@
         var vm = new nexplorer.AddressViewModel({
             addressId: @Model.Address.AddressId,
             addressHash: '@Model.Address.Hash',
-            addressTxTypes: {
-                both: @((int)TransactionType.Both),
-                in: @((int)TransactionType.Input),
-                out: @((int)TransactionType.Output)
-            },
             addressAlias: '@Model.AddressAlias',
             nxsBalance: @Math.Round(Model.Address.Balance, 2),
             usdValue: @Model.NxsCurrency.NXSValue,

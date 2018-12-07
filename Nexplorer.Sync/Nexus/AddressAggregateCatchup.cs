@@ -36,7 +36,7 @@ namespace Nexplorer.Sync.Nexus
 
         private const string TxInOutSelectSql = @"
             SELECT
-            tIo.[TransactionType],
+            tIo.[TransactionInputOutputType],
             tIo.[AddressId]
             FROM [dbo].[TransactionInputOutput] tIo
             WHERE tIo.[TransactionId] = @TransactionId";
@@ -44,7 +44,7 @@ namespace Nexplorer.Sync.Nexus
         private const string TxUpdateSql = @"
             UPDATE [dbo].[Transaction]  
             SET
-            [RewardType] = @RewardType
+            [TransactionType] = @TransactionType
             WHERE [TransactionId] = @TransactionId";
 
         public BlockRewardCatchup(ILogger<BlockRewardCatchup> logger, NexusDb nexusDb, BlockQuery blockQuery)
@@ -61,7 +61,7 @@ namespace Nexplorer.Sync.Nexus
             _iterationCount = 0;
 
             var dbHeight = await _nexusDb.Blocks.CountAsync();
-            var currentHeight = 2335002;
+            var currentHeight = 2345525;
 
             while (currentHeight <= dbHeight)
             {
@@ -81,7 +81,7 @@ namespace Nexplorer.Sync.Nexus
                             {
                                 var tx = txs[o];
 
-                                var rewardType = BlockRewardType.None;
+                                var transactionType = TransactionType.User;
 
                                 if (o == 0)
                                 {
@@ -89,22 +89,27 @@ namespace Nexplorer.Sync.Nexus
 
                                     if (channel == BlockChannels.PoS)
                                     {
-                                        var insOuts = (await con.QueryAsync(TxInOutSelectSql, new { tx.TransactionId }, trans)).ToList();
+                                        var insOuts = (await con.QueryAsync(TxInOutSelectSql, new {tx.TransactionId}, trans)).ToList();
 
-                                        var ins = insOuts.Where(x => x.TransactionType == (int)TransactionType.Input).ToList();
-                                        var outs = insOuts.Where(x => x.TransactionType == (int)TransactionType.Output).ToList();
+                                        var ins = insOuts.Where(x => x.TransactionInputOutputType == (int) TransactionInputOutputType.Input).ToList();
+                                        var outs = insOuts.Where(x => x.TransactionInputOutputType == (int) TransactionInputOutputType.Output).ToList();
 
                                         if (ins.Any() && outs.Any() && outs.Count == 1)
                                         {
-                                            if (ins.Any(x => outs.First().AddressId == x.AddressId))
-                                                rewardType = BlockRewardType.Staking;
+                                            transactionType = ins.Any(x => outs.First().AddressId == x.AddressId)
+                                                ? TransactionType.Coinstake
+                                                : TransactionType.CoinstakeGenesis;
                                         }
                                     }
                                     else
-                                        rewardType = BlockRewardType.Mining;
+                                    {
+                                        transactionType = channel == (BlockChannels) BlockChannels.Hash
+                                            ? TransactionType.CoinbaseHash
+                                            : TransactionType.CoinbasePrime;
+                                    }
                                 }
 
-                                await con.ExecuteAsync(TxUpdateSql, new { tx.TransactionId, RewardType = rewardType }, trans);
+                                await con.ExecuteAsync(TxUpdateSql, new { tx.TransactionId, TransactionType = transactionType }, trans);
 
                             }
 

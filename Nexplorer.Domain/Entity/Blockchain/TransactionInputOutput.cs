@@ -17,7 +17,7 @@ namespace Nexplorer.Domain.Entity.Blockchain
         public int TransactionId { get; set; }
 
         [Required]
-        public TransactionType TransactionType { get; set; }
+        public TransactionInputOutputType TransactionInputOutputType { get; set; }
 
         [Required]
         public int AddressId { get; set; }

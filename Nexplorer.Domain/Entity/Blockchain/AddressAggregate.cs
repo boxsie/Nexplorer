@@ -39,15 +39,15 @@ namespace Nexplorer.Domain.Entity.Blockchain
         [ForeignKey("LastBlockHeight")]
         public Block LastBlock { get; set; }
 
-        public void ModifyAggregateProperties(TransactionType txType, double amount, int blockHeight)
+        public void ModifyAggregateProperties(TransactionInputOutputType txIoType, double amount, int blockHeight)
         {
-            switch (txType)
+            switch (txIoType)
             {
-                case TransactionType.Input:
+                case TransactionInputOutputType.Input:
                     SentAmount = Math.Round(SentAmount + amount, 8);
                     SentCount++;
                     break;
-                case TransactionType.Output:
+                case TransactionInputOutputType.Output:
                     ReceivedAmount = Math.Round(ReceivedAmount + amount, 8);
                     ReceivedCount++;
                     break;

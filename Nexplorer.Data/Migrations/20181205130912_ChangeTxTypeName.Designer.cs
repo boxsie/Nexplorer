@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Nexplorer.Data.Context;
 
 namespace Nexplorer.Data.Migrations
 {
     [DbContext(typeof(NexusDb))]
-    partial class NexusDbModelSnapshot : ModelSnapshot
+    [Migration("20181205130912_ChangeTxTypeName")]
+    partial class ChangeTxTypeName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -118,9 +120,9 @@ namespace Nexplorer.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(256);
 
-                    b.Property<DateTime>("Timestamp");
+                    b.Property<int?>("RewardType");
 
-                    b.Property<int?>("TransactionType");
+                    b.Property<DateTime>("Timestamp");
 
                     b.HasKey("TransactionId");
 
@@ -130,9 +132,9 @@ namespace Nexplorer.Data.Migrations
 
                     b.HasIndex("Hash");
 
-                    b.HasIndex("Timestamp");
+                    b.HasIndex("RewardType");
 
-                    b.HasIndex("TransactionType");
+                    b.HasIndex("Timestamp");
 
                     b.ToTable("Transaction");
                 });
