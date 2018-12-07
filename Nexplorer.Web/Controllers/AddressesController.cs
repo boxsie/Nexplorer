@@ -117,7 +117,17 @@ namespace Nexplorer.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> GetAddressTxs(DataTablePostModel<TransactionFilterCriteria> model)
         {
-            var txType = (TransactionInputOutputType)int.Parse(model.Filter);
+            TransactionInputOutputType? txType = null;
+
+            switch (model.Filter)
+            {
+                case "input":
+                    txType = TransactionInputOutputType.Input;
+                    break;
+                case "output":
+                    txType = TransactionInputOutputType.Output;
+                    break;
+            }
 
             var count = model.Length > MaxAddressesPerFilterPage
                 ? MaxAddressesPerFilterPage

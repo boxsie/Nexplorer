@@ -12,7 +12,7 @@ import '../../Style/addresses.address.scss';
 
 export class AddressViewModel {
     constructor(options) {
-        const defaultFilter = options.addressTxTypes['both'];
+        const defaultFilter = 'both';
 
         const defaultCriteria = {
             minAmount: null,
@@ -70,9 +70,11 @@ export class AddressViewModel {
                         data: 'oppositeAddresses',
                         width: '60%',
                         render: (data, type, row) => {
-                            if (row.isMiningReward) {
-                                return `<span>Coinbase reward</span>`;
-                            } else if (row.isStakingReward) {
+                            if (options.txTypes[row.transactionType] === 'CoinbaseHash') {
+                                return `<span>Coinbase hash reward</span>`;
+                            } if (options.txTypes[row.transactionType] === 'CoinbasePrime') {
+                                return `<span>Coinbase prime reward</span>`;
+                            } else if (options.txTypes[row.transactionType] === 'Coinstake') {
                                 return `<span>Coinstake reward</span>`;
                             } else if (data.length > 0) {
                                 const id = `addTx${row.i}`;
@@ -111,15 +113,16 @@ export class AddressViewModel {
                         render: (data, type, row) => {
                             var dataFirst = data[0];
                             var icon = '';
-
-                            if (row.isStakingReward) {
+                            console.log(options.txTypes[row.transactionType]);
+                            
+                            if (options.txTypes[row.transactionType] === 'Coinstake') {
                                 icon = 'fa-bolt stake';
                             } else if (row.isMiningReward) {
                                 icon = 'fa-cube mining';
-                            } else {
-                                if(dataFirst.transactionType === 1) {
+                            } else if (options.txTypes[row.transactionType] === 'User') {
+                                if (dataFirst.transactionIoType === 0) {
                                     icon = 'fa-arrow-left red';
-                                } else if (dataFirst.transactionType === 2) {
+                                } else if (dataFirst.transactionIoType === 1) {
                                     icon = 'fa-arrow-right green';
                                 }
                             }
