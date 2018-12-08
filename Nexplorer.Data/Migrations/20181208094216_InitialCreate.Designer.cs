@@ -10,8 +10,8 @@ using Nexplorer.Data.Context;
 namespace Nexplorer.Data.Migrations
 {
     [DbContext(typeof(NexusDb))]
-    [Migration("20181116170303_MoreIndexes")]
-    partial class MoreIndexes
+    [Migration("20181208094216_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -122,11 +122,19 @@ namespace Nexplorer.Data.Migrations
 
                     b.Property<DateTime>("Timestamp");
 
+                    b.Property<int?>("TransactionType");
+
                     b.HasKey("TransactionId");
+
+                    b.HasIndex("Amount");
 
                     b.HasIndex("BlockHeight");
 
                     b.HasIndex("Hash");
+
+                    b.HasIndex("Timestamp");
+
+                    b.HasIndex("TransactionType");
 
                     b.ToTable("Transaction");
                 });
@@ -143,7 +151,7 @@ namespace Nexplorer.Data.Migrations
 
                     b.Property<int>("TransactionId");
 
-                    b.Property<int>("TransactionType");
+                    b.Property<int>("TransactionInputOutputType");
 
                     b.HasKey("TransactionInputOutputId");
 
@@ -153,7 +161,7 @@ namespace Nexplorer.Data.Migrations
 
                     b.HasIndex("TransactionId");
 
-                    b.HasIndex("TransactionType");
+                    b.HasIndex("TransactionInputOutputType");
 
                     b.ToTable("TransactionInputOutput");
                 });

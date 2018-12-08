@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Nexplorer.Data.Migrations
 {
-    public partial class InitialCreateNoIndexes : Migration
+    public partial class InitialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -94,7 +94,8 @@ namespace Nexplorer.Data.Migrations
                     BlockHeight = table.Column<int>(nullable: false),
                     Hash = table.Column<string>(maxLength: 256, nullable: false),
                     Timestamp = table.Column<DateTime>(nullable: false),
-                    Amount = table.Column<double>(nullable: false)
+                    Amount = table.Column<double>(nullable: false),
+                    TransactionType = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -164,7 +165,7 @@ namespace Nexplorer.Data.Migrations
                     TransactionInputOutputId = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     TransactionId = table.Column<int>(nullable: false),
-                    TransactionType = table.Column<int>(nullable: false),
+                    TransactionInputOutputType = table.Column<int>(nullable: false),
                     AddressId = table.Column<int>(nullable: false),
                     Amount = table.Column<double>(nullable: false)
                 },
@@ -227,9 +228,24 @@ namespace Nexplorer.Data.Migrations
                 column: "FirstBlockHeight");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Address_Hash",
+                table: "Address",
+                column: "Hash");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AddressAggregate_Balance",
+                table: "AddressAggregate",
+                column: "Balance");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AddressAggregate_LastBlockHeight",
                 table: "AddressAggregate",
                 column: "LastBlockHeight");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Block_Hash",
+                table: "Block",
+                column: "Hash");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrphanTransaction_BlockHeight",
@@ -237,9 +253,29 @@ namespace Nexplorer.Data.Migrations
                 column: "BlockHeight");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Transaction_Amount",
+                table: "Transaction",
+                column: "Amount");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Transaction_BlockHeight",
                 table: "Transaction",
                 column: "BlockHeight");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transaction_Hash",
+                table: "Transaction",
+                column: "Hash");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transaction_Timestamp",
+                table: "Transaction",
+                column: "Timestamp");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transaction_TransactionType",
+                table: "Transaction",
+                column: "TransactionType");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TransactionInputOutput_AddressId",
@@ -247,9 +283,19 @@ namespace Nexplorer.Data.Migrations
                 column: "AddressId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TransactionInputOutput_Amount",
+                table: "TransactionInputOutput",
+                column: "Amount");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TransactionInputOutput_TransactionId",
                 table: "TransactionInputOutput",
                 column: "TransactionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TransactionInputOutput_TransactionInputOutputType",
+                table: "TransactionInputOutput",
+                column: "TransactionInputOutputType");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TrustKey_AddressId",
