@@ -81,19 +81,54 @@ namespace Nexplorer.Data.Query
 
             if (cacheBlock != null)
                 return cacheBlock;
-            
-            var block = await _nexusDb.Blocks.Where(x => x.Hash == hash)
-                .Include(x => x.Transactions)
-                    .ThenInclude(x => x.InputOutputs)
-                    .ThenInclude(x => x.Address)
-                .Include(x => x.Transactions)
-                .FirstOrDefaultAsync() ?? await _nexusDb.Blocks.Where(x => x.Hash.StartsWith(hash))
-                    .Include(x => x.Transactions)
-                        .ThenInclude(x => x.InputOutputs)
-                        .ThenInclude(x => x.Address)
-                    .FirstOrDefaultAsync();
 
-            return _mapper.Map<BlockDto>(block);
+            const string sqlQ = @"
+                SELECT 
+	              *
+                FROM [dbo].[Block] b
+                INNER JOIN [dbo].[Transaction] t ON t.[BlockHeight] = b.[Height]
+                INNER JOIN [dbo].[TransactionInputOutput] tIo ON tIo.[TransactionId] = t.[TransactionId]
+                INNER JOIN [dbo].[Address] a ON a.[AddressId] = tIo.[AddressId]
+                WHERE b.[Hash] = @hash";
+
+            using (var connection = new SqlConnection(Settings.Connection.NexusDb))
+            {
+                connection.Open();
+
+                Block b = null;
+
+                var block = connection.Query<Block, Transaction, TransactionInputOutput, Address, Block>(
+                    sqlQ, (bk, tx, txIo, add) =>
+                    {
+                        if (b == null)
+                        {
+                            b = bk;
+                            b.Transactions = new List<Transaction>();
+                        }
+
+                        var t = b.Transactions.FirstOrDefault(x => x.TransactionId == tx.TransactionId);
+
+                        if (t == null)
+                        {
+                            t = tx;
+                            t.Block = b;
+                            t.InputOutputs = new List<TransactionInputOutput>();
+                            b.Transactions.Add(t);
+                        }
+
+                        txIo.Transaction = t;
+                        txIo.Address = add;
+                        t.InputOutputs.Add(txIo);
+
+                        return b;
+                    },
+                    splitOn: "TransactionId,TransactionInputOutputId,AddressId",
+                    param: new { hash })
+                    .Distinct()
+                    .FirstOrDefault();
+
+                return _mapper.Map<BlockDto>(block);
+            }
         }
 
         public async Task<BlockDto> GetBlockAsync(DateTime time)

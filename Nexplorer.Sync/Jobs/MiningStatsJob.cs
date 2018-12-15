@@ -21,7 +21,7 @@ namespace Nexplorer.Sync.Jobs
         private readonly StatQuery _statQuery;
 
         public MiningStatsJob(ILogger<MiningStatsJob> logger, RedisCommand redisCommand, NexusQuery nexusQuery, StatQuery statQuery)
-            : base(logger, 10)
+            : base(logger, 50)
         {
             _redisCommand = redisCommand;
             _nexusQuery = nexusQuery;

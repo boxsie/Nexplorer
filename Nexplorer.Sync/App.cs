@@ -73,19 +73,19 @@ namespace Nexplorer.Sync
                 switch (jt.Key)
                 {
                     case nameof(BlockScanJob):
-                        offsetSecs = 120;
-                        break;
-                    case nameof(BlockSyncJob):
-                        offsetSecs = 120;
-                        break;
-                    case nameof(AddressCacheJob):
                         offsetSecs = 0;
                         break;
+                    case nameof(BlockSyncJob):
+                        offsetSecs = 0;
+                        break;
+                    case nameof(AddressCacheJob):
+                        offsetSecs = 30;
+                        break;
                     case nameof(AddressStatsJob):
-                        offsetSecs = 240;
+                        offsetSecs = 60;
                         break;
                     case nameof(MiningStatsJob):
-                        offsetSecs = 60;
+                        offsetSecs = 120;
                         break;
                 }
 

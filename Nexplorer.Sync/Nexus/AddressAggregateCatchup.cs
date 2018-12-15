@@ -61,7 +61,7 @@ namespace Nexplorer.Sync.Nexus
             _iterationCount = 0;
 
             var dbHeight = await _nexusDb.Blocks.CountAsync();
-            var currentHeight = 2345525;
+            var currentHeight = 0;
 
             while (currentHeight <= dbHeight)
             {
@@ -196,7 +196,9 @@ namespace Nexplorer.Sync.Nexus
                 {
                     var nextBlockHeight = lastBlockHeight + 1;
 
-                    var bulkSaveCount = Settings.App.BulkSaveCount;
+                    var bulkSaveCount = Settings.App.BulkSaveCount < (dbHeight - lastBlockHeight)
+                        ? Settings.App.BulkSaveCount
+                        : (dbHeight - lastBlockHeight);
 
                     var lastHeight = dbHeight - nextBlockHeight > bulkSaveCount
                         ? nextBlockHeight + bulkSaveCount
