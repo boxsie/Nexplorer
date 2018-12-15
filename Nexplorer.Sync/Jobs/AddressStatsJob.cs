@@ -15,8 +15,8 @@ namespace Nexplorer.Sync.Jobs
 {
     public class AddressStatsJob : SyncJob
     {
-        private const int IntervalSeconds = 30;
-        private const int BigUpdateIntervalSeconds = 60;
+        private const int IntervalSeconds = 120;
+        private const int BigUpdateIntervalSeconds = 360;
         private static int _secondsSinceLastBigUpdate = 0;
         private const int StakeThreshold = 1000;
 
