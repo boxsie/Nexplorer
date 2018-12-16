@@ -1,7 +1,7 @@
 ﻿import Moment from 'moment';
 
-import BootstrapPager from '../Library/bootstrapPager.js';
-import dateAge from '../Library/dateAge.js';
+import BootstrapPager from '../Library/bootstrapPager';
+import dateAge from '../Library/dateAge';
 
 export default (tableType) => {
 
@@ -69,13 +69,6 @@ export default (tableType) => {
             addItem(item) {
                 this.currentPageItems.splice(0, 0, item);
                 this.currentPageItems.pop();
-            },
-            getAge(createdTime) {
-                if (this.$layoutHub.utcMoment) {
-                    return Moment.duration(this.$layoutHub.utcMoment.diff(createdTime)).humanize();
-                }
-
-                return 'Unknown';
             },
             truncateHash(hash, len) {
                 const start = hash.substring(0, len);

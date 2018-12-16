@@ -84,6 +84,10 @@
 
 #addressActivityChart {
     margin-top: 10px;
+    
+    .chart {
+        position: relative;
+    }
 }
 
 #addressTx {

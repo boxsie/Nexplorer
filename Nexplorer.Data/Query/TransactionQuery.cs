@@ -155,10 +155,10 @@ namespace Nexplorer.Data.Query
                         results.Results = results.Results.OrderBy(x => x.Timestamp).ToList();
                         break;
                     case OrderTransactionsBy.HighestAmount:
-                        results.Results = results.Results.OrderByDescending(x => x.Amount).ToList();
+                        results.Results = results.Results.OrderByDescending(x => x.Inputs.Concat(x.Outputs).Max(y => y.Amount)).ToList();
                         break;
                     case OrderTransactionsBy.LowestAmount:
-                        results.Results = results.Results.OrderBy(x => x.Amount).ToList();
+                        results.Results = results.Results.OrderBy(x => x.Inputs.Concat(x.Outputs).Max(y => y.Amount)).ToList();
                         break;
                 }
 
@@ -269,19 +269,65 @@ namespace Nexplorer.Data.Query
             return hashesOne.Any(x => hashesTwo.Any(y => y == x));
         }
 
-        private static List<TransactionDto> FilterCacheBlocks(IEnumerable<BlockDto> blocks, TransactionInputOutputType? txIoType, TransactionFilterCriteria filter)
+        private static IEnumerable<TransactionDto> FilterCacheBlocks(IEnumerable<BlockDto> blocks, TransactionInputOutputType? txIoType, TransactionFilterCriteria filter)
         {
             return blocks.SelectMany(x => x.Transactions
-                .Where(y => (!filter.MinAmount.HasValue || y.Amount >= filter.MinAmount) &&
+                .Where(y => (FilterRewardTypes(filter.IsStakeReward, filter.IsMiningReward, y.TransactionType)) &&
+                            (!filter.MinAmount.HasValue || y.Amount >= filter.MinAmount) &&
                             (!filter.MaxAmount.HasValue || y.Amount <= filter.MaxAmount) &&
                             (!filter.HeightFrom.HasValue || y.BlockHeight >= filter.HeightFrom) &&
                             (!filter.HeightTo.HasValue || y.BlockHeight <= filter.HeightTo) &&
                             (!filter.UtcFrom.HasValue || y.Timestamp >= filter.UtcFrom) &&
-                            (!filter.UtcTo.HasValue || y.Timestamp <= filter.UtcTo) &&
-                            (filter.AddressHashes == null || 
-                                ((!txIoType.HasValue || txIoType != TransactionInputOutputType.Input) && y.Outputs.Any(z => filter.AddressHashes.Any(hash => hash == z.AddressHash))) ||
-                                ((!txIoType.HasValue || txIoType != TransactionInputOutputType.Output) && y.Inputs.Any(z => filter.AddressHashes.Any(hash => hash == z.AddressHash)))
-                             ))).ToList();
+                            (!filter.UtcTo.HasValue || y.Timestamp <= filter.UtcTo))
+                .Select(y => new TransactionDto
+                {
+                    TransactionId = y.TransactionId,
+                    Amount = y.Amount,
+                    BlockHeight = y.BlockHeight,
+                    Confirmations = y.Confirmations,
+                    Hash = y.Hash,
+                    Timestamp = y.Timestamp,
+                    TransactionType = y.TransactionType,
+                    Inputs = !txIoType.HasValue || txIoType == TransactionInputOutputType.Input
+                        ? y.Inputs.Where(z =>
+                            filter.AddressHashes == null || !filter.AddressHashes.Any() ||
+                            filter.AddressHashes.Any(hash => hash == z.AddressHash)).ToList()
+                        : new List<TransactionInputOutputLiteDto>(),
+                    Outputs = !txIoType.HasValue || txIoType == TransactionInputOutputType.Output
+                        ? y.Outputs.Where(z =>
+                            filter.AddressHashes == null || !filter.AddressHashes.Any() ||
+                            filter.AddressHashes.Any(hash => hash == z.AddressHash)).ToList()
+                        : new List<TransactionInputOutputLiteDto>(),
+                })
+                .Where(y => y.Inputs.Concat(y.Outputs).Any()));
+        }
+
+        private static bool FilterRewardTypes(bool? isStake, bool? isMine, TransactionType tt)
+        {
+            if (!isMine.HasValue && !isStake.HasValue)
+                return true;
+
+            if (isMine.HasValue && isStake.HasValue)
+            {
+                if (isMine.Value && isStake.Value)
+                    return tt == TransactionType.CoinbaseHash || tt == TransactionType.CoinbasePrime || tt == TransactionType.Coinstake;
+                else if (!isMine.Value && !isStake.Value)
+                    return tt != TransactionType.CoinbaseHash && tt != TransactionType.CoinbasePrime && tt != TransactionType.Coinstake;
+            }
+            else if (isMine.HasValue)
+            {
+                return isMine.Value
+                    ? tt == TransactionType.CoinbaseHash || tt == TransactionType.CoinbasePrime
+                    : tt != TransactionType.CoinbaseHash && tt != TransactionType.CoinbasePrime;
+            }
+            else
+            {
+                return isStake.Value
+                    ? tt == TransactionType.Coinstake
+                    : tt != TransactionType.Coinstake;
+            }
+
+            return true;
         }
 
         private static string BuildWhereClause(TransactionInputOutputType? txIoType, TransactionFilterCriteria filter, out DynamicParameters param)
@@ -335,6 +381,29 @@ namespace Nexplorer.Data.Query
                 var toDate = filter.UtcTo.Value;
                 param.Add(nameof(toDate), toDate);
                 whereClause.Append($"AND t.[Timestamp] >= @toDate ");
+            }
+            
+            if (filter.IsMiningReward.HasValue || filter.IsStakeReward.HasValue)
+            {
+                if (filter.IsMiningReward.HasValue && filter.IsStakeReward.HasValue)
+                {
+                    if (filter.IsMiningReward.Value && filter.IsStakeReward.Value)
+                        whereClause.Append($"AND (t.[TransactionType] = {(int)TransactionType.CoinbaseHash} OR t.[TransactionType] = {(int)TransactionType.CoinbasePrime} OR t.[TransactionType] = {(int)TransactionType.Coinstake}) ");
+                    else if (!filter.IsMiningReward.Value && !filter.IsStakeReward.Value)
+                        whereClause.Append($"AND (t.[TransactionType] <> {(int)TransactionType.CoinbaseHash} AND t.[TransactionType] <> {(int)TransactionType.CoinbasePrime} AND t.[TransactionType] <> {(int)TransactionType.Coinstake}) ");
+                }
+                else if (filter.IsMiningReward.HasValue)
+                {
+                    whereClause.Append(filter.IsMiningReward.Value
+                        ? $"AND (t.[TransactionType] = {(int) TransactionType.CoinbaseHash} OR t.[TransactionType] = {(int) TransactionType.CoinbasePrime}) "
+                        : $"AND (t.[TransactionType] <> {(int) TransactionType.CoinbaseHash} AND t.[TransactionType] <> {(int) TransactionType.CoinbasePrime}) ");
+                }
+                else
+                {
+                    whereClause.Append(filter.IsStakeReward.Value
+                        ? $"AND t.[TransactionType] = {(int) TransactionType.Coinstake} "
+                        : $"AND t.[TransactionType] <> {(int) TransactionType.Coinstake} ");
+                }
             }
 
             if (filter.AddressHashes != null && filter.AddressHashes.Any())

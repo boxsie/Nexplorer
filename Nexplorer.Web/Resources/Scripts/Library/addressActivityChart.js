@@ -1,17 +1,20 @@
 ﻿import $ from 'jquery';
 import Moment from 'moment';
-import LineChart from './lineChartVue.js';
+import LineChart from './lineChartVue';
+import preloaderVue from '../Library/preloaderVue';
 
 export default {
     template: require('../../Markup/address-activity-chart.html'),
     props: ['width', 'height', 'addressHash'],
     components: {
-        LineChart
+        LineChart,
+        Preloader: preloaderVue
     },
     data() {
         return {
             datacollection: null,
             currentDays: 7,
+            showChart: false,
             chartOptions: {
                 maintainAspectRatio: false,
                 scales: {
@@ -50,6 +53,8 @@ export default {
     },
     methods: {
         getBalance() {
+            this.showChart = false;
+
             $.ajax({
                 type: 'GET',
                 url: '/addresses/getaddressbalance',
@@ -78,6 +83,8 @@ export default {
                             }
                         ]
                     };
+                    
+                    this.showChart = true;
                 }
             });
         },

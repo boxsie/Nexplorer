@@ -149,7 +149,7 @@ namespace Nexplorer.Web.Controllers
                     var inputOutputs = x.Inputs.Concat(x.Outputs).ToList();
                     var addressHashes = txAddressHashes[x.Hash];
                     var oppositeAddresses = addressHashes
-                        .Where(y => y.TransactionInputOutputType != inputOutputs.First().TransactionInputOutputType)
+                        .Where(y => inputOutputs.Any() && y.TransactionInputOutputType != inputOutputs.First().TransactionInputOutputType)
                         .GroupBy(y => y.AddressHash)
                         .Select(y => y.First())
                         .ToList();

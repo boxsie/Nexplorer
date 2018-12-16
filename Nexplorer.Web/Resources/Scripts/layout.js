@@ -2,7 +2,7 @@
 import Vue from 'vue';
 import { HubConnectionBuilder, LogLevel } from '@aspnet/signalr';
 
-import layoutHub from './layoutHub.js';
+import layoutHub from './layoutHub';
 
 import 'font-awesome/scss/font-awesome.scss';
 import '../Style/layout.scss';

@@ -23,7 +23,7 @@
                 <td>{{ tx.amount.toLocaleString() }} <span style="font-size: 10px;">NXS</span></td>
                 <td class="hidden-xs">{{ tx.transactionInputCount.toLocaleString() }}</td>
                 <td class="hidden-xs">{{ tx.transactionOutputCount.toLocaleString() }}</td>
-                <td><date-age :fromDate="tx.timeUtc" :precise="true"></date-age></td>
+                <td><date-age :fromDate="tx.timestamp" :precise="true"></date-age></td>
             </tr>
         </tbody>
     </table>

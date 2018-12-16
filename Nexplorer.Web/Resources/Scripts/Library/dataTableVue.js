@@ -2,7 +2,7 @@
 import dt from 'datatables.net-bs4';
 import preloaderVue from '../Library/preloaderVue';
 
-import 'datatables.net-bs4/css/dataTables.bootstrap4.css'; 
+import 'datatables.net-bs4/css/dataTables.bootstrap4.css';
 
 export default (defaultFilter, defaultCriteria, pagingType) => {
     return {
@@ -64,7 +64,7 @@ export default (defaultFilter, defaultCriteria, pagingType) => {
                             self.showTable = true;
 
                             for (let i = 0; i < obj.data.length; i++) {
-                                obj.data[i].i = (i + 1) + (pageInfo.page * pageInfo.length);
+                                obj.data[i].i = i + 1 + pageInfo.page * pageInfo.length;
                             }
 
                             return JSON.stringify(obj);
@@ -75,12 +75,14 @@ export default (defaultFilter, defaultCriteria, pagingType) => {
                     columns: self.columns
                 });
 
-                $('#dataTable tbody').on('click', 'tr', function (e) {
-                    if(!$(e.target).is('.no-row-link')) {
-                        self.$emit('row-click', self.dataTable.row(this).data());
-                    }
-                });
+                $('#dataTable tbody').on('click',
+                    'tr',
+                    function(e) {
+                        if (!$(e.target).is('.no-row-link')) {
+                            self.$emit('row-click', self.dataTable.row(this).data());
+                        }
+                    });
             });
         }
     };
-}
+};

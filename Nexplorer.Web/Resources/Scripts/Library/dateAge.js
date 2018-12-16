@@ -6,6 +6,7 @@ export default {
     computed: {
         age() {
             const utcMoment = this.$layoutHub.utcMoment;
+
             return this.precise ? this.formatDuration(moment.duration(utcMoment.diff(this.fromDate))) : moment.duration(utcMoment.diff(this.fromDate)).humanize();
         }
     },

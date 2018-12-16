@@ -44,5 +44,14 @@
   },
   "vendor": {
     "js": "../js/vendor.js"
+  },
+  "": {
+    "eot": "../font/fontawesome-webfont.eot",
+    "woff": "../font/fontawesome-webfont.woff",
+    "ttf": "../font/fontawesome-webfont.ttf",
+    "svg": "../font/fontawesome-webfont.svg",
+    "jpg": "../img/hero-img.jpg",
+    "png": "../img/nxs-icon.png",
+    "woff2": "../font/fontawesome-webfont.woff2"
   }
 }

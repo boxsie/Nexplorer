@@ -39,18 +39,9 @@ namespace Nexplorer.Data.Map
                     .ForMember(d => d.OrphanBlock, o => o.Ignore());
 
                 x.CreateMap<BlockResponse, BlockDto>()
-                    .ForMember(d => d.Timestamp, o => o.MapFrom(s => s.Time))
+                    .ForMember(d => d.Timestamp, o => o.MapFrom(s => s.Timestamp))
                     .ForMember(d => d.Transactions, o => o.Ignore());
-
-                x.CreateMap<TransactionResponse, TransactionDto>()
-                    .ForMember(d => d.Hash, o => o.MapFrom(s => s.TxId))
-                    .ForMember(d => d.Timestamp, o => o.MapFrom(s => Helpers.ToDateTime(s.Time)))
-                    .ForMember(d => d.Inputs, o => o.MapFrom(s => MapTxInOutDto(s.Inputs)))
-                    .ForMember(d => d.Outputs, o => o.MapFrom(s => MapTxInOutDto(s.Outputs)))
-                    .ForMember(d => d.TransactionId, o => o.Ignore())
-                    .ForMember(d => d.BlockHeight, o => o.Ignore())
-                    .ForMember(d => d.TransactionType, o => o.Ignore());
-
+                
                 x.CreateMap<InfoResponse, NexusInfoDto>()
                     .ForMember(d => d.TimeStampUtc, o => o.MapFrom(s => Helpers.ToDateTime(s.TimeStamp)));
 
@@ -100,29 +91,6 @@ namespace Nexplorer.Data.Map
             config.AssertConfigurationIsValid();
 
             return config.CreateMapper();
-        }
-
-        private static List<TransactionInputOutputLiteDto> MapTxInOutDto(IEnumerable<string> rawInputOutput)
-        {
-            var txIos = new List<TransactionInputOutputLiteDto>();
-
-            if (rawInputOutput == null)
-                return txIos;
-
-            foreach (var s in rawInputOutput)
-            {
-                var split = s.Split(':');
-                var hash = split.Length > 0 ? split[0] : "";
-                var hasAmount = double.TryParse(split.Length > 1 ? split[1] : "", out var amountD);
-
-                txIos.Add(new TransactionInputOutputLiteDto
-                {
-                    Amount = hasAmount ? amountD : 0,
-                    AddressHash = hash
-                });
-            }
-
-            return txIos;
         }
     }
 }

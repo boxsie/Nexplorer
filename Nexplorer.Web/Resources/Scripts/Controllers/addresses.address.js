@@ -75,7 +75,8 @@ export class AddressViewModel {
                             } if (options.txTypes[row.transactionType] === 'CoinbasePrime') {
                                 return `<span>Coinbase prime reward</span>`;
                             } else if (options.txTypes[row.transactionType] === 'Coinstake') {
-                                return `<span>Coinstake reward</span>`;
+                                const rewardOrTx = this.vm.currentFilter === 'both' ? 'reward' : 'transaction';
+                                return `<span>Coinstake ${rewardOrTx}</span>`;
                             } else if (data.length > 0) {
                                 const id = `addTx${row.i}`;
                                 const collapse = data.length > 2;
@@ -113,16 +114,15 @@ export class AddressViewModel {
                         render: (data, type, row) => {
                             var dataFirst = data[0];
                             var icon = '';
-                            console.log(options.txTypes[row.transactionType]);
                             
                             if (options.txTypes[row.transactionType] === 'Coinstake') {
                                 icon = 'fa-bolt stake';
-                            } else if (row.isMiningReward) {
+                            } else if (options.txTypes[row.transactionType] === 'CoinbasePrime' || options.txTypes[row.transactionType] === 'CoinbaseHash') {
                                 icon = 'fa-cube mining';
-                            } else if (options.txTypes[row.transactionType] === 'User') {
+                            } else {
                                 if (dataFirst.transactionIoType === 0) {
                                     icon = 'fa-arrow-left red';
-                                } else if (dataFirst.transactionIoType === 1) {
+                                } else {
                                     icon = 'fa-arrow-right green';
                                 }
                             }
@@ -140,15 +140,14 @@ export class AddressViewModel {
                             var amounts = '<ul class="list">';
                             var dFirst = data[0];
 
-                            if (row.isStakingReward) {
-                                const stakeAmount = data[1] ? (parseFloat(data[1].amount) - parseFloat(dFirst.amount)) : parseFloat(dFirst.amount);
-                                const addOrSub = this.vm.currentFilter === 1 ? '-' : '+';
-
+                            if (options.txTypes[row.transactionType] === 'Coinstake') {
+                                const stakeAmount = data[1] ? parseFloat(data[1].amount) - parseFloat(dFirst.amount) : parseFloat(dFirst.amount);
+                                const addOrSub = this.vm.currentFilter === 'input' ? '-' : '+';
                                 amounts += `<li><strong>${addOrSub}${stakeAmount.toLocaleString()}</strong> <small>NXS</small></li>`;
-                            } else if (row.IsMiningReward) {
+                            } else if (options.txTypes[row.transactionType] === 'CoinbasePrime' || options.txTypes[row.transactionType] === 'CoinbaseHash') {
                                 amounts += `<li><strong>${parseFloat(dFirst.amount.toFixed(4)).toLocaleString()}</strong> <small>NXS</small></li>`;
                             } else {
-                                const sub = dFirst.transactionType === 1 ? '-' : '+';
+                                const sub = dFirst.transactionIoType === 0 ? '-' : '+';
                                 amounts += `<li><strong>${sub}${parseFloat(data.reduce((a, b) => +a + +b.amount.toFixed(4), 0)).toLocaleString()}</strong> <small>NXS</small></li>`;
                             }
 

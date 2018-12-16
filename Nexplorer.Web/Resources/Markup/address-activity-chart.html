@@ -10,6 +10,9 @@
         <span class="toggle-seperator fa fa-ellipsis-v"></span>
         <a href="#" v-on:click.prevent.stop="changeDays(180)" v-bind:class="currentDays == 180 ? 'active-link' : ''">180 days</a>
     </div>
-    <br/>
-    <line-chart :chart-data="datacollection" :options="chartOptions" :width="width" :height="height"></line-chart>
+    <br />
+    <div class="chart">
+        <preloader v-if="!showChart"></preloader>
+        <line-chart :chart-data="datacollection" :options="chartOptions" :width="width" :height="height"></line-chart>
+    </div>
 </div>
