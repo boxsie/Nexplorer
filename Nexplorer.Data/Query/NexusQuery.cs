@@ -80,6 +80,8 @@ namespace Nexplorer.Data.Query
                 };
 
             txDto.BlockHeight = blockHeight ?? 0;
+            txDto.Inputs.ForEach(x => x.TransactionInputOutputType = TransactionInputOutputType.Input);
+            txDto.Outputs.ForEach(x => x.TransactionInputOutputType = TransactionInputOutputType.Output);
 
             return txDto;
         }

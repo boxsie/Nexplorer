@@ -45,11 +45,12 @@ namespace Nexplorer.Data.Map
                 x.CreateMap<TransactionResponse, TransactionDto>()
                     .ForMember(d => d.Hash, o => o.MapFrom(s => s.TransactionHash))
                     .ForMember(d => d.Timestamp, o => o.MapFrom(s => Helpers.ToDateTime(s.Time)))
-                    .ForMember(d => d.Inputs, o => o.Ignore())
-                    .ForMember(d => d.Outputs, o => o.Ignore())
                     .ForMember(d => d.TransactionId, o => o.Ignore())
                     .ForMember(d => d.BlockHeight, o => o.Ignore())
                     .ForMember(d => d.TransactionType, o => o.Ignore());
+
+                x.CreateMap<TransactionInputOutputResponse, TransactionInputOutputLiteDto>()
+                    .ForMember(d => d.TransactionInputOutputType, o => o.Ignore());
 
                 x.CreateMap<InfoResponse, NexusInfoDto>()
                     .ForMember(d => d.TimeStampUtc, o => o.MapFrom(s => Helpers.ToDateTime(s.TimeStamp)));
