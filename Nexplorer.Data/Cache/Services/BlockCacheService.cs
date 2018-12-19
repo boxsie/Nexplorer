@@ -73,7 +73,12 @@ namespace Nexplorer.Data.Cache.Services
             return address?.AddressTransactions
                 ?? new List<AddressTransactionDto>();
         }
-        
+
+        public async Task<int> GetCacheSizeAsync()
+        {
+            return (await GetCacheAsync()).Count;
+        }
+
         public async Task<int> GetLastHeightAsync()
         {
             var cache = await GetCacheAsync();

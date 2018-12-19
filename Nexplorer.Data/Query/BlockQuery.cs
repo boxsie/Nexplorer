@@ -59,6 +59,11 @@ namespace Nexplorer.Data.Query
             return count;
         }
 
+        public Task<int> GetCacheSizeAsync()
+        {
+            return _cache.GetCacheSizeAsync();
+        }
+
         public async Task<BlockDto> GetBlockAsync(int height)
         {
             var cacheBlock = await _cache.GetBlockAsync(height);

@@ -8,6 +8,6 @@ sudo cp ~/.Nexplorer/connectionStrings.json ~/Nexplorer/Nexplorer.Sync/bin/Relea
 sudo cp ~/.Nexplorer/emailConfig.json ~/Nexplorer/Nexplorer.Sync/bin/Release/netcoreapp2.2/publish/emailConfig.json
 sudo cp ~/.Nexplorer/userConfig.json ~/Nexplorer/Nexplorer.Sync/bin/Release/netcoreapp2.2/publish/userConfig.json
 sudo rm -rf /var/nexplorerSync
-sudo cp -r ~/Nexplorer/Nexplorer.Sync/bin/Release/netcoreapp2.2/publish/ /var/nexplorerSync
+sudo cp -r ~/Nexplorer/Nexplorer.Sync/bin/Release/netcoreapp2.2/publish/ /var/www/nexplorerSync
 sudo supervisorctl restart nexplorerSync
 echo "Nexplorer sync is running!"

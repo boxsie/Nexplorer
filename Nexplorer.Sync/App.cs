@@ -56,6 +56,7 @@ namespace Nexplorer.Sync
 
             jobs.Add(nameof(BlockScanJob), (SyncJob)_serviceProvider.GetService(typeof(BlockScanJob)));
             jobs.Add(nameof(BlockSyncJob), (SyncJob)_serviceProvider.GetService(typeof(BlockSyncJob)));
+            jobs.Add(nameof(BittrexSyncJob), (SyncJob)_serviceProvider.GetService(typeof(BittrexSyncJob)));
             jobs.Add(nameof(AddressCacheJob), (SyncJob)_serviceProvider.GetService(typeof(AddressCacheJob)));
             jobs.Add(nameof(AddressStatsJob), (SyncJob)_serviceProvider.GetService(typeof(AddressStatsJob)));
             jobs.Add(nameof(MiningStatsJob), (SyncJob)_serviceProvider.GetService(typeof(MiningStatsJob)));
