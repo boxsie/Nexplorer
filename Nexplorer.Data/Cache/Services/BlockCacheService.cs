@@ -150,27 +150,38 @@ namespace Nexplorer.Data.Cache.Services
 
             _logger.LogInformation("Building block cache...");
 
-            using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
+            try
             {
-                var nextHeight = (await sqlCon.QueryAsync<int>(sqlQ)).FirstOrDefault();
 
-                nextHeight += 1;
-                
-                for (var i = nextHeight; i < nextHeight + Settings.App.BlockCacheCount; i++)
+                using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
                 {
-                    var cacheBlock = await _redisCommand.GetAsync<BlockDto>(Settings.Redis.BuildCachedBlockKey(i));
+                    var nextHeight = (await sqlCon.QueryAsync<int>(sqlQ)).FirstOrDefault();
 
-                    if (cacheBlock == null)
+                    nextHeight += 1;
+
+                    for (var i = nextHeight; i < nextHeight + Settings.App.BlockCacheCount; i++)
                     {
-                        _logger.LogWarning($"Cannot get block {nextHeight} from the redis");
-                        break;
+                        var cacheBlock = await _redisCommand.GetAsync<BlockDto>(Settings.Redis.BuildCachedBlockKey(i));
+
+                        if (cacheBlock == null)
+                        {
+                            _logger.LogWarning($"Cannot get block {nextHeight} from the redis");
+                            break;
+                        }
+
+                        _logger.LogWarning($"Adding block {nextHeight} from redis");
+                        cache.Add(cacheBlock);
                     }
 
-                    _logger.LogWarning($"Adding block {nextHeight} from redis");
-                    cache.Add(cacheBlock);
+                    return cache;
                 }
-
-                return cache;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Cache build failed!");
+                _logger.LogError(e.Message);
+                _logger.LogError(e.StackTrace);
+                throw;
             }
         }
 
