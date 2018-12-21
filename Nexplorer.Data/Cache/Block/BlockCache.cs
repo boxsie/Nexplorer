@@ -167,7 +167,7 @@ namespace Nexplorer.Data.Cache.Block
             foreach (var blockDto in _cache.Where(x => x.NeedsUpdate).Select(x => x.Item).ToList())
                 await _redisCommand.SetAsync(Settings.Redis.BuildCachedBlockKey(blockDto.Height), blockDto);
 
-            await _redisCommand.SetAsync(Settings.Redis.BlockCache, _cache);
+            await _redisCommand.SetAsync(Settings.Redis.BlockCache, _cache.Select(x => x.Item).ToList());
 
             await _redisCommand.SetAsync(Settings.Redis.BlockLiteCache, _blockLiteCache);
             await _redisCommand.SetAsync(Settings.Redis.TransactionLiteCache, _transactionLiteCache);
