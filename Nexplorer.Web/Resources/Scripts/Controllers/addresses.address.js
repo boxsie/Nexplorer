@@ -66,9 +66,9 @@ export class AddressViewModel {
                     },
                     {
                         title: '<span class="fa fa-hashtag"></span>',
-                        className: 'hidden-xs',
+                        className: '',
                         data: 'oppositeAddresses',
-                        width: '60%',
+                        width: '55%',
                         render: (data, type, row) => {
                             if (options.txTypes[row.transactionType] === 'CoinbaseHash') {
                                 return `<span>Coinbase hash reward</span>`;
@@ -135,7 +135,7 @@ export class AddressViewModel {
                         title: '<span class="fa fa-paper-plane-o"></span>',
                         className: 'balance-col',
                         data: 'inputOutputs',
-                        width: '23%',
+                        width: '28%',
                         render: (data, type, row) => {
                             var amounts = '<ul class="list">';
                             var dFirst = data[0];

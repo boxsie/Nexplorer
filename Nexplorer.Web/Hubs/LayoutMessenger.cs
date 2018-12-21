@@ -20,7 +20,7 @@ namespace Nexplorer.Web.Hubs
             redisCommand.Subscribe<DateTime>(Settings.Redis.TimestampUtcLatest, OnLatestTimestampUtc);
             redisCommand.Subscribe<BlockLiteDto>(Settings.Redis.NewBlockPubSub, UpdateLatestBlockData);
             redisCommand.Subscribe<BittrexSummaryDto>(Settings.Redis.BittrexSummaryPubSub, UpdateLatestPriceData);
-            redisCommand.Subscribe<Dictionary<string, double>>(Settings.Redis.MiningStatPubSub, UpdateLatestDiffData);
+            redisCommand.Subscribe<Dictionary<string, double>>(Settings.Redis.DifficultyStatPubSub, UpdateLatestDiffData);
         }
 
         private Task OnLatestTimestampUtc(DateTime timestamp)
@@ -40,7 +40,7 @@ namespace Nexplorer.Web.Hubs
 
         private Task UpdateLatestDiffData(Dictionary<string, double> difficulties)
         {
-            return _layoutContext.Clients.All.SendAsync("UpdateLatestMiningData", difficulties);
+            return _layoutContext.Clients.All.SendAsync("UpdateLatestDiffData", difficulties);
         }
     }
 }

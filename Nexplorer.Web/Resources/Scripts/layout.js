@@ -102,17 +102,75 @@ export class LayoutViewModel {
         this.tickerVm = new Vue({
             el: '#ticker',
             data: {
+                lastPrice: 0
             },
             computed: {
                 height() {
+                    this.pulseElement($(this.$refs.tickerHeight));
                     return this.$layoutHub.latestBlock.height ? this.$layoutHub.latestBlock.height.toLocaleString() : ' - ';
                 },
-                price() {
-                    return this.$layoutHub.latestPrice.last ? this.$layoutHub.latestPrice.last.toFixed(8).toLocaleString() : ' - ';
+                heightUrl() {
+                    return this.$layoutHub.latestBlock.height ? `/blocks/${this.$layoutHub.latestBlock.height}` : '';
                 },
-                difficulty() {
-                    return 0;
+                price() {
+                    if (this.$layoutHub.latestPrice.last && this.$layoutHub.latestPrice.last !== this.lastPrice) {
+                        this.lastPrice = this.$layoutHub.latestPrice.last;
+                        this.pulseElement($(this.$refs.tickerPrice));
+
+                        return this.$layoutHub.latestPrice.last.toFixed(8);
+                    }
+
+                    return this.lastPrice ? this.lastPrice : ' - ';
+                },
+                diffPos() {
+                    this.pulseElement($(this.$refs.tickerDiffPos));
+                    return this.$layoutHub.latestDiffs.pos ? this.parseDifficulty(this.$layoutHub.latestDiffs.pos) : ' - ';
+                },
+                diffHash() {
+                    this.pulseElement($(this.$refs.tickerDiffHash));
+                    return this.$layoutHub.latestDiffs.hash ? this.parseDifficulty(this.$layoutHub.latestDiffs.hash) : ' - ';
+                },
+                diffPrime() {
+                    this.pulseElement($(this.$refs.tickerDiffPrime));
+                    return this.$layoutHub.latestDiffs.prime ? this.parseDifficulty(this.$layoutHub.latestDiffs.prime) : ' - ';
                 }
+            },
+            methods: {
+                parseDifficulty(diff) {
+                    return parseFloat(diff.toFixed(8)).toLocaleString(undefined, { 'minimumFractionDigits': 2, 'maximumFractionDigits': 6 });
+                },
+                pulseElement($elem) {
+                    $elem.addClass('pulse');
+
+                    setTimeout(() => {
+                            $elem.removeClass('pulse');
+                        },
+                        1000);
+                }
+            },
+            created() {
+                var self = this;
+
+                $(() => {
+                    var diffs = $(this.$refs.mobileDiffs).children();
+                    var i = 0;
+                    var currentDiff = diffs[i];
+
+                    console.log(diffs);
+
+                    setInterval(() => {
+                        $(currentDiff).fadeOut('fast', () => {
+                            i++;
+
+                            if (i >= diffs.length) {
+                                i = 0;
+                            }
+
+                            currentDiff = diffs[i];
+                            $(currentDiff).fadeIn('fast');
+                        });
+                    }, 5000);
+                });
             }
         });
 

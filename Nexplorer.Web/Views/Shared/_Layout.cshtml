@@ -149,30 +149,65 @@
 <div id="ticker" class="text-center">
     <table id="tickerTable">
         <tr>
-            <td>
-                <div class="val">
-                    <span class="fa fa-link"></span> {{ height }}
-                </div>
+            <td title="Chain height">
+                <a :href="heightUrl">
+                    <div class="val">
+                        <span class="fa fa-link"></span>
+                        <div ref="tickerHeight">
+                            {{ height }}
+                        </div>
+                    </div>
+                </a>
             </td>
-            <td>
-                <div class="val">
-                    <span class="fa fa-btc" style="margin-top: -1px;"></span> {{ price }}
-                </div>
+            <td title="Bittrex price">
+                <a asp-controller="home" asp-action="index">
+                    <div class="val">
+                        <span class="fa fa-btc" style="margin-top: -1px;"></span>
+                        <div ref="tickerPrice">{{ price }}</div>
+                    </div>
+                </a>
             </td>
-            <td>
-                <div class="val">
-                    <span class="fa fa-bolt" style="margin-top: -1px;"></span> {{ difficulty }}
-                </div>
+            <td title="Difficulty" class="visible-xs">
+                <a asp-controller="mining" asp-action="index">
+                    <div ref="mobileDiffs" class="val">
+                        <div>
+                            <span class="fa fa-bolt" style="margin-top: -1px;"></span>
+                            <div ref="tickerDiffPos">{{ diffPos }}</div>
+                        </div>
+                        <div style="display: none;">
+                            <span class="fa fa-hashtag" style="margin-top: -1px;"></span>
+                            <div ref="tickerDiffHash">{{ diffHash }}</div>
+                        </div>
+                        <div style="display: none;">
+                            <span class="fa fa-microchip"></span>
+                            <div ref="tickerDiffPrime">{{ diffPrime }}</div>
+                        </div>
+                    </div>
+                </a>
             </td>
-            <td class="hidden-xs">
-                <div class="val">
-                    <span class="fa fa-hashtag" style="margin-top: -1px;"></span> {{ difficulty }}
-                </div>
+            <td title="POS difficulty" class="hidden-xs">
+                <a asp-controller="mining" asp-action="index">
+                    <div class="val">
+                        <span class="fa fa-bolt" style="margin-top: -1px;"></span>
+                        <div ref="tickerDiffPos">{{ diffPos }}</div>
+                    </div>
+                </a>
             </td>
-            <td class="hidden-xs">
-                <div class="val">
-                    <span class="fa fa-microchip"></span> {{ difficulty }}
-                </div>
+            <td title="Hash difficulty" class="hidden-xs">
+                <a asp-controller="mining" asp-action="index">
+                    <div class="val">
+                        <span class="fa fa-hashtag" style="margin-top: -1px;"></span>
+                        <div ref="tickerDiffHash">{{ diffHash }}</div>
+                    </div>
+                </a>
+            </td>
+            <td title="Prime difficulty" class="hidden-xs">
+                <a asp-controller="mining" asp-action="index">
+                    <div class="val">
+                        <span class="fa fa-microchip"></span>
+                        <div ref="tickerDiffPrime">{{ diffPrime }}</div>
+                    </div>
+                </a>
             </td>
         </tr>
     </table>
