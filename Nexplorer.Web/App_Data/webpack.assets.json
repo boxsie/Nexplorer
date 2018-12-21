@@ -1,11 +1,10 @@
 {
+  "favourites.index": {
+    "js": "../js/favourites.index.js"
+  },
   "addresses.address": {
     "js": "../js/addresses.address.js",
     "css": "../css/addresses.address.css"
-  },
-  "addresses.index": {
-    "js": "../js/addresses.index.js",
-    "css": "../css/addresses.index.css"
   },
   "mining.index": {
     "js": "../js/mining.index.js",
@@ -25,8 +24,9 @@
     "js": "../js/layout.js",
     "css": "../css/layout.css"
   },
-  "favourites.index": {
-    "js": "../js/favourites.index.js"
+  "addresses.index": {
+    "js": "../js/addresses.index.js",
+    "css": "../css/addresses.index.css"
   },
   "validate": {
     "js": "../js/validate.js"
@@ -50,7 +50,10 @@
     "woff": "../font/fontawesome-webfont.woff",
     "ttf": "../font/fontawesome-webfont.ttf",
     "svg": "../font/fontawesome-webfont.svg",
-    "jpg": "../img/hero-img.jpg",
+    "jpg": [
+      "../img/hero-img.jpg",
+      "../img/hero-img-xs.jpg"
+    ],
     "png": "../img/nxs-icon.png",
     "woff2": "../font/fontawesome-webfont.woff2"
   }

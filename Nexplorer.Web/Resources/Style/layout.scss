@@ -308,7 +308,7 @@ body, h1, h2, h3, h4, h5, h6, p {
     height: $hero-height-xs + $nav-height-xs;
     width: 100%;
     top: 0;
-    background-image: url(../Images/hero-img.jpg);
+    background-image: url(../Images/hero-img-xs.jpg);
     background-position: center;
     background-size: cover;
     background-color: #000;
@@ -696,6 +696,7 @@ body, h1, h2, h3, h4, h5, h6, p {
 
     #hero {
         height: $hero-height-full + $nav-height-full;
+        background-image: url(../Images/hero-img.jpg);
     }
 
     #heroText {

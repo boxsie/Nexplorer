@@ -131,16 +131,6 @@ export class HomeViewModel {
                 animateBittrexSummaryItem($elem, isUp) {
                     $elem.removeClass('summary-up').removeClass('summary-down');
                     $elem.addClass(isUp ? 'summary-up' : 'summary-down');
-
-                    this.pulseElement($elem);
-                },
-                pulseElement($elem) {
-                    $elem.addClass('pulse');
-
-                    setTimeout(() => {
-                            $elem.removeClass('pulse');
-                        },
-                        1000);
                 },
                 formatTimeStamp(timestamp) {
                     return timestamp.format("DD/MM HH:mm:ss");
