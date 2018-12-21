@@ -6,6 +6,8 @@
     Layout = "_Layout";
 }
 
+@{ await Html.RenderPartialAsync("_AdvertBanner"); }
+
 <div class="card border">
     <h1>Transaction</h1>
 
@@ -87,5 +89,5 @@
         </div>
     </div>
 
-    @{ Html.RenderPartial("_TransactionItem", new TransactionItemViewModel {Transaction = Model.Transaction, ShowHash = false}); }
+    @{ Html.RenderPartial("_TransactionItem", new TransactionItemViewModel { Transaction = Model.Transaction, ShowHash = false }); }
 </div>

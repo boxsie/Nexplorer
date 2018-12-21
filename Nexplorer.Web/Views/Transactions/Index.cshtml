@@ -5,10 +5,13 @@
     Layout = "_Layout";
 }
 
+@{ await Html.RenderPartialAsync("_AdvertBanner"); }
+
 <div id="transactionPages" class="panel clearfix">
     <h1>Transactions</h1>
     <h3>Last 50 Transactions</h3>
-    <p><i>This page live updates the transactions as they arrive.</i>
+    <p>
+        <i>This page live updates the transactions as they arrive.</i>
     </p>
     <blockchain-table ref="txTable" v-bind:items-per-page="10"></blockchain-table>
 </div>
