@@ -9,17 +9,20 @@ using Nexplorer.Core;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Enums;
 using Dapper;
+using Microsoft.Extensions.Logging;
 
 namespace Nexplorer.Data.Cache.Services
 {
     public class BlockCacheService
     {
         private readonly RedisCommand _redisCommand;
+        private readonly ILogger<BlockCacheService> _logger;
         private List<BlockDto> _cache;
 
-        public BlockCacheService(RedisCommand redisCommand)
+        public BlockCacheService(RedisCommand redisCommand, ILogger<BlockCacheService> logger)
         {
             _redisCommand = redisCommand;
+            _logger = logger;
 
             _redisCommand.Subscribe<BlockLiteDto>(Settings.Redis.NewBlockPubSub, AddToBlockCacheAsync);
         }
@@ -145,19 +148,25 @@ namespace Nexplorer.Data.Cache.Services
                                   FROM Block b
                                   ORDER BY b.Height DESC";
 
+            _logger.LogInformation("Building block cache...");
+
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
                 var nextHeight = (await sqlCon.QueryAsync<int>(sqlQ)).FirstOrDefault();
 
                 nextHeight += 1;
-
+                
                 for (var i = nextHeight; i < nextHeight + Settings.App.BlockCacheCount; i++)
                 {
                     var cacheBlock = await _redisCommand.GetAsync<BlockDto>(Settings.Redis.BuildCachedBlockKey(i));
 
                     if (cacheBlock == null)
+                    {
+                        _logger.LogWarning($"Cannot get block {nextHeight} from the redis");
                         break;
+                    }
 
+                    _logger.LogWarning($"Adding block {nextHeight} from redis");
                     cache.Add(cacheBlock);
                 }
 
