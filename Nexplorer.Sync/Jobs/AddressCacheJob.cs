@@ -149,7 +149,7 @@ namespace Nexplorer.Sync.Jobs
         {
             var nexusAddresses = new List<AddressLiteDto>();
 
-            var hashes = AddressQuery._nexusAddresses.Values.SelectMany(x => x.SelectMany(y => y));
+            var hashes = AddressQuery.NexusAddresses.Values.SelectMany(x => x.SelectMany(y => y));
 
             foreach (var nexusAmbassadorAddress in hashes)
             {

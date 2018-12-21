@@ -78,7 +78,7 @@ namespace Nexplorer.Data.Query
         
         public int GetNexusAddressCount()
         {
-            return _nexusAddresses.Sum(x => x.Value.Count);
+            return NexusAddresses.Sum(x => x.Value.Count);
         }
 
         public async Task<string> GetAddressHashAsync(int addressId)
@@ -543,7 +543,7 @@ namespace Nexplorer.Data.Query
             return address;
         }
 
-        public static readonly Dictionary<NexusAddressPools, List<string>> _nexusAddresses =
+        public static readonly Dictionary<NexusAddressPools, List<string>> NexusAddresses =
             new Dictionary<NexusAddressPools, List<string>>
             {
                 {
