@@ -3,6 +3,20 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Nexplorer.Domain.Enums
 {
+    public enum NexusAddressPools
+    {
+        [Display(Name = "USA Embassy")]
+        USA,
+        [Display(Name = "UK Embassy")]
+        UK,
+        [Display(Name = "Australia Embassy")]
+        AUS,
+        [Display(Name = "Community")]
+        Community,
+        [Display(Name = "Retired")]
+        Retired
+    }
+
     public enum OrderAddressesBy
     {
         [Display(Name = "Highest Balance")]
