@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
@@ -5,6 +6,7 @@ using Nexplorer.Core;
 using Nexplorer.Data.Cache.Services;
 using Nexplorer.Data.Publish;
 using Nexplorer.Data.Query;
+using Nexplorer.Domain.Dtos;
 
 namespace Nexplorer.Data.Cache.Block
 {
@@ -36,6 +38,8 @@ namespace Nexplorer.Data.Cache.Block
 
             var blockCount = 0;
             var txCount = 0;
+
+            var cache = new List<BlockDto>();
 
             for (var i = nextHeight; i < nextHeight + Settings.App.BlockCacheCount; i++)
             {

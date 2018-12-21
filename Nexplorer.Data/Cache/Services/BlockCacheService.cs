@@ -17,14 +17,11 @@ namespace Nexplorer.Data.Cache.Services
     {
         private readonly RedisCommand _redisCommand;
         private readonly ILogger<BlockCacheService> _logger;
-        private List<BlockDto> _cache;
 
         public BlockCacheService(RedisCommand redisCommand, ILogger<BlockCacheService> logger)
         {
             _redisCommand = redisCommand;
             _logger = logger;
-
-            _redisCommand.Subscribe<BlockLiteDto>(Settings.Redis.NewBlockPubSub, AddToBlockCacheAsync);
         }
 
         public Task<BlockDto> GetBlockAsync(int height)
@@ -116,7 +113,7 @@ namespace Nexplorer.Data.Cache.Services
 
         private async Task<List<BlockDto>> GetCacheAsync()
         {
-            return _cache ?? (_cache = await BuildBlockCacheAsync());
+            return await _redisCommand.GetAsync<List<BlockDto>>(Settings.Redis.BlockCache);
         }
 
         private async Task<List<CachedAddressDto>> GetAddressCacheAsync()
@@ -124,67 +121,6 @@ namespace Nexplorer.Data.Cache.Services
             var cache = await _redisCommand.GetAsync<List<CachedAddressDto>>(Settings.Redis.AddressCache);
 
             return cache ?? new List<CachedAddressDto>();
-        }
-
-        private async Task AddToBlockCacheAsync(BlockLiteDto blockLite)
-        {
-            if (_cache == null)
-                _cache = await BuildBlockCacheAsync();
-
-            var fullBlock = await _redisCommand.GetAsync<BlockDto>(Settings.Redis.BuildCachedBlockKey(blockLite.Height));
-
-            _cache.Add(fullBlock);
-            
-            if (_cache.Count > Settings.App.BlockCacheCount)
-                _cache.RemoveRange(0, _cache.Count - Settings.App.BlockCacheCount);
-        }
-
-        private async Task<List<BlockDto>> BuildBlockCacheAsync()
-        {
-            var cache = new List<BlockDto>();
-
-            const string sqlQ = @"SELECT TOP 1
-                                  b.Height
-                                  FROM Block b
-                                  ORDER BY b.Height DESC";
-
-            _logger.LogInformation("Building block cache...");
-
-            try
-            {
-
-                using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
-                {
-                    var nextHeight = (await sqlCon.QueryAsync<int>(sqlQ)).FirstOrDefault();
-
-                    _logger.LogWarning($"Last block height = {nextHeight}");
-
-                    nextHeight += 1;
-
-                    for (var i = nextHeight; i < nextHeight + Settings.App.BlockCacheCount; i++)
-                    {
-                        var cacheBlock = await _redisCommand.GetAsync<BlockDto>(Settings.Redis.BuildCachedBlockKey(i));
-
-                        if (cacheBlock == null)
-                        {
-                            _logger.LogWarning($"Cannot get block {i} from the redis");
-                            break;
-                        }
-
-                        _logger.LogInformation($"Adding block {i} from redis");
-                        cache.Add(cacheBlock);
-                    }
-
-                    return cache;
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"Cache build failed!");
-                _logger.LogError(e.Message);
-                _logger.LogError(e.StackTrace);
-                throw;
-            }
         }
 
         private Task<CachedAddressDto> GetCachedAddressAsync(string hash)
