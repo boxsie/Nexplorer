@@ -82,7 +82,7 @@ namespace Nexplorer.Data.Cache.Services
         public async Task<int> GetLastHeightAsync()
         {
             var cache = await GetCacheAsync();
-
+            Console.WriteLine(cache.Count + " - " + cache.Max(x => x.Height));
             return cache.Any()
                 ? cache.Max(x => x.Height)
                 : 0;
