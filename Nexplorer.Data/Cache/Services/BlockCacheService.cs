@@ -17,11 +17,14 @@ namespace Nexplorer.Data.Cache.Services
     {
         private readonly RedisCommand _redisCommand;
         private readonly ILogger<BlockCacheService> _logger;
+        private List<BlockDto> _cache;
+        private bool _subscribed;
 
         public BlockCacheService(RedisCommand redisCommand, ILogger<BlockCacheService> logger)
         {
             _redisCommand = redisCommand;
             _logger = logger;
+            _subscribed = false;
         }
 
         public Task<BlockDto> GetBlockAsync(int height)
@@ -113,7 +116,21 @@ namespace Nexplorer.Data.Cache.Services
 
         private async Task<List<BlockDto>> GetCacheAsync()
         {
-            return await _redisCommand.GetAsync<List<BlockDto>>(Settings.Redis.BlockCache);
+            if (_cache == null)
+                await SetCacheAsync();
+
+            return _cache;
+        }
+
+        private async Task SetCacheAsync()
+        {
+            _cache = await _redisCommand.GetAsync<List<BlockDto>>(Settings.Redis.BlockCache);
+
+            if (!_subscribed)
+            {
+                await _redisCommand.SubscribeAsync<BlockLiteDto>(Settings.Redis.NewBlockPubSub, dto => SetCacheAsync());
+                _subscribed = true;
+            }
         }
 
         private async Task<List<CachedAddressDto>> GetAddressCacheAsync()
