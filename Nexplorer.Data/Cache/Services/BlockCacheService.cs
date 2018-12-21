@@ -165,11 +165,11 @@ namespace Nexplorer.Data.Cache.Services
 
                         if (cacheBlock == null)
                         {
-                            _logger.LogWarning($"Cannot get block {nextHeight} from the redis");
+                            _logger.LogWarning($"Cannot get block {i} from the redis");
                             break;
                         }
 
-                        _logger.LogWarning($"Adding block {nextHeight} from redis");
+                        _logger.LogInformation($"Adding block {i} from redis");
                         cache.Add(cacheBlock);
                     }
 
