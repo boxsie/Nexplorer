@@ -157,6 +157,8 @@ namespace Nexplorer.Data.Cache.Services
                 {
                     var nextHeight = (await sqlCon.QueryAsync<int>(sqlQ)).FirstOrDefault();
 
+                    _logger.LogWarning($"Last block height = {nextHeight}");
+
                     nextHeight += 1;
 
                     for (var i = nextHeight; i < nextHeight + Settings.App.BlockCacheCount; i++)
