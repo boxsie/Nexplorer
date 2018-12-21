@@ -27,7 +27,6 @@
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
     <meta name="theme-color" content="#ffffff">
-    <meta name="adbit-site-verification" content="53d3dec9ca9d361e67349f25a0f5b0a6221b7940191c6b8179467e184f9fa526" />
     
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet">
     <link rel="stylesheet" href="@ViewBag.LayoutCss" />
@@ -44,6 +43,13 @@
         gtag('js', new Date());
 
         gtag('config', 'UA-110464552-1');
+    </script>
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({
+            google_ad_client: "ca-pub-6209150577224148",
+            enable_page_level_ads: true
+        });
     </script>
 
     @RenderSection("Head", required: false)
@@ -270,8 +276,6 @@
 </script>
 
 @RenderSection("Scripts", false)
-    
-<script type="text/javascript" src="https://adbit.biz/js/show_ads.js"></script>
 
 <div class="device-xs visible-xs"></div>
 <div class="device-sm visible-sm"></div>
