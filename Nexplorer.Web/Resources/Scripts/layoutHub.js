@@ -6,7 +6,10 @@ export default {
     install(Vue, options) {
         Vue.prototype.$layoutHub = new Vue({
             data: {
-                utcMoment: moment()
+                utcMoment: moment(),
+                latestBlock: {},
+                latestPrice: {},
+                latestDiffs: {}
             },
             created() {
                 this.connection = new HubConnectionBuilder()
@@ -19,9 +22,36 @@ export default {
                             (timestamp) => {
                                 this.utcMoment = moment(timestamp);
                             });
-
+                        
                         this.connection.invoke('getLatestTimestampUtc').then((timestamp) => {
                             this.utcMoment = moment(timestamp);
+                        });
+
+                        this.connection.on('updateLatestBlockData',
+                            (latestBlock) => {
+                                this.latestBlock = latestBlock;
+                            });
+                        
+                        this.connection.invoke('getLatestBlock').then((latestBlock) => {
+                            this.latestBlock = latestBlock;
+                        });
+                        
+                        this.connection.on('updateLatestPriceData',
+                            (latestPrice) => {
+                                this.latestPrice = latestPrice;
+                            });
+
+                        this.connection.invoke('getLatestPrice').then((latestPrice) => {
+                            this.latestPrice = latestPrice;
+                        });
+
+                        this.connection.on('updateLatestDiffData',
+                            (latestDiffs) => {
+                                this.latestDiffs = latestDiffs;
+                            });
+
+                        this.connection.invoke('getLatestDiffs').then((latestDiffs) => {
+                            this.latestDiffs = latestDiffs;
                         });
                     });
 

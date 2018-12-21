@@ -48,6 +48,11 @@ namespace Nexplorer.Data.Query
                 .FirstOrDefaultAsync();
         }
 
+        public Task<BlockDto> GetLastBlockAsync()
+        {
+            return _cache.GetLastBlockAsync();
+        }
+
         public async Task<int> GetChannelHeight(BlockChannels channel, int height = 0)
         {
             var count = await  _cache.GetChannelHeightAsync(channel, height);

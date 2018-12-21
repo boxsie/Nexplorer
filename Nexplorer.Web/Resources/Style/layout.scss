@@ -487,6 +487,45 @@ body, h1, h2, h3, h4, h5, h6, p {
     }
 }
 
+#ticker {
+    position: fixed;
+    bottom: 0;
+    z-index: 2;
+    width: 100%;
+    background-color: rgba($nav-secondary, .6);
+    border-top-width: 1px;
+    border-top-style: solid;
+    border-top-color: rgba($nav-primary, .6);
+    color: $nav-primary;
+    font-size: 12px;
+    font-weight: 500;
+
+    #tickerTable {
+        width: 100%;
+        margin: 4px auto;
+        max-width: $container-max-width + 40px;
+
+        td {
+            width: 20%;
+
+            .val {
+                position: relative;
+                border-radius: 4px;
+                background-color: $nav-secondary;
+                margin: 0 3%;
+                padding: 2px 0;
+                               
+                .fa {
+                    position: absolute;
+                    left: 6px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    font-size: 12px;
+                }
+            }
+        }
+    }
+}
 
 #footer {
     background-color: #27323c;
@@ -723,6 +762,26 @@ body, h1, h2, h3, h4, h5, h6, p {
         }
     }
 
+    #ticker {
+        font-size: 14px;
+
+        #tickerTable {
+            td {
+                width: 20%;
+
+                .val {
+                    margin: 0 10%;
+                    padding: 2px 0;
+
+                    .fa {
+                        left: 6px;
+                        font-size: 16px;
+                    }
+                }
+            }
+        }
+    }
+
     #footer {
         .container-fluid {
             .row {
@@ -747,6 +806,12 @@ body, h1, h2, h3, h4, h5, h6, p {
     #heroText {
         .slider {
             margin: 20px auto 0 auto;
+        }
+    }
+
+    #ticker {
+        #tickerTable {
+            width: 80%;
         }
     }
 }

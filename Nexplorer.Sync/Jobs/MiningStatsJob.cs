@@ -51,10 +51,14 @@ namespace Nexplorer.Sync.Jobs
                 SupplyRate = await _nexusQuery.GetSupplyRate()
             };
 
+            var diffs = channelStats?.ToDictionary(x => x.Channel.ToLower(), y => y.Difficulty);
+
             await _redisCommand.SetAsync(Settings.Redis.SupplyRatesLatest, statDto.SupplyRate);
             await _redisCommand.SetAsync(Settings.Redis.ChannelStatsLatest, statDto.ChannelStats);
+            await _redisCommand.SetAsync(Settings.Redis.DifficultyStatPubSub, diffs);
 
             await _redisCommand.PublishAsync(Settings.Redis.MiningStatPubSub, statDto);
+            await _redisCommand.PublishAsync(Settings.Redis.DifficultyStatPubSub, diffs);
         }
 
         private async Task UpdateMiningInfoAsync()

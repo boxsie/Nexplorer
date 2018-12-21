@@ -31,6 +31,7 @@ namespace Nexplorer.Config.Core
         public string NewTransactionPubSub { get; set; }
         public string BittrexSummaryPubSub { get; set; }
         public string MiningStatPubSub { get; set; }
+        public string DifficultyStatPubSub { get; set; }
         public string AddressStatPubSub { get; set; }
 
         public string NodeVersion { get; set; }

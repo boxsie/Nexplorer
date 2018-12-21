@@ -46,6 +46,11 @@ namespace Nexplorer.Data.Cache.Services
             return (await GetBlockAsync(height))?.Hash;
         }
 
+        public async Task<BlockDto> GetLastBlockAsync()
+        {
+            return (await GetBlockAsync(await GetLastHeightAsync()));
+        }
+
         public async Task<List<BlockDto>> GetBlocksAsync()
         {
             return await GetCacheAsync();

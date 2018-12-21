@@ -51,6 +51,7 @@ export class HomeViewModel {
                             .then(() => this.connection.invoke('getTransactionCountLastDay'))
                                 .then((count) => this.txCountLastDay = count);
 
+                        document.title = `#${jsonBlockData.block.height} | Nexplorer - A Nexus Block Explorer`;
                     });
 
                 this.connection.on('newTxPubSub',

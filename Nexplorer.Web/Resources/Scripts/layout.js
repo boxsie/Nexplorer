@@ -11,7 +11,7 @@ export class LayoutViewModel {
     constructor(options) {
         Vue.use(layoutHub);
 
-        this.vm = new Vue({
+        this.navVm = new Vue({
             el: '#navbar',
             data: {
                 isSignedIn: options.isSignedIn,
@@ -99,8 +99,25 @@ export class LayoutViewModel {
             }
         });
 
+        this.tickerVm = new Vue({
+            el: '#ticker',
+            data: {
+            },
+            computed: {
+                height() {
+                    return this.$layoutHub.latestBlock.height ? this.$layoutHub.latestBlock.height.toLocaleString() : ' - ';
+                },
+                price() {
+                    return this.$layoutHub.latestPrice.last ? this.$layoutHub.latestPrice.last.toFixed(8).toLocaleString() : ' - ';
+                },
+                difficulty() {
+                    return 0;
+                }
+            }
+        });
+
         $(() => {
-            this.vm.windowResize();
+            this.navVm.windowResize();
         });
     }
 }

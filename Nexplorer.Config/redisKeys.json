@@ -15,6 +15,7 @@
     "NewTransactionPubSub": "transactions:new",
     "BittrexSummaryPubSub": "bittrex:summary",
     "MiningStatPubSub": "stats:mining",
+    "DifficultyStatPubSub": "stats:mining:difficulty",
     "AddressStatPubSub": "stats:addresses",
     "AddressDistributionStats": "stats:addresses:distribution",
     "BittrexLastUsdBtcPrice": "bittrex:usdbtcprice",
