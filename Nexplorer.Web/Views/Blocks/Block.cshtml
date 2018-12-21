@@ -21,7 +21,7 @@
                     <span class="toggle-seperator fa fa-ellipsis-v"></span> <a href="/blocks/@(Model.Height + 1)">NEXT</a>
                     <span class="toggle-seperator fa fa-ellipsis-v"></span> <a href="/blocks/latest"> LAST</a>
                 </span>
-			</div>
+            </div>
         </div>
     </div>
 }
@@ -80,7 +80,7 @@
             <p class="val">@Model.TimeUtc</p>
         </div>
     </div>
-    
+
     <div class="col-sm-4">
         <div class="panel">
             <div class="row">
@@ -99,7 +99,7 @@
             <p class="val">@Model.Mint.ToString("N6", CultureInfo.InvariantCulture) <span style="font-size: 10px;">NXS</span></p>
         </div>
     </div>
-    
+
     <div class="col-sm-4">
         <div class="panel">
             <div class="row">
@@ -119,6 +119,8 @@
         </div>
     </div>
 </div>
+
+@{ await Html.RenderPartialAsync("_AdvertBanner"); }
 
 <div class="row">
     <div class="col-xs-12">

@@ -78,6 +78,8 @@
     </div>
 </div>
 
+@{ await Html.RenderPartialAsync("_AdvertBanner"); }
+
 <div class="panel full-length">
     <div class="row">
         <div class="col-xs-8">
@@ -119,7 +121,7 @@
             <span class="fa fa-filter"></span>
         </div>
     </div>
-    
+
     <div class="text-toggle">
         <a href="#" v-on:click.prevent.stop="changeFilter('all')" v-bind:class="currentFilter == 'all' ? 'active-link' : ''">All</a>
         <span class="toggle-seperator fa fa-ellipsis-v"></span>
@@ -131,7 +133,7 @@
         <span class="toggle-seperator fa fa-ellipsis-v"></span>
         <a href="#" v-on:click.prevent.stop="changeFilter('custom')" v-bind:class="currentFilter == 'custom' ? 'active-link' : ''">Custom</a>
     </div>
-    
+
     <div class="row">
         <div class="col-md-offset-1 col-md-10">
             <div id="customFilter" v-if="currentFilter == 'custom'">
@@ -139,7 +141,7 @@
                     <div class="row">
                         <div class="col-sm-4">
                             <h3>BALANCE</h3>
-                            <br/>
+                            <br />
                             <div class="form-group">
                                 <label for="balanceMin">Min Balance</label>
                                 <input type="number" class="form-control" id="balanceMin" v-model="filterCriteria.minBalance">
@@ -151,7 +153,7 @@
                         </div>
                         <div class="col-sm-4">
                             <h3>LAST BLOCK</h3>
-                            <br/>
+                            <br />
                             <div class="form-group">
                                 <label for="lastSeenFrom">Min Height</label>
                                 <input type="number" class="form-control" id="lastSeenFrom" v-model="filterCriteria.heightFrom">
@@ -167,7 +169,7 @@
                             <div class="form-group">
                                 <select asp-items="Html.GetEnumSelectList<OrderAddressesBy>()" class="form-control" v-model="filterCriteria.orderBy"></select>
                             </div>
-                            <br/>
+                            <br />
                             <h3>OPTIONS</h3>
                             <br />
                             <div class="form-group">
@@ -189,7 +191,7 @@
                             <small class="text-muted" style="display: block;">
                                 All fields are optional, 1000 results maximum.
                             </small>
-                            <br/>
+                            <br />
                             <button type="submit" class="btn btn-primary" v-on:click.prevent.stop="reloadData">GO</button>
                         </div>
                     </div>
@@ -197,7 +199,7 @@
             </div>
         </div>
     </div>
-    
+
     <address-table ref="addressTable" class="address-table"
                    :ajax-url="addressTableAjaxUrl"
                    :columns="addressTableColumns"></address-table>
