@@ -16,7 +16,12 @@ config.module.rules.push({
     }
 });
 
-config.module.resolve.alias.vue = 'vue/dist/vue.min';
+config.module.resolve = {
+    alias: {
+        'vue': 'vue/dist/vue.min',
+        'jquery.validation': 'jquery-validation/dist/jquery.validate.js'
+    }
+};
 
 config.plugins.push(new webpack.DefinePlugin({
     'process.env': {

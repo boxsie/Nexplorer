@@ -84,12 +84,6 @@ module.exports = {
             }
         ]
     },
-    resolve: {
-        alias: {
-            'vue': 'vue/dist/vue.js',
-            'jquery.validation': 'jquery-validation/dist/jquery.validate.js'
-        }
-    },
     plugins: [
         new webpack.ProvidePlugin({
             $: "jquery",
