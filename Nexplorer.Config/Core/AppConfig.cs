@@ -1,6 +1,6 @@
 namespace Nexplorer.Config.Core
 {
-    public class AppSettings
+    public class AppConfig
     {
         public int BulkSaveCount { get; set; }
         public int BlockRefreshHeight { get; set; }
