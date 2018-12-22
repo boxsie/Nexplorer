@@ -193,6 +193,7 @@ namespace Nexplorer.Web
                 routes.MapRoute("blocks", "blocks/{blockId}", new { controller = "blocks", action = "block" });
                 routes.MapRoute("transactions", "transactions/{txHash}", new { controller = "transactions", action = "transaction" });
                 routes.MapRoute("addresses", "addresses/{addressHash}", new { controller = "addresses", action = "address" });
+                routes.MapRoute("cookie", "cookie", new { controller = "home", action = "cookie" });
             });
             
             app.UseSignalR(routes =>

@@ -20,6 +20,7 @@ using Nexplorer.Core;
 using Nexplorer.Domain.Entity.User;
 using Nexplorer.Domain.Enums;
 using Nexplorer.Web.Controllers;
+using Nexplorer.Web.Cookies;
 using Nexplorer.Web.Enums;
 
 namespace Nexplorer.Web.Extensions
@@ -140,6 +141,27 @@ namespace Nexplorer.Web.Extensions
             }
 
             return false;
+        }
+
+        public static T GetCookie<T>(this HttpRequest request) where T : new()
+        {
+            var cookieJson = request.Cookies[Settings.App.UserSettingsCookieKey];
+
+            T cookie = default(T);
+
+            if (cookieJson != null)
+                cookie = JsonConvert.DeserializeObject<T>(cookieJson);
+
+            if (cookie == null)
+                cookie = new T();
+
+            return cookie;
+        }
+
+        public static void SetCookie<T>(this HttpResponse response, T cookie)
+        {
+            var options = new CookieOptions { Expires = DateTime.Now.AddDays(7) };
+            response.Cookies.Append(Settings.App.UserSettingsCookieKey, JsonConvert.SerializeObject(cookie), options);
         }
     }
 }

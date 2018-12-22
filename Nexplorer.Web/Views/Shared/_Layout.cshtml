@@ -153,8 +153,8 @@
 </div>
     
 
-<div id="ticker" class="text-center">
-    <table id="tickerTable">
+<div id="layout">
+    <table id="tickerTable" class="text-center">
         <tr>
             <td title="Chain height">
                 <a :href="heightUrl">
@@ -218,6 +218,17 @@
             </td>
         </tr>
     </table>
+
+    <div ref="cookieWarning" id="cookieWarning" v-show="!userSettings.dismissedCookiePolicy" v-cloak>
+        <a href="#" v-on:click.prevent.stop="closeCookieWarning">
+            <span class="fa fa-close"></span>
+        </a>
+
+        <p>
+            <strong>Welcome to Nexplorer.</strong> This site uses cookies to improve your experience and deliver personalised advertising.
+            You can <a target="_blank" href="/cookie#optingOut">opt out</a> at any time or find out more by reading our <a target="_blank" href="/cookie">cookie policy</a>.
+        </p>
+    </div>
 </div>
     
 <footer id="footer">
@@ -231,6 +242,7 @@
                     <li><a href="/transactions">Transactions</a></li>
                     <li><a href="/addresses">Addresses</a></li>
                     <li><a href="/swagger" target="_blank">API</a></li>
+                    <li><a href="/cookie" target="_blank">Cookie Policy</a></li>
                 </ul>
             </div>
             <div class="col-sm-3">
@@ -271,7 +283,8 @@
 <script language="javascript" src="@ViewBag.LayoutJs"></script>
 <script language="javascript">
     var layoutVm = new nexplorer.LayoutViewModel({
-        isSignedIn: @Json.Serialize(User.Identity.IsAuthenticated)
+        isSignedIn: @Json.Serialize(User.Identity.IsAuthenticated),
+        userSettings: @Json.Serialize(ViewBag.UserSettings)
     });
 </script>
 

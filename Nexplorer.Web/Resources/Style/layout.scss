@@ -487,7 +487,7 @@ body, h1, h2, h3, h4, h5, h6, p {
     }
 }
 
-#ticker {
+#layout {
     position: fixed;
     bottom: 0;
     z-index: 2;
@@ -535,6 +535,37 @@ body, h1, h2, h3, h4, h5, h6, p {
                 &:hover {
                     background-color: darken($nav-secondary, 5%);
                 }
+            }
+        }
+    }
+
+    #cookieWarning {
+        width: 100%;
+        position: fixed;
+        height: 110px;
+        background-color: rgba(0, 0, 0, 0.75);
+        bottom: 0;
+        z-index: 3;
+        color: #fff;
+        transition: height 0.5s ease-out;
+
+        a {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        p {
+            padding: 25px;
+        }
+
+        .fa-close {
+            float: right;
+            font-size: 22px;
+            padding: 15px;
+            text-decoration: none;
+
+            &:hover {
+                color: #ccc;
             }
         }
     }
@@ -625,6 +656,10 @@ body, h1, h2, h3, h4, h5, h6, p {
     }
 }
 /**/
+
+[v-cloak] {
+    display: none
+}
 
 @media(min-width: 768px) {
     .text-right-xs {
@@ -776,7 +811,7 @@ body, h1, h2, h3, h4, h5, h6, p {
         }
     }
 
-    #ticker {
+    #layout {
         font-size: 14px;
 
         #tickerTable {
@@ -793,6 +828,12 @@ body, h1, h2, h3, h4, h5, h6, p {
                     }
                 }
             }
+        }
+
+        #cookieWarning {
+            width: 350px;
+            height: 150px;
+            bottom: 0;
         }
     }
 

@@ -9,6 +9,8 @@ using Nexplorer.Core;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Enums;
+using Nexplorer.Web.Cookies;
+using Nexplorer.Web.Extensions;
 using Nexplorer.Web.Models;
 
 namespace Nexplorer.Web.Controllers
@@ -44,6 +46,23 @@ namespace Nexplorer.Web.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public IActionResult Cookie()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult DismissCookieWarning()
+        {
+            var cookie = Request.GetCookie<UserSettingsCookieData>();
+
+            cookie.DismissedCookiePolicy = true;
+
+            Response.SetCookie(cookie);
+
+            return Ok();
         }
 
         [HttpPost]

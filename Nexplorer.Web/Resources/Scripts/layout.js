@@ -100,8 +100,9 @@ export class LayoutViewModel {
         });
 
         this.tickerVm = new Vue({
-            el: '#ticker',
+            el: '#layout',
             data: {
+                userSettings: options.userSettings,
                 lastPrice: 0
             },
             computed: {
@@ -146,6 +147,14 @@ export class LayoutViewModel {
                             $elem.removeClass('pulse');
                         },
                         1000);
+                },
+                closeCookieWarning() {
+                    $(this.$refs.cookieWarning).height(0);
+
+                    $.ajax({
+                        url: '/home/dismissCookieWarning',
+                        method: 'POST'
+                    });
                 }
             },
             created() {
