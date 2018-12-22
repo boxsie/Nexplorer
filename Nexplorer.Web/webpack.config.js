@@ -15,11 +15,4 @@ config.plugins.push(new webpack.optimize.CommonsChunkPlugin({
     minChunks: Infinity
 }));
 
-config.module.resolve = {
-    alias: {
-        'vue': 'vue/dist/vue.js',
-        'jquery.validation': 'jquery-validation/dist/jquery.validate.js'
-    }
-};
-
 module.exports = config;
