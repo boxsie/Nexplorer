@@ -17,26 +17,50 @@
             <div id="heroHeader">
                 <h1>NEXPLORER</h1>
                 <p class="lead">
-                    A block explorer for <a href="https://nexusearth.com/" target="_blank">Nexus (NXS)<img class="nxs-icon" src="img/nxs-icon.png" alt="Nexus (NXS)" /></a><br />
+                    A cryptocurrency block explorer for <a href="https://nexusearth.com/" target="_blank">Nexus (NXS)<img class="nxs-icon hidden-xs" src="img/nxs-icon.png" alt="Nexus (NXS)" /></a><br />
                     <em>nex·usˈneksəs' : a connection or series of connections linking two or more things.</em>
                 </p>
             </div>
-
-            <div id="headerSwiper">
-                <swiper>
-                    <swiper-slide :slide-title="'Chain Height'" :slide-val="chainHeight" :slide-icon="'fa-link'"></swiper-slide>
-                    <swiper-slide :slide-title="'Bittrex Price'" :slide-val="bittrexSummary.last" :slide-icon="'fa-btc'"></swiper-slide>
-                    <swiper-slide :slide-title="'Bittrex Volume'" :slide-val="bittrexSummary.volume" :slide-icon="'fa-btc'"></swiper-slide>
-                    <swiper-slide :slide-title="'nPoS Difficulty'" :slide-val="posDiff" :slide-icon="'fa-bolt'"></swiper-slide>
-                    <swiper-slide :slide-title="'Prime Difficulty'" :slide-val="primeDiff" :slide-icon="'fa-microchip'"></swiper-slide>
-                    <swiper-slide :slide-title="'Hash Difficulty'" :slide-val="hashDiff" :slide-icon="'fa-hashtag'"></swiper-slide>
-                    <swiper-slide :slide-title="'UTC'" :slide-val="timestampUtc" :slide-icon="'fa-clock-o'"></swiper-slide>
-                </swiper>
-            </div>
+            
+            <form id="mainSearch" asp-controller="home" asp-action="search" method="post">
+                <div class="form-group">
+                    <div id="mainSearchBar">
+                        <span class="fa fa-search"></span>
+                        <input class="form-control" name="searchTerm" type="text" />
+                        <button type="submit" href="#" class="btn btn-flat">
+                            Go
+                        </button>
+                    </div>
+                    <span class="instructions">Search for blocks, transactions or addresses</span>
+                </div>
+            </form>
         </div>
     </div>
 }
 
+<div class="panel full-length">
+    <div class="row">
+        <div class="col-xs-8">
+            <h2>LATEST BLOCKS</h2>
+        </div>
+        <div class="col-xs-4 text-right">
+            <span class="fa fa-cubes"></span>
+        </div>
+    </div>
+</div>
+
+<div class="panel full-length">
+    <div class="row">
+        <div class="col-xs-8">
+            <h2>LATEST TRANSACTIONS</h2>
+        </div>
+        <div class="col-xs-4 text-right">
+            <span class="fa fa-list-alt"></span>
+        </div>
+    </div>
+    <tx-table ref="txTable" v-bind:items-per-page="5" v-bind:paging-disabled="true"></tx-table>
+    <h5 class="text-right">@Html.ActionLink("More info", "index", "transactions")</h5>
+</div>
 
 <div class="card border">
     <h3>Nexus Latest</h3>

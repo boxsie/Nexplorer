@@ -242,7 +242,6 @@
                     <li><a href="/transactions">Transactions</a></li>
                     <li><a href="/addresses">Addresses</a></li>
                     <li><a href="/swagger" target="_blank">API</a></li>
-                    <li><a href="/cookie" target="_blank">Cookie Policy</a></li>
                 </ul>
             </div>
             <div class="col-sm-3">
@@ -276,7 +275,12 @@
             </div>
         </div>
     </div>
-    <p class="text-center copy-text">&copy; @DateTime.Now.Year <span class="fa fa-hand-peace-o" style="font-size: 20px; margin: 0 5px;"></span> NEXPLORER<br />@ViewBag.NodeVersion</p>
+    <p class="text-center copy-text">
+        <a href="/cookie" target="_blank" style="font-size: 12px;">COOKIE POLICY</a>
+        <br />
+        @ViewBag.NodeVersion <span class="fa fa-hand-peace-o" style="font-size: 16px; margin: 0 5px;"></span> NEXPLORER @DateTime.Now.Year
+        <br />
+    </p>
 </footer>
 
 <script language="javascript" src="@ViewBag.VendorJs"></script>

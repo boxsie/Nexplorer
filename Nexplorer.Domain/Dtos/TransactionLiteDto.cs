@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using Nexplorer.Domain.Enums;
 using ProtoBuf;
 
 namespace Nexplorer.Domain.Dtos
@@ -28,6 +29,9 @@ namespace Nexplorer.Domain.Dtos
         [ProtoMember(7)]
         public int TransactionOutputCount { get; set; }
 
+        [ProtoMember(8)]
+        public TransactionType TransactionType { get; set; }
+
         public TransactionLiteDto() { }
         
         public TransactionLiteDto(TransactionDto tx, int height, int confirmations)
@@ -38,6 +42,7 @@ namespace Nexplorer.Domain.Dtos
             Timestamp = tx.Timestamp;
             TransactionInputCount = tx.Inputs?.Count ?? 0;
             TransactionOutputCount = tx.Outputs?.Count ?? 0;
+            TransactionType = tx.TransactionType;
         }
     }
 }

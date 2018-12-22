@@ -7,6 +7,10 @@ body, h1, h2, h3, h4, h5, h6, p {
     font-family: 'Roboto', sans-serif;
 }
 
+[v-cloak] {
+    display: none
+}
+
 .container-fluid.max-width {
     max-width: $container-max-width;
     
@@ -331,7 +335,7 @@ body, h1, h2, h3, h4, h5, h6, p {
         padding-left: 0;
         padding-right: 0;
     }
-        
+
     &.jumbotron {
         padding-top: 25px;
         padding-bottom: 25px;
@@ -359,7 +363,7 @@ body, h1, h2, h3, h4, h5, h6, p {
     em {
         font-size: 14px;
     }
-
+    
     .slider {
         max-width: 1050px;
         margin: 0 -15px;
@@ -511,15 +515,14 @@ body, h1, h2, h3, h4, h5, h6, p {
             a {
                 text-decoration: none;
                 color: $nav-primary;
-
-                &:hover {
-                    color: darken($nav-primary, 15%);
-                }
             }
 
             .val {
                 position: relative;
                 border-radius: 4px;
+                border-style: solid;
+                border-width: 1px;
+                border-color: rgba($nav-primary, .4);
                 background-color: $nav-secondary;
                 margin: 0 3%;
                 padding: 2px 0;
@@ -534,6 +537,7 @@ body, h1, h2, h3, h4, h5, h6, p {
 
                 &:hover {
                     background-color: darken($nav-secondary, 5%);
+                    border-color: rgba($nav-primary, .7);
                 }
             }
         }
@@ -618,6 +622,11 @@ body, h1, h2, h3, h4, h5, h6, p {
             }
         }
     }
+
+    .copy-text {
+        margin: 0 0 30px 0;
+        font-size: 13px;
+    }
 }
 
 /*Transaction Table*/
@@ -656,10 +665,6 @@ body, h1, h2, h3, h4, h5, h6, p {
     }
 }
 /**/
-
-[v-cloak] {
-    display: none
-}
 
 @media(min-width: 768px) {
     .text-right-xs {
@@ -852,7 +857,7 @@ body, h1, h2, h3, h4, h5, h6, p {
         }
 
         .copy-text {
-            margin-top: 30px;
+            margin: 30px 0 30px 0;
         }
     }
 }

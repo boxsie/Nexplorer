@@ -1,11 +1,10 @@
 {
-  "addresses.address": {
-    "js": "../js/addresses.address.js",
-    "css": "../css/addresses.address.css"
-  },
   "addresses.index": {
     "js": "../js/addresses.index.js",
     "css": "../css/addresses.index.css"
+  },
+  "favourites.index": {
+    "js": "../js/favourites.index.js"
   },
   "mining.index": {
     "js": "../js/mining.index.js",
@@ -25,8 +24,9 @@
     "js": "../js/layout.js",
     "css": "../css/layout.css"
   },
-  "favourites.index": {
-    "js": "../js/favourites.index.js"
+  "addresses.address": {
+    "js": "../js/addresses.address.js",
+    "css": "../css/addresses.address.css"
   },
   "validate": {
     "js": "../js/validate.js"

@@ -12,12 +12,8 @@
         </thead>
         <tbody>
             <tr v-for="tx in currentPageItems">
-                <td class="hash-cell">
-                    <a v-bind:href="'/transactions/' + tx.transactionHash">
-                        <span class="visible-xs">{{ truncateHash(tx.transactionHash, 4) }}</span>
-                        <span class="visible-sm">{{ truncateHash(tx.transactionHash, 14) }}</span>
-                        <span class="hidden-xs hidden-sm">{{ tx.transactionHash }}</span>
-                    </a>
+                <td>
+                    {{ tx.transactionType }}
                 </td>
                 <td class="hidden-xs"><a v-bind:href="'/blocks/' + tx.blockHeight">{{ tx.blockHeight.toLocaleString() }}</a></td>
                 <td>{{ tx.amount.toLocaleString() }} <span style="font-size: 10px;">NXS</span></td>
