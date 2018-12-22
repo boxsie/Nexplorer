@@ -21,7 +21,7 @@
                     <em>nex·usˈneksəs' : a connection or series of connections linking two or more things.</em>
                 </p>
             </div>
-            
+
             <form id="mainSearch" asp-controller="home" asp-action="search" method="post">
                 <div class="form-group">
                     <div id="mainSearchBar">
@@ -39,138 +39,79 @@
 }
 
 <div class="panel full-length">
-    <div class="row">
-        <div class="col-xs-8">
-            <h2>LATEST BLOCKS</h2>
+    <div class="row visible-xs">
+        <div class="col-xs-9">
+            <h2>LATEST PRICE</h2>
         </div>
-        <div class="col-xs-4 text-right">
-            <span class="fa fa-cubes"></span>
-        </div>
-    </div>
-</div>
-
-<div class="panel full-length">
-    <div class="row">
-        <div class="col-xs-8">
-            <h2>LATEST TRANSACTIONS</h2>
-        </div>
-        <div class="col-xs-4 text-right">
-            <span class="fa fa-list-alt"></span>
+        <div class="col-xs-3 text-right">
+            <span class="fa fa-btc"></span>
         </div>
     </div>
-    <tx-table ref="txTable" v-bind:items-per-page="5" v-bind:paging-disabled="true"></tx-table>
-    <h5 class="text-right">@Html.ActionLink("More info", "index", "transactions")</h5>
-</div>
-
-<div class="card border">
-    <h3>Nexus Latest</h3>
-    <div id="bittrexSummary">
-        <hr />
-        <div class="row">
-            <div class="col-xs-4 col-sm-3">
-                <h5><strong>Last</strong></h5>
-            </div>
-            <div class="col-xs-8 col-sm-3 text-right">
-                <h4 id="summaryLast" class="animated-single">
-                    <span class="fa fa-btc"></span> {{ bittrexSummary.last }}
-                </h4>
-            </div>
-            <div class="col-xs-4 col-sm-3">
-                <h5><strong>Volume</strong></h5>
-            </div>
-            <div class="col-xs-8 col-sm-3 text-right">
-                <h4 id="summaryVolume" class="animated-single">
-                    <span class="fa fa-btc"></span> {{ bittrexSummary.volume }}
-                </h4>
-            </div>
+    <div class="row">
+        <div class="col-sm-2 hidden-xs">
+            <h2>LATEST PRICE</h2>
         </div>
-        <hr class="hidden-xs" />
-        <div class="row">
-            <div class="col-xs-4 col-sm-3">
-                <h5><strong>Bid</strong></h5>
-            </div>
-            <div class="col-xs-8 col-sm-3 text-right">
-                <h4 id="summaryBid" class="animated-single">
-                    <span class="fa fa-btc"></span> {{ bittrexSummary.bid }}
-                </h4>
-            </div>
-            <div class="col-xs-4 col-sm-3">
-                <h5><strong>Ask</strong></h5>
-            </div>
-            <div class="col-xs-8 col-sm-3 text-right">
-                <h4 id="summaryAsk" class="animated-single">
-                    <span class="fa fa-btc"></span> {{ bittrexSummary.ask }}
-                </h4>
-            </div>
+        <div class="col-sm-3">
+            <h3>Last</h3>
+            <p class="val" v-cloak>
+                {{ lastPrice }}
+                <span class="fa fa-btc inline-fa"></span>
+            </p>
         </div>
-        <hr class="hidden-xs" />
-        <div class="row">
-            <div class="col-xs-8 col-sm-3">
-                <h5><strong>Buy orders</strong></h5>
-            </div>
-            <div class="col-xs-4 col-sm-3 text-right">
-                <h4>{{ bittrexSummary.openBuyOrders }}</h4>
-            </div>
-            <div class="col-xs-8 col-sm-3">
-                <h5><strong>Sell orders</strong></h5>
-            </div>
-            <div class="col-xs-4 col-sm-3 text-right">
-                <h4>{{ bittrexSummary.openSellOrders }}</h4>
-            </div>
+        <div class="col-sm-3">
+            <h3>Spread</h3>
+            <p class="val" v-cloak>
+                {{ spread }}
+                <span class="fa fa-btc inline-fa"></span>
+            </p>
         </div>
-        <hr class="hidden-xs" />
-        <div class="row">
-            <div class="col-xs-6">
-                <h6>{{ bittrexSummary.timeStamp }}</h6>
-            </div>
-            <div class="col-xs-6 text-right">
-                <h6>powered by <a href="https://bittrex.com/">Bittrex</a></h6>
-            </div>
+        <div class="col-sm-3">
+            <h3>Volume</h3>
+            <p class="val" v-cloak>
+                {{ volume }}
+                <span class="fa fa-btc inline-fa"></span>
+            </p>
         </div>
-        <hr />
+        <div class="col-sm-1 text-right hidden-xs">
+            <span class="fa fa-btc"></span>
+        </div>
     </div>
 </div>
 
 @{ await Html.RenderPartialAsync("_AdvertBanner"); }
 
-<div class="card border">
-    <div class="row">
-        <div class="col-sm-6">
-            <h3>Most Recent Blocks</h3>
-            <p>
-                <i>This page live updates the blocks as they arrive.</i>
-            </p>
-        </div>
-        <div class="col-sm-6">
-            <h3 class="text-right-sm">{{ blockCountLastDay.toLocaleString() }}</h3>
-            <p class="text-right-sm">
-                <i>Blocks in the last 24 hours.</i>
-            </p>
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel">
+            <div class="row">
+                <div class="col-xs-9">
+                    <h2>LATEST BLOCKS</h2>
+                </div>
+                <div class="col-xs-3 text-right">
+                    <span class="fa fa-cubes"></span>
+                </div>
+            </div>
+
+            <block-table ref="blockTable" v-bind:items-per-page="10" v-bind:paging-disabled="true" style="margin-top: 15px;"></block-table>
+            <h5 class="text-right">@Html.ActionLink("More info", "index", "blocks")</h5>
         </div>
     </div>
 
-    <block-table ref="blockTable" v-bind:items-per-page="5" v-bind:paging-disabled="true"></block-table>
-    <h5 class="text-right">@Html.ActionLink("More info", "index", "blocks")</h5>
-</div>
+    <div class="col-md-6">
+        <div class="panel">
+            <div class="row">
+                <div class="col-xs-9">
+                    <h2>LATEST TRANSACTIONS</h2>
+                </div>
+                <div class="col-xs-3 text-right">
+                    <span class="fa fa-exchange"></span>
+                </div>
+            </div>
 
-<div class="card border">
-    <div class="row">
-        <div class="col-sm-6">
-            <h3>Most Recent Transactions</h3>
-            <p>
-                <i>This page live updates the transactions as they arrive.</i>
-            </p>
-        </div>
-        <div class="col-sm-6">
-            <h3 class="text-right-sm">{{ txCountLastDay.toLocaleString() }}</h3>
-            <p class="text-right-sm">
-                <i>Transactions in the last 24 hours.</i>
-            </p>
+            <tx-table ref="txTable" v-bind:items-per-page="10" v-bind:paging-disabled="true" style="margin-top: 15px;"></tx-table>
+            <h5 class="text-right">@Html.ActionLink("More info", "index", "transactions")</h5>
         </div>
     </div>
-
-    <tx-table ref="txTable" v-bind:items-per-page="5" v-bind:paging-disabled="true"></tx-table>
-    <h5 class="text-right">@Html.ActionLink("More info", "index", "transactions")</h5>
 </div>
 
 @section Scripts {

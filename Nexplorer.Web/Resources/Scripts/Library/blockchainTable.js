@@ -75,6 +75,9 @@ export default (tableType) => {
                 const end = hash.substring(hash.length - len, hash.length);
 
                 return start + '...' + end;
+            },
+            selectRow(href) {
+                window.location.href = href;
             }
         },
         created() {

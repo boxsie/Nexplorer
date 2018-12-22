@@ -1,4 +1,6 @@
-﻿@using Nexplorer.Web.Extensions
+﻿@using System.ComponentModel.DataAnnotations
+@using Nexplorer.Domain.Enums
+@using Nexplorer.Web.Extensions
 @using Nexplorer.Web.Models.AccountViewModels
 
 <!DOCTYPE html>
@@ -288,7 +290,10 @@
 <script language="javascript">
     var layoutVm = new nexplorer.LayoutViewModel({
         isSignedIn: @Json.Serialize(User.Identity.IsAuthenticated),
-        userSettings: @Json.Serialize(ViewBag.UserSettings)
+        userSettings: @Json.Serialize(ViewBag.UserSettings),
+        txTypes: @Json.Serialize((Enum.GetValues(typeof(TransactionType))
+                                      .Cast<TransactionType>()
+                                      .Select(x => x.GetAttribute<DisplayAttribute>().Name))),
     });
 </script>
 

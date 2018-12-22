@@ -102,7 +102,7 @@ export class AddressViewModel {
 
                                 return txAddressHashes;
                             }
-                            console.log(data);
+
                             return 'Unknown';
                         }
                     },

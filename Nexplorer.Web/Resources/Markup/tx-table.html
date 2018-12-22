@@ -2,24 +2,20 @@
     <table class="table table-hover">
         <thead>
             <tr>
-                <th>Hash</th>
-                <th class="hidden-xs">Block</th>
-                <th>Amount</th>
+                <th>Type</th>
+                <th class="text-right">Amount</th>
                 <th class="hidden-xs">In</th>
                 <th class="hidden-xs">Out</th>
-                <th>Age</th>
+                <th style="width: 100px">Age</th>
             </tr>
         </thead>
         <tbody>
-            <tr v-for="tx in currentPageItems">
-                <td>
-                    {{ tx.transactionType }}
-                </td>
-                <td class="hidden-xs"><a v-bind:href="'/blocks/' + tx.blockHeight">{{ tx.blockHeight.toLocaleString() }}</a></td>
-                <td>{{ tx.amount.toLocaleString() }} <span style="font-size: 10px;">NXS</span></td>
+            <tr v-for="tx in currentPageItems" v-on:click="selectRow('/transactions/' + tx.transactionHash)" style="cursor: pointer;">
+                <td><a v-bind:href="'/transactions/' + tx.transactionHash">{{ $layoutHub.parseTxType(tx.transactionType) }}</a></td>
+                <td class="text-right">{{ tx.amount.toLocaleString() }} <span style="font-size: 10px;">NXS</span></td>
                 <td class="hidden-xs">{{ tx.transactionInputCount.toLocaleString() }}</td>
                 <td class="hidden-xs">{{ tx.transactionOutputCount.toLocaleString() }}</td>
-                <td><date-age :fromDate="tx.timestamp" :precise="true"></date-age></td>
+                <td style="width: 100px"><date-age :fromDate="tx.timestamp" :precise="true"></date-age></td>
             </tr>
         </tbody>
     </table>

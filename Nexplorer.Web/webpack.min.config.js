@@ -16,6 +16,8 @@ config.module.rules.push({
     }
 });
 
+config.module.resolve.alias.vue = 'vue/dist/vue.min';
+
 config.plugins.push(new webpack.DefinePlugin({
     'process.env': {
         NODE_ENV: '"production"'

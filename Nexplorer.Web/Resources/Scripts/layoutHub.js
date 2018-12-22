@@ -11,6 +11,11 @@ export default {
                 latestPrice: {},
                 latestDiffs: {}
             },
+            methods: {
+                parseTxType(txType) {
+                    return options.txTypes[txType];
+                }
+            },
             created() {
                 this.connection = new HubConnectionBuilder()
                     .configureLogging(LogLevel.Information)

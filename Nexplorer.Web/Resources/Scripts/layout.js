@@ -9,7 +9,7 @@ import '../Style/layout.scss';
 
 export class LayoutViewModel {
     constructor(options) {
-        Vue.use(layoutHub);
+        Vue.use(layoutHub, options);
 
         this.navVm = new Vue({
             el: '#navbar',
@@ -164,8 +164,6 @@ export class LayoutViewModel {
                     var diffs = $(this.$refs.mobileDiffs).children();
                     var i = 0;
                     var currentDiff = diffs[i];
-
-                    console.log(diffs);
 
                     setInterval(() => {
                         $(currentDiff).fadeOut('fast', () => {
