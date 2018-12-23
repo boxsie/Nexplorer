@@ -5,13 +5,15 @@
     Layout = "_Layout";
 }
 
-@{ await Html.RenderPartialAsync("_AdvertBanner"); }
+<div id="blockPages">
+    @{ await Html.RenderPartialAsync("_AdvertBanner"); }
 
-<div id="blockPages" class="panel clearfix">
-    <h1>Blocks</h1>
-    <h3>Last 50 Blocks</h3>
-    <p><i>This page live updates the blocks as they arrive.</i></p>
-    <blockchain-table ref="blockTable" v-bind:items-per-page="10"></blockchain-table>
+    <div class="panel clearfix">
+        <h1>Blocks</h1>
+        <h3>Last 50 Blocks</h3>
+        <p><i>This page live updates the blocks as they arrive.</i></p>
+        <blockchain-table ref="blockTable" v-bind:items-per-page="10"></blockchain-table>
+    </div>
 </div>
 
 @section Scripts {
