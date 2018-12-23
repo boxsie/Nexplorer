@@ -1,6 +1,7 @@
 ﻿import $ from 'jquery';
 import Vue from 'vue';
 import { HubConnectionBuilder, LogLevel } from '@aspnet/signalr';
+import Ads from 'vue-google-adsense';
 
 import layoutHub from './layoutHub';
 
@@ -9,6 +10,11 @@ import '../Style/layout.scss';
 
 export class LayoutViewModel {
     constructor(options) {
+        Vue.use(require('vue-script2'));
+        Vue.use(Ads.Adsense);
+        Vue.use(Ads.InArticleAdsense);
+        Vue.use(Ads.InFeedAdsense);
+
         Vue.use(layoutHub, options);
 
         this.navVm = new Vue({
