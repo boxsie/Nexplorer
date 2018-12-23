@@ -7,8 +7,8 @@ sudo rm -rf css
 sudo rm -rf js
 sudo rm -rf font
 cd ..
-npm install
-npm run build
+sudo npm install
+sudo npm run build
 sudo dotnet publish -c Release
 sudo rm -rf /var/www/nexplorer/
 sudo cp -r ~/Nexplorer/Nexplorer.Web/bin/Release/netcoreapp2.2/publish/ /var/www/nexplorer
