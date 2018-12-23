@@ -24,7 +24,6 @@ namespace Nexplorer.Web.Hubs
 
             _redisCommand.Subscribe<BlockLiteDto>(Settings.Redis.NewBlockPubSub, SendLatestBlockDataAsync);
             _redisCommand.Subscribe<TransactionLiteDto>(Settings.Redis.NewTransactionPubSub, OnNewTransactionAsync);
-            _redisCommand.Subscribe<BittrexSummaryDto>(Settings.Redis.BittrexSummaryPubSub, OnNewSummaryAsync);
         }
 
         private async Task SendLatestBlockDataAsync(BlockLiteDto block)
@@ -52,11 +51,6 @@ namespace Nexplorer.Web.Hubs
         private Task OnNewTransactionAsync(TransactionLiteDto tx)
         {
             return _homeContext.Clients.All.SendAsync("NewTxPubSub", Helpers.JsonSerialise(tx));
-        }
-
-        private Task OnNewSummaryAsync(BittrexSummaryDto summary)
-        {
-            return _homeContext.Clients.All.SendAsync("NewBittrexSummaryPubSub", Helpers.JsonSerialise(summary));
         }
     }
 }
