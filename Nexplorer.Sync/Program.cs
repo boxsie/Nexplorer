@@ -42,14 +42,14 @@ namespace Nexplorer.Sync
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
             LogManager.LoadConfiguration("nlog.config");
-            
-            //// Clear Redis
-            //var endpoints = serviceProvider.GetService<ConnectionMultiplexer>().GetEndPoints(true);
-            //foreach (var endpoint in endpoints)
-            //{
-            //    var server = serviceProvider.GetService<ConnectionMultiplexer>().GetServer(endpoint);
-            //    server.FlushAllDatabases();
-            //}
+
+            // Clear Redis
+            var endpoints = serviceProvider.GetService<ConnectionMultiplexer>().GetEndPoints(true);
+            foreach (var endpoint in endpoints)
+            {
+                var server = serviceProvider.GetService<ConnectionMultiplexer>().GetServer(endpoint);
+                server.FlushAllDatabases();
+            }
 
             // Migrate EF
             serviceProvider.GetService<NexusDb>().Database.Migrate();
