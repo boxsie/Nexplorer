@@ -11,6 +11,7 @@ config.output.filename = chunkFileNameJs;
 config.module.rules.push({
     test: /\.js$/,
     loader: 'babel-loader',
+    exclude: '/node_modules',
     query: {
         presets: ['es2015']
     }
