@@ -87,8 +87,6 @@ namespace Nexplorer.Sync.Jobs
                     .Select(x => _mapper.Map<OrphanBlock>(x)));
 
                 await _nexusDb.SaveChangesAsync();
-
-                await _blockCache.RemoveAllBelowAsync(await _blockQuery.GetLastSyncedHeightAsync());
             }
 
             await _countPublisher.PublishRollingCountAsync();

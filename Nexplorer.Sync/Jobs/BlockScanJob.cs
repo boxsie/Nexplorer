@@ -19,7 +19,7 @@ namespace Nexplorer.Sync.Jobs
 
         public BlockScanJob(IBlockCache blockCache, NexusQuery nexusQuery, BlockQuery blockQuery, 
             LatestBlockPublisher blockPublisher, ILogger<BlockScanJob> logger) 
-            : base(logger, 1)
+            : base(logger, 5)
         {
             _blockCache = blockCache;
             _nexusQuery = nexusQuery;
@@ -65,6 +65,8 @@ namespace Nexplorer.Sync.Jobs
 
             foreach (var newBlock in newBlocks)
                 await _blockPublisher.PublishLatestDataAsync(newBlock);
+            
+            await _blockCache.RemoveAllBelowAsync(await _blockQuery.GetLastSyncedHeightAsync());
 
             return newBlocks.Count > 1 
                 ? $"Published blocks {string.Join(", ", newBlocks)}" 

@@ -1,49 +1,49 @@
 {
   "favourites.index": {
-    "js": "../js/favourites.index.d7134b704ffa0cb9a0b9.js"
+    "js": "../js/favourites.index.js"
   },
   "addresses.address": {
-    "js": "../js/addresses.address.17296901a5f22bf0de0d.js",
-    "css": "../css/addresses.address.17296901a5f22bf0de0d.css"
+    "js": "../js/addresses.address.js",
+    "css": "../css/addresses.address.css"
   },
   "mining.index": {
-    "js": "../js/mining.index.b2fd2a4bd4d8c4524536.js",
-    "css": "../css/mining.index.b2fd2a4bd4d8c4524536.css"
+    "js": "../js/mining.index.js",
+    "css": "../css/mining.index.css"
   },
   "home.index": {
-    "js": "../js/home.index.111b7772a835db519a58.js",
-    "css": "../css/home.index.111b7772a835db519a58.css"
+    "js": "../js/home.index.js",
+    "css": "../css/home.index.css"
   },
   "transactions.index": {
-    "js": "../js/transactions.index.a2f7b5dd5b528fe43784.js"
+    "js": "../js/transactions.index.js"
   },
   "blocks.index": {
-    "js": "../js/blocks.index.efaf4d8efb145c446069.js"
+    "js": "../js/blocks.index.js"
   },
   "layout": {
-    "js": "../js/layout.0cd2b8bf920a0d036489.js",
-    "css": "../css/layout.0cd2b8bf920a0d036489.css"
+    "js": "../js/layout.js",
+    "css": "../css/layout.css"
   },
   "addresses.index": {
-    "js": "../js/addresses.index.e70b32dcdf080155de3e.js",
-    "css": "../css/addresses.index.e70b32dcdf080155de3e.css"
+    "js": "../js/addresses.index.js",
+    "css": "../css/addresses.index.css"
   },
   "validate": {
-    "js": "../js/validate.88f3d59f1c72dd51a3d0.js"
+    "js": "../js/validate.js"
   },
   "network.index": {
-    "js": "../js/network.index.08ba08b54596222345e3.js",
-    "css": "../css/network.index.08ba08b54596222345e3.css"
+    "js": "../js/network.index.js",
+    "css": "../css/network.index.css"
   },
   "manage.enableauthenticator": {
-    "js": "../js/manage.enableauthenticator.3eb31f10fd0b2da4263c.js"
+    "js": "../js/manage.enableauthenticator.js"
   },
   "blocks.block": {
-    "js": "../js/blocks.block.fd5cd170506f4a7c582a.js",
-    "css": "../css/blocks.block.fd5cd170506f4a7c582a.css"
+    "js": "../js/blocks.block.js",
+    "css": "../css/blocks.block.css"
   },
   "vendor": {
-    "js": "../js/vendor.78f4bf450b885c7b83f3.js"
+    "js": "../js/vendor.js"
   },
   "": {
     "eot": "../font/fontawesome-webfont.eot",
