@@ -21,7 +21,7 @@ namespace Nexplorer.Tools
         private static IWebHost CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseKestrel()
-                .UseUrls("https://localhost:5000")
+                .UseUrls("http://localhost:5005")
                 .UseStartup<Startup>()
                 .UseNLog()
                 .Build();

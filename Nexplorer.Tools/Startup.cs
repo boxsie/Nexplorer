@@ -101,7 +101,6 @@ namespace Nexplorer.Tools
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
 
