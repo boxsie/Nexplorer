@@ -33,7 +33,7 @@ namespace Nexplorer.Data.Query
 
         public async Task<int> GetLastHeightAsync()
         {
-            var cacheHeight = await _cache.GetLastHeightAsync();
+            var cacheHeight = await _cache.GetCacheHeightAsync();
 
             if (cacheHeight > 0)
                 return cacheHeight;
@@ -43,14 +43,16 @@ namespace Nexplorer.Data.Query
 
         public async Task<int> GetLastSyncedHeightAsync()
         {
-            return await _nexusDb.Blocks.OrderByDescending(x => x.Height)
-                .Select(x => x.Height)
-                .FirstOrDefaultAsync();
-        }
+            const string sqlQ = @"SELECT MAX(b.[Height]) FROM [dbo].[Block] b";
 
-        public Task<BlockDto> GetLastBlockAsync()
-        {
-            return _cache.GetLastBlockAsync();
+            using (var connection = new SqlConnection(Settings.Connection.NexusDb))
+            {
+                connection.Open();
+
+                var height = (await connection.QueryAsync<int>(sqlQ)).FirstOrDefault();
+
+                return height;
+            }
         }
 
         public async Task<int> GetChannelHeight(BlockChannels channel, int height = 0)
@@ -64,18 +66,24 @@ namespace Nexplorer.Data.Query
             return count;
         }
 
-        public async Task<BlockDto> GetBlockAsync(int height)
+        public async Task<BlockDto> GetBlockAsync(int height, bool includeTransactions = true)
         {
             var cacheBlock = await _cache.GetBlockAsync(height);
 
             if (cacheBlock != null)
                 return cacheBlock;
             
-            var block = await _nexusDb.Blocks.Where(x => x.Height == height)
-                .Include(x => x.Transactions)
+            var blockQuery = _nexusDb.Blocks.Where(x => x.Height == height);
+
+            if (includeTransactions)
+            {
+                blockQuery
+                    .Include(x => x.Transactions)
                     .ThenInclude(x => x.InputOutputs)
-                        .ThenInclude(x => x.Address)
-                .FirstOrDefaultAsync();
+                    .ThenInclude(x => x.Address);
+            }
+            
+            var block = await blockQuery.FirstOrDefaultAsync();
 
             return _mapper.Map<BlockDto>(block);
         }
@@ -160,21 +168,6 @@ namespace Nexplorer.Data.Query
             return height > 0
                 ? await _nexusDb.Blocks.Where(x => x.Height == height).Select(x => x.Timestamp).FirstOrDefaultAsync()
                 : new DateTime();
-        }
-
-        public async Task<string> GetLastSyncedBlockHashAsync()
-        {
-            var sql = @"SELECT TOP 1 
-                            b.[Hash] 
-                        FROM [dbo].[Block] b
-                        ORDER BY b.[Height] DESC";
-
-            using (var con = new SqlConnection(Settings.Connection.NexusDb))
-            {
-                var response = await con.QueryAsync<string>(sql);
-
-                return response.FirstOrDefault();
-            }
         }
 
         public async Task<Transaction> GetLastTransaction()

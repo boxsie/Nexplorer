@@ -15,13 +15,11 @@ namespace Nexplorer.Data.Query
     public class NexusQuery
     {
         private readonly INexusClient _nxsClient;
-        private readonly GeolocationService _geolocationService;
         private readonly IMapper _mapper;
 
-        public NexusQuery(INexusClient nxsClient, GeolocationService geolocationService, IMapper mapper)
+        public NexusQuery(INexusClient nxsClient, IMapper mapper)
         {
             _nxsClient = nxsClient;
-            _geolocationService = geolocationService;
             _mapper = mapper;
         }
 
@@ -29,7 +27,7 @@ namespace Nexplorer.Data.Query
         {
             var blockResponse = await _nxsClient.GetBlockAsync(hash);
 
-            return await MapResponseToDto(blockResponse, includeTransactions);
+            return await MapResponseToDtoAsync(blockResponse, includeTransactions);
         }
 
         public Task<bool> IsBlockHashOnChain(string hash)
@@ -51,7 +49,7 @@ namespace Nexplorer.Data.Query
             if (blockResponse.TransactionHash.Any(string.IsNullOrEmpty))
                 throw new KeyNotFoundException($"Block height {blockResponse.Height} has a null transaction");
             
-            return await MapResponseToDto(blockResponse, includeTransactions);
+            return await MapResponseToDtoAsync(blockResponse, includeTransactions);
         }
 
         public async Task<TransactionDto> GetTransactionAsync(string hash, int? blockHeight)
@@ -122,7 +120,7 @@ namespace Nexplorer.Data.Query
             {
                 var dto = _mapper.Map<PeerInfoDto>(peerResponse);
 
-                dto.Geolocation = _mapper.Map<GeolocationDto>(await _geolocationService.GetGeolocation(dto.Address));
+                //dto.Geolocation = _mapper.Map<GeolocationDto>(await _geolocationService.GetGeolocation(dto.Address));
 
                 peerDtos.Add(dto);
             }
@@ -151,7 +149,7 @@ namespace Nexplorer.Data.Query
             return trustKeyResponse.Keys.Select(x => _mapper.Map<TrustKeyAddressResponse, TrustKeyResponseDto>(x)).ToList();
         }
         
-        private async Task<BlockDto> MapResponseToDto(BlockResponse blockResponse, bool includeTransactions)
+        public async Task<BlockDto> MapResponseToDtoAsync(BlockResponse blockResponse, bool includeTransactions)
         {
             var blockDto = _mapper.Map<BlockDto>(blockResponse);
 

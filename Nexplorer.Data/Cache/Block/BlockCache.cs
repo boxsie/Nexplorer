@@ -11,11 +11,9 @@ using Nexplorer.Domain.Enums;
 
 namespace Nexplorer.Data.Cache.Block
 {
-    public class BlockCache : IBlockCache
+    public class BlockCache
     {
         private List<BlockCacheItem<BlockDto>> _cache;
-        private List<BlockLiteDto> _blockLiteCache;
-        private List<TransactionLiteDto> _transactionLiteCache;
         private Dictionary<string, CachedAddressDto> _addressCache;
 
         private readonly RedisCommand _redisCommand;
@@ -58,26 +56,6 @@ namespace Nexplorer.Data.Cache.Block
             return _cache.Select(x => x.Item).ToList();
         }
 
-        public async Task<List<BlockLiteDto>> GetBlockLiteCacheAsync()
-        {
-            if (_blockLiteCache != null)
-                return _blockLiteCache;
-
-            _blockLiteCache = await _redisCommand.GetAsync<List<BlockLiteDto>>(Settings.Redis.BlockLiteCache);
-
-            return _blockLiteCache;
-        }
-
-        public async Task<List<TransactionLiteDto>> GetTransactionLiteCacheAsync()
-        {
-            if (_transactionLiteCache != null)
-                return _transactionLiteCache;
-
-            _transactionLiteCache = await _redisCommand.GetAsync<List<TransactionLiteDto>>(Settings.Redis.TransactionLiteCache);
-
-            return _transactionLiteCache;
-        }
-
         public async Task<List<CachedAddressDto>> GetCachedAddressAsync()
         {
             if (_addressCache != null)
@@ -96,9 +74,6 @@ namespace Nexplorer.Data.Cache.Block
             _cache.Insert(0, new BlockCacheItem<BlockDto>(block, true));
             CheckBlockForAddress(block);
 
-            AddLiteBlock(block);
-            AddLiteTransactions(block.Height, block.Transactions);
-
             return Task.CompletedTask;
         }
         
@@ -113,8 +88,6 @@ namespace Nexplorer.Data.Cache.Block
                 await _redisCommand.DeleteAsync(Settings.Redis.BuildCachedBlockKey(i));
 
             _cache.RemoveAll(x => x.Item.Height <= height);
-            _blockLiteCache.RemoveAll(x => x.Height <= height);
-            _transactionLiteCache.RemoveAll(x => x.BlockHeight <= height);
 
             var keys = _addressCache.Keys.ToList();
 
@@ -152,11 +125,6 @@ namespace Nexplorer.Data.Cache.Block
                     tx.Confirmations = txUpdate.TransactionUpdate.Confirmations;
                     txItem.NeedsUpdate = true;
                 }
-
-                var txLite = _transactionLiteCache.FirstOrDefault(x => x.TransactionHash == txUpdate.TxHash);
-
-                if (txLite != null)
-                    txLite.Confirmations = txUpdate.TransactionUpdate.Confirmations;
             }
 
             return Task.CompletedTask;
@@ -169,8 +137,8 @@ namespace Nexplorer.Data.Cache.Block
 
             await _redisCommand.SetAsync(Settings.Redis.BlockCache, _cache.Select(x => x.Item).ToList());
 
-            await _redisCommand.SetAsync(Settings.Redis.BlockLiteCache, _blockLiteCache);
-            await _redisCommand.SetAsync(Settings.Redis.TransactionLiteCache, _transactionLiteCache);
+            //await _redisCommand.SetAsync(Settings.Redis.BlockLiteCache, _blockLiteCache);
+            //await _redisCommand.SetAsync(Settings.Redis.TransactionLiteCache, _transactionLiteCache);
 
             var addressValues = _addressCache.Values.ToList();
 
@@ -183,8 +151,6 @@ namespace Nexplorer.Data.Cache.Block
         public Task Clear()
         {
             _cache = new List<BlockCacheItem<BlockDto>>();
-            _blockLiteCache = new List<BlockLiteDto>();
-            _transactionLiteCache = new List<TransactionLiteDto>();
 
             return Task.CompletedTask;
         }
@@ -192,32 +158,6 @@ namespace Nexplorer.Data.Cache.Block
         public async Task<bool> BlockExistsAsync(int height)
         {
             return (await GetBlockCacheAsync())?.Any(x => x.Height == height) ?? false;
-        }
-
-        private void AddLiteBlock(BlockDto block)
-        {
-            if (_blockLiteCache == null)
-                _blockLiteCache = new List<BlockLiteDto>();
-
-            var blockLite = new BlockLiteDto(block);
-
-            _blockLiteCache.Insert(0, blockLite);
-
-            if (_blockLiteCache.Count > Settings.App.BlockLiteCacheCount)
-                _blockLiteCache.RemoveRange(Settings.App.BlockLiteCacheCount, _blockLiteCache.Count - Settings.App.BlockLiteCacheCount);
-        }
-
-        private void AddLiteTransactions(int blockHeight, IEnumerable<TransactionDto> txs)
-        {
-            if (_transactionLiteCache == null)
-                _transactionLiteCache = new List<TransactionLiteDto>();
-
-            var txLites = txs.Select(x => new TransactionLiteDto(x, blockHeight, _cache.Count - blockHeight)).ToList();
-
-            _transactionLiteCache.InsertRange(0, txLites);
-
-            if (_transactionLiteCache.Count > Settings.App.TransactionLiteCacheCount)
-                _transactionLiteCache.RemoveRange(Settings.App.TransactionLiteCacheCount, _transactionLiteCache.Count - Settings.App.TransactionLiteCacheCount);
         }
 
         private void CheckBlockForAddress(BlockDto block)

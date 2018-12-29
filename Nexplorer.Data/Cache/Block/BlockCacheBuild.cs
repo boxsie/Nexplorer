@@ -58,9 +58,6 @@ namespace Nexplorer.Data.Cache.Block
             await _blockCache.SaveAsync();
 
             _logger.LogInformation($"{txCount} transactions and {blockCount} blocks added to cache");
-            
-            var miningInfo = await _nexusQuery.GetMiningInfoAsync();
-            await _redisCommand.SetAsync(Settings.Redis.MiningInfoLatest, miningInfo);
         }
     }
 }

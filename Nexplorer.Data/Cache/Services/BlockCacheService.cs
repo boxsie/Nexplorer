@@ -48,7 +48,7 @@ namespace Nexplorer.Data.Cache.Services
 
         public async Task<BlockDto> GetLastBlockAsync()
         {
-            return (await GetBlockAsync(await GetLastHeightAsync()));
+            return (await GetBlockAsync(await GetCacheHeightAsync()));
         }
 
         public async Task<List<BlockDto>> GetBlocksAsync()
@@ -87,13 +87,9 @@ namespace Nexplorer.Data.Cache.Services
             return (await GetCacheAsync()).Count;
         }
 
-        public async Task<int> GetLastHeightAsync()
+        public async Task<int> GetCacheHeightAsync()
         {
-            var cache = await GetCacheAsync();
-
-            return cache.Any()
-                ? cache.Max(x => x.Height)
-                : 0;
+            return await _redisCommand.GetAsync<int>(Settings.Redis.CachedHeight);
         }
 
         public async Task<int> GetChannelHeightAsync(BlockChannels channel, int height = 0)

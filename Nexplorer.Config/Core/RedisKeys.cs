@@ -2,6 +2,9 @@ namespace Nexplorer.Config.Core
 {
     public class RedisKeys
     {
+        public string CachedHeight { get; set; }
+        public string SyncedHeight { get; set; }
+
         // Cache
         public string BlockCache { get; set; }
         public string BlockLiteCache { get; set; }

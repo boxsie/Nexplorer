@@ -75,7 +75,6 @@ namespace Nexplorer.Sync
             services.AddSingleton<AutoMapperConfig>();
             services.AddSingleton(x => x.GetService<AutoMapperConfig>().GetMapper());
 
-            services.AddSingleton<IBlockCache, BlockCache>();
             services.AddSingleton<BlockCacheService>();
             services.AddSingleton<GeolocationService>();
 

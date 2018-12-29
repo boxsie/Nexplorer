@@ -7,6 +7,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using NLog.Web;
 
 namespace Nexplorer.Tools
 {
@@ -14,13 +15,15 @@ namespace Nexplorer.Tools
     {
         public static void Main(string[] args)
         {
-
-
-            CreateWebHostBuilder(args).Build().Run();
+            CreateWebHostBuilder(args).Run();
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+        private static IWebHost CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+                .UseKestrel()
+                .UseUrls("https://localhost:5000")
+                .UseStartup<Startup>()
+                .UseNLog()
+                .Build();
     }
 }

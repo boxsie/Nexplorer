@@ -78,6 +78,7 @@ namespace Nexplorer.Data.Command
                         foreach (var txIoDto in txIoDtos)
                             await UpdateOrInsertAggregate(con, trans, txIoDto);
 
+
                         LogProgress((i - startHeight) + 1, count);
                     }
 
@@ -116,7 +117,6 @@ namespace Nexplorer.Data.Command
                     }
 
                     trans.Commit();
-                    Console.WriteLine();
                 }
             }
         }

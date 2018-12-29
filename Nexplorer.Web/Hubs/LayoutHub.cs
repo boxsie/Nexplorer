@@ -27,9 +27,9 @@ namespace Nexplorer.Web.Hubs
             return _redisCommand.GetAsync<DateTime>(Settings.Redis.TimestampUtcLatest);
         }
 
-        public Task<BlockDto> GetLatestBlock()
+        public async Task<BlockDto> GetLatestBlock()
         {
-            return _blockQuery.GetLastBlockAsync();
+            return await _blockQuery.GetBlockAsync(await _blockQuery.GetLastHeightAsync());
         }
 
         public Task<BittrexSummaryDto> GetLatestPrice()

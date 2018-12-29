@@ -55,7 +55,7 @@ namespace Nexplorer.Sync.Jobs
                 var newBlockDtos = new List<BlockDto>();
                 var orphanBlocks = new List<BlockDto>();
 
-                var lastSyncedBlockHash = await _blockQuery.GetLastSyncedBlockHashAsync();
+                var lastSyncedBlockHash = await _blockQuery.GetBlockHashAsync(await _blockQuery.GetLastSyncedHeightAsync());
                 var nextBlock = await _nexusQuery.GetBlockAsync(lastSyncedBlockHash, false);
                 var nextBlockHash = nextBlock.NextBlockHash;
 
