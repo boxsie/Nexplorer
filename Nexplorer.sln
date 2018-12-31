@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nexplorer.Infrastructure", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nexplorer.Tools", "Nexplorer.Tools\Nexplorer.Tools.csproj", "{9A1A8F3F-45BC-4326-9E89-0C89AEDCD636}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boxsie.DotNetNexusClient", "..\DotNetNexusClient\Boxsie.DotNetNexusClient\Boxsie.DotNetNexusClient.csproj", "{5A3BA3FA-5152-42CA-B4DD-618F18D642BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boxsie.DotNetNexusClient", "DotNetNexusClient\Boxsie.DotNetNexusClient\Boxsie.DotNetNexusClient.csproj", "{126630F7-983C-4EDF-BF27-4C0F16C60590}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,10 +59,10 @@ Global
 		{9A1A8F3F-45BC-4326-9E89-0C89AEDCD636}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A1A8F3F-45BC-4326-9E89-0C89AEDCD636}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9A1A8F3F-45BC-4326-9E89-0C89AEDCD636}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5A3BA3FA-5152-42CA-B4DD-618F18D642BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5A3BA3FA-5152-42CA-B4DD-618F18D642BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5A3BA3FA-5152-42CA-B4DD-618F18D642BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5A3BA3FA-5152-42CA-B4DD-618F18D642BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{126630F7-983C-4EDF-BF27-4C0F16C60590}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{126630F7-983C-4EDF-BF27-4C0F16C60590}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{126630F7-983C-4EDF-BF27-4C0F16C60590}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{126630F7-983C-4EDF-BF27-4C0F16C60590}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
