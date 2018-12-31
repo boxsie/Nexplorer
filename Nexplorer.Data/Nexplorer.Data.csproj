@@ -48,11 +48,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DotNetNexusClient\Boxsie.DotNetNexusClient\Boxsie.DotNetNexusClient.csproj" />
     <ProjectReference Include="..\Nexplorer.Config\Nexplorer.Config.csproj" />
     <ProjectReference Include="..\Nexplorer.Core\Nexplorer.Core.csproj" />
     <ProjectReference Include="..\Nexplorer.Domain\Nexplorer.Domain.csproj" />
     <ProjectReference Include="..\Nexplorer.Infrastructure\Nexplorer.Infrastructure.csproj" />
+    <ProjectReference Include="..\Nexplorer.NexusClient\Nexplorer.NexusClient.csproj" />
   </ItemGroup>
 
 </Project>

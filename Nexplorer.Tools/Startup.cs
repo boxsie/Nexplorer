@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Boxsie.DotNetNexusClient;
-using Boxsie.DotNetNexusClient.Core;
 using Hangfire;
 using Hangfire.Storage;
 using Microsoft.AspNetCore.Builder;
@@ -20,6 +18,8 @@ using Nexplorer.Data.Command;
 using Nexplorer.Data.Context;
 using Nexplorer.Data.Map;
 using Nexplorer.Data.Query;
+using Nexplorer.NexusClient;
+using Nexplorer.NexusClient.Core;
 using Nexplorer.Tools.Jobs;
 using Nexplorer.Tools.Jobs.Catchup;
 using StackExchange.Redis;
@@ -71,8 +71,8 @@ namespace Nexplorer.Tools
             services.AddScoped<StatQuery>();
             services.AddScoped<AddressAggregator>();
 
-            services.AddScoped<INexusClient, NexusClient>();
-            services.AddScoped<INexusClient, NexusClient>(x => new NexusClient(config.GetConnectionString("Nexus")));
+            services.AddScoped<INxsClient, NxsClient>();
+            services.AddScoped<INxsClient, NxsClient>(x => new NxsClient(config.GetConnectionString("Nexus")));
             services.AddScoped<NexusBlockStream>();
 
             services.AddScoped<App>();

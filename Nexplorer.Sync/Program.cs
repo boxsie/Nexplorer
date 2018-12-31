@@ -1,6 +1,4 @@
 ﻿using System;
-using Boxsie.DotNetNexusClient;
-using Boxsie.DotNetNexusClient.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +14,8 @@ using Nexplorer.Data.Publish;
 using Nexplorer.Data.Query;
 using Nexplorer.Infrastructure.Bittrex;
 using Nexplorer.Infrastructure.Geolocate;
+using Nexplorer.NexusClient;
+using Nexplorer.NexusClient.Core;
 using Nexplorer.Sync.Nexus;
 using NLog.Extensions.Logging;
 using StackExchange.Redis;
@@ -100,8 +100,8 @@ namespace Nexplorer.Sync
             services.AddTransient<AddressStatsJob>();
             services.AddTransient<AddressCacheJob>();
 
-            services.AddTransient<INexusClient, NexusClient>();
-            services.AddTransient<INexusClient, NexusClient>(x => new NexusClient(configuration.GetConnectionString("Nexus")));
+            services.AddTransient<INxsClient, NxsClient>();
+            services.AddTransient<INxsClient, NxsClient>(x => new NxsClient(configuration.GetConnectionString("Nexus")));
             services.AddTransient<BittrexClient>();
             services.AddTransient<GeolocateIpClient>();
             

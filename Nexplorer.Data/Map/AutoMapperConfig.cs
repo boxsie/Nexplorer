@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
-using Boxsie.DotNetNexusClient.Response;
 using Nexplorer.Core;
 using Nexplorer.Data.Api;
 using Nexplorer.Domain.Criteria;
@@ -12,6 +11,7 @@ using Nexplorer.Domain.Entity.Orphan;
 using Nexplorer.Domain.Entity.User;
 using Nexplorer.Domain.Enums;
 using Nexplorer.Infrastructure.Geolocate;
+using Nexplorer.NexusClient.Response;
 
 namespace Nexplorer.Data.Map
 {
