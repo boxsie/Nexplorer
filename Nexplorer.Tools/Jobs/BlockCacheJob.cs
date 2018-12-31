@@ -11,6 +11,57 @@ using Nexplorer.Domain.Entity.Orphan;
 
 namespace Nexplorer.Tools.Jobs
 {
+    public class JobsInit
+    {
+        public void Start()
+        {
+            BackgroundJob.Enqueue<BlockScanJob>(x => x.ScanAsync(null));
+            BackgroundJob.Schedule<BlockSyncJob>(x => x.SyncLatestAsync(), BlockSyncJob.JobInterval);
+            BackgroundJob.Schedule<BlockCacheCleanupJob>(x => x.CleanUpAsync(), BlockCacheCleanupJob.JobInterval);
+            BackgroundJob.Schedule<TrustAddressCacheJob>(x => x.UpdateTrustAddressesAsync(), TrustAddressCacheJob.JobInterval);
+            BackgroundJob.Schedule<NexusAddressCacheJob>(x => x.CacheNexusAddressesAsync(), NexusAddressCacheJob.JobInterval);
+            BackgroundJob.Schedule<AddressStatsJob>(x => x.UpdateStatsAsync(), AddressStatsJob.JobInterval);
+        }
+    }
+
+    public class BlockScanJob
+    {
+        public static readonly TimeSpan JobInterval = TimeSpan.FromSeconds(3);
+
+        private readonly NexusQuery _nexusQuery;
+        private readonly ILogger<BlockScanJob> _logger;
+
+        private const int TimeoutSeconds = 10;
+
+        public BlockScanJob(NexusQuery nexusQuery, ILogger<BlockScanJob> logger)
+        {
+            _nexusQuery = nexusQuery;
+            _logger = logger;
+        }
+
+        [AutomaticRetry(Attempts = 1)]
+        [DisableConcurrentExecution(TimeoutSeconds)]
+        public async Task ScanAsync(int? nextHeight)
+        {
+            var newBlock = await _nexusQuery.GetBlockAsync(nextHeight, false);
+
+            while (newBlock != null)
+            {
+                _logger.LogInformation($"Found new block {nextHeight}");
+
+                var block = newBlock;
+
+                BackgroundJob.Enqueue<BlockCacheJob>(x => x.AddAsync(block.Height, true));
+
+                nextHeight = block.Height + 1;
+
+                newBlock = await _nexusQuery.GetBlockAsync(nextHeight, false);
+            }
+
+            BackgroundJob.Schedule<BlockScanJob>(x => x.ScanAsync(nextHeight), JobInterval);
+        }
+    }
+
     public class BlockCacheJob
     {
         private readonly ILogger<BlockCacheJob> _logger;
@@ -32,8 +83,8 @@ namespace Nexplorer.Tools.Jobs
         {
             var chainHeight = await _nexusQuery.GetBlockchainHeightAsync();
             var nextHeight = chainHeight - Settings.App.BlockCacheCount;
-            
-            for (var i = 0; i < Settings.App.BlockCacheCount; i++)
+
+            for (var i = 0; i <= Settings.App.BlockCacheCount; i++)
                 await AddAsync(nextHeight + i, false);
 
             _logger.LogInformation($"{Settings.App.BlockCacheCount} blocks added to cache");
@@ -42,25 +93,51 @@ namespace Nexplorer.Tools.Jobs
         [AutomaticRetry(Attempts = 0)]
         public async Task AddAsync(int blockHeight, bool publish)
         {
-            if (blockHeight == 0)
-                return;
-
-            if (await CacheBlockExistsAsync(blockHeight))
+            try
             {
-                _logger.LogInformation($"Block {blockHeight} is already in the cache");
-                return;
+                if (blockHeight == 0)
+                    return;
+
+                if (await CacheBlockExistsAsync(blockHeight))
+                {
+                    _logger.LogInformation($"Block {blockHeight} is already in the cache");
+                    return;
+                }
+                
+                var cacheHeight = await _redisCommand.GetAsync<int>(Settings.Redis.CachedHeight);
+
+                if (cacheHeight > 0)
+                {
+                    while (blockHeight > cacheHeight + 1)
+                    {
+                        _logger.LogInformation($"Found new block {blockHeight}");
+
+                        var prevBlock = await GetBlockAsync(cacheHeight + 1);
+
+                        await _redisCommand.SetAsync(Settings.Redis.BuildCachedBlockKey(prevBlock.Height), prevBlock);
+
+                        cacheHeight++;
+                    }
+                }
+                
+                var block = await GetBlockAsync(blockHeight);
+
+                await _redisCommand.SetAsync(Settings.Redis.BuildCachedBlockKey(block.Height), block);
+
+                if (cacheHeight < blockHeight)
+                    await _redisCommand.SetAsync(Settings.Redis.CachedHeight, blockHeight);
+
+                if (publish)
+                    BackgroundJob.Enqueue<BlockPublishJob>(x => x.PublishAsync(block.Height));
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                _logger.LogError(ex.StackTrace);
 
-            _logger.LogInformation($"Found new block {blockHeight}");
-
-            var block = await GetBlockAsync(blockHeight);
-
-            await _redisCommand.SetAsync(Settings.Redis.BuildCachedBlockKey(block.Height), block);
-
-            await SetCacheHeightAsync(blockHeight);
-
-            if (publish)
-                BackgroundJob.Enqueue<BlockPublishJob>(x => x.PublishAsync(block.Height));
+                throw;
+            }
+            
         }
 
         private async Task<bool> CacheBlockExistsAsync(int height)
@@ -80,14 +157,6 @@ namespace Nexplorer.Tools.Jobs
             }
 
             return block;
-        }
-
-        private async Task SetCacheHeightAsync(int height)
-        {
-            var cacheHeight = await _redisCommand.GetAsync<int>(Settings.Redis.CachedHeight);
-
-            if (cacheHeight < height)
-                await _redisCommand.SetAsync(Settings.Redis.CachedHeight, height);
         }
     }
 }

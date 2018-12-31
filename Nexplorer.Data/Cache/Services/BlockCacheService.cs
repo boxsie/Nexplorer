@@ -18,13 +18,14 @@ namespace Nexplorer.Data.Cache.Services
         private readonly RedisCommand _redisCommand;
         private readonly ILogger<BlockCacheService> _logger;
         private List<BlockDto> _cache;
-        private bool _subscribed;
 
         public BlockCacheService(RedisCommand redisCommand, ILogger<BlockCacheService> logger)
         {
             _redisCommand = redisCommand;
             _logger = logger;
-            _subscribed = false;
+
+
+            _redisCommand.Subscribe<BlockLiteDto>(Settings.Redis.NewBlockPubSub, AddToCache);
         }
 
         public Task<BlockDto> GetBlockAsync(int height)
@@ -117,21 +118,40 @@ namespace Nexplorer.Data.Cache.Services
 
         private async Task<List<BlockDto>> GetCacheAsync()
         {
-            if (_cache == null)
-                await SetCacheAsync();
+            if (_cache == null || _cache.Count == 0)
+                _cache = await SetCacheAsync();
 
             return _cache;
         }
 
-        private async Task SetCacheAsync()
+        private async Task<List<BlockDto>> SetCacheAsync()
         {
-            _cache = await _redisCommand.GetAsync<List<BlockDto>>(Settings.Redis.BlockCache);
+            var cache = new List<BlockDto>();
 
-            if (!_subscribed)
+            var cacheHeight = await _redisCommand.GetAsync<int?>(Settings.Redis.CachedHeight);
+
+            if (!cacheHeight.HasValue || cacheHeight == 0)
             {
-                await _redisCommand.SubscribeAsync<BlockLiteDto>(Settings.Redis.NewBlockPubSub, dto => SetCacheAsync());
-                _subscribed = true;
+                _logger.LogWarning($"Cannot retrieve the cache height");
+                return cache;
             }
+
+            _logger.LogInformation($"Rebuilding local cache from block {cacheHeight}");
+
+            for (var i = 0; i < Settings.App.BlockCacheCount; i++)
+                cache.Add(await _redisCommand.GetAsync<BlockDto>(Settings.Redis.BuildCachedBlockKey(cacheHeight.Value - i)));
+
+            _logger.LogInformation($"Local block cache rebuilt");
+
+            return cache;
+        }
+
+        private async Task AddToCache(BlockLiteDto blockDto)
+        {
+            _cache.Insert(0, await _redisCommand.GetAsync<BlockDto>(Settings.Redis.BuildCachedBlockKey(blockDto.Height)));
+            _cache.RemoveAt(_cache.Count - 1);
+
+            _logger.LogInformation($"Added new block {blockDto.Height} to the local block cache");
         }
 
         private async Task<List<CachedAddressDto>> GetAddressCacheAsync()

@@ -14,12 +14,13 @@ namespace Nexplorer.Tools.Jobs
 {
     public class BlockSyncJob
     {
+        public static readonly TimeSpan JobInterval = TimeSpan.FromMinutes(1);
+
         private readonly ILogger<BlockSyncJob> _logger;
         private readonly NexusQuery _nexusQuery;
         private readonly BlockQuery _blockQuery;
 
         private const int TimeoutSeconds = 10;
-        private readonly TimeSpan _syncInterval = TimeSpan.FromMinutes(1);
 
         public BlockSyncJob(ILogger<BlockSyncJob> logger, NexusQuery nexusQuery, BlockQuery blockQuery, RedisCommand redisCommand)
         {
@@ -40,7 +41,7 @@ namespace Nexplorer.Tools.Jobs
             if (syncDelta <= 0)
             {
                 _logger.LogInformation("Block sync found no blocks to sync.");
-                BackgroundJob.Schedule<BlockSyncJob>(x => x.SyncLatestAsync(), _syncInterval);
+                BackgroundJob.Schedule<BlockSyncJob>(x => x.SyncLatestAsync(), JobInterval);
                 return;
             }
 
@@ -72,7 +73,7 @@ namespace Nexplorer.Tools.Jobs
                 nextBlockHash = nextBlock.NextBlockHash;
             }
 
-            _logger.LogInformation($"Syncing {saveCount} blocks from {lastSyncedHeight} - {lastSyncedHeight + saveCount}...");
+            _logger.LogInformation($"Syncing {saveCount} blocks from {lastSyncedHeight + 1} - {lastSyncedHeight + saveCount}...");
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -91,7 +92,7 @@ namespace Nexplorer.Tools.Jobs
             stopwatch.Stop();
             _logger.LogInformation($"Addresses synced in {stopwatch.Elapsed:g}");
 
-            BackgroundJob.Schedule<BlockSyncJob>(x => x.SyncLatestAsync(), _syncInterval);
+            BackgroundJob.Schedule<BlockSyncJob>(x => x.SyncLatestAsync(), JobInterval);
 
             //await _nexusDb.OrphanBlocks.AddRangeAsync(syncBlocks
             //    .Where(x => newBlocks.All(y => y.Hash != x.Hash))

@@ -40,7 +40,7 @@ namespace Nexplorer.Data.Command
             FROM [dbo].[Address] a
             WHERE a.Hash = @Hash";
 
-        public static async Task<List<Block>> InsertBlocksAsync(this List<BlockDto> blockDtos)
+        public static async Task<List<Block>> InsertBlocksAsync(this List<BlockDto> blockDtos, bool consoleOutput = false)
         {
             var blocks = new List<Block>();
 
@@ -79,11 +79,14 @@ namespace Nexplorer.Data.Command
 
                         blocks.Add(block);
 
-                        LogProgress(index + 1, blockDtos.Count);
+                        if (consoleOutput)
+                            LogProgress(index + 1, blockDtos.Count);
                     }
 
                     trans.Commit();
-                    Console.WriteLine();
+
+                    if (consoleOutput)
+                        Console.WriteLine();
                 }
             }
 

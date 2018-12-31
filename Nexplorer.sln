@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2003
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nexplorer.Cmd", "Nexplorer.Cmd\Nexplorer.Cmd.csproj", "{B28229A2-4ED2-4F38-AA1E-D2CC2529F3B3}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nexplorer.Domain", "Nexplorer.Domain\Nexplorer.Domain.csproj", "{2BA381D1-6C71-4F5F-8BBA-EB85A2DBC9D2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nexplorer.Sync", "Nexplorer.Sync\Nexplorer.Sync.csproj", "{D084D0BC-6709-4C98-9058-3AA1B280CA16}"
@@ -21,16 +19,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nexplorer.Infrastructure", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nexplorer.Tools", "Nexplorer.Tools\Nexplorer.Tools.csproj", "{9A1A8F3F-45BC-4326-9E89-0C89AEDCD636}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boxsie.DotNetNexusClient", "..\DotNetNexusClient\Boxsie.DotNetNexusClient\Boxsie.DotNetNexusClient.csproj", "{5A3BA3FA-5152-42CA-B4DD-618F18D642BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B28229A2-4ED2-4F38-AA1E-D2CC2529F3B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B28229A2-4ED2-4F38-AA1E-D2CC2529F3B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B28229A2-4ED2-4F38-AA1E-D2CC2529F3B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B28229A2-4ED2-4F38-AA1E-D2CC2529F3B3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2BA381D1-6C71-4F5F-8BBA-EB85A2DBC9D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2BA381D1-6C71-4F5F-8BBA-EB85A2DBC9D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2BA381D1-6C71-4F5F-8BBA-EB85A2DBC9D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -63,6 +59,10 @@ Global
 		{9A1A8F3F-45BC-4326-9E89-0C89AEDCD636}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A1A8F3F-45BC-4326-9E89-0C89AEDCD636}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9A1A8F3F-45BC-4326-9E89-0C89AEDCD636}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A3BA3FA-5152-42CA-B4DD-618F18D642BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A3BA3FA-5152-42CA-B4DD-618F18D642BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A3BA3FA-5152-42CA-B4DD-618F18D642BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A3BA3FA-5152-42CA-B4DD-618F18D642BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

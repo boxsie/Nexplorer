@@ -1,6 +1,4 @@
-﻿
-
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Boxsie.DotNetNexusClient;
@@ -77,13 +75,19 @@ namespace Nexplorer.Tools
             services.AddScoped<INexusClient, NexusClient>(x => new NexusClient(config.GetConnectionString("Nexus")));
             services.AddScoped<NexusBlockStream>();
 
-            services.AddTransient<App>();
-
-            services.AddTransient<BlockSyncCatchup>();
-            services.AddTransient<AddressAggregateCatchup>();
-            services.AddTransient<BlockRewardCatchup>();
+            services.AddScoped<App>();
+            
+            services.AddScoped<BlockSyncCatchup>();
+            services.AddScoped<AddressAggregateCatchup>();
+            services.AddScoped<BlockRewardCatchup>();
+            services.AddScoped<JobsInit>();
+            services.AddScoped<BlockScanJob>();
             services.AddScoped<BlockCacheJob>();
             services.AddScoped<BlockPublishJob>();
+            services.AddScoped<BlockCacheCleanupJob>();
+            services.AddScoped<TrustAddressCacheJob>();
+            services.AddScoped<NexusAddressCacheJob>();
+            services.AddScoped<AddressStatsJob>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider serviceProvider)
@@ -111,11 +115,12 @@ namespace Nexplorer.Tools
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
+            
             GlobalConfiguration.Configuration.UseActivator(new HangfireActivator(serviceProvider));
 
             app.UseHangfireServer();
             app.UseHangfireDashboard();
-
+            
             JobStorage.Current.GetMonitoringApi().PurgeJobs();
 
             // Clear Redis
@@ -127,26 +132,28 @@ namespace Nexplorer.Tools
             }
 
             var toolsApp = serviceProvider.GetService<App>();
-
             Task.Run(async () => { await toolsApp.StartAsync(); });
         }
     }
 
     public class App
     {
-        private readonly NexusQuery _query;
-        private readonly BlockCacheJob _cacheJob;
-        private readonly NexusBlockStream _stream;
+        private readonly NexusQuery _nexusQuery;
         private readonly BlockSyncCatchup _blockCatchup;
         private readonly AddressAggregateCatchup _addressCatchup;
+        private readonly BlockCacheJob _blockCacheJob;
+        private readonly BlockCacheService _blockCache;
+        private readonly RedisCommand _redisCommand;
 
-        public App(NexusQuery query, BlockCacheJob cacheJob, NexusBlockStream stream, BlockSyncCatchup blockCatchup, AddressAggregateCatchup addressCatchup)
+        public App(NexusQuery nexusQuery, BlockSyncCatchup blockCatchup, AddressAggregateCatchup addressCatchup, 
+            BlockCacheJob blockCacheJob, BlockCacheService blockCache, RedisCommand redisCommand)
         {
-            _query = query;
-            _cacheJob = cacheJob;
-            _stream = stream;
+            _nexusQuery = nexusQuery;
             _blockCatchup = blockCatchup;
             _addressCatchup = addressCatchup;
+            _blockCacheJob = blockCacheJob;
+            _blockCache = blockCache;
+            _redisCommand = redisCommand;
         }
 
         public async Task StartAsync()
@@ -154,22 +161,12 @@ namespace Nexplorer.Tools
             await _blockCatchup.CatchupAsync();
             await _addressCatchup.CatchupAsync();
 
-            await StartJobsAsync();
-        }
+            await _redisCommand.SetAsync(Settings.Redis.NodeVersion, (await _nexusQuery.GetInfoAsync()).Version);
+            
+            await _blockCacheJob.CreateAsync();
+            await _blockCache.GetBlocksAsync();
 
-        private async Task StartJobsAsync()
-        {
-            BackgroundJob.Enqueue<BlockCacheJob>(x => x.CreateAsync());
-            BackgroundJob.Schedule<BlockSyncJob>(x => x.SyncLatestAsync(), TimeSpan.FromMinutes(1));
-
-            await _stream.Start(TimeSpan.FromSeconds(3));
-
-            _stream.Subscribe(async blockResponse =>
-            {
-                var blockDto = await _query.MapResponseToDtoAsync(blockResponse, true);
-
-                BackgroundJob.Enqueue<BlockCacheJob>(x => x.AddAsync(blockDto.Height, true));
-            });
+            BackgroundJob.Schedule<JobsInit>(x => x.Start(), TimeSpan.FromSeconds(10));
         }
     }
 
@@ -177,14 +174,17 @@ namespace Nexplorer.Tools
     {
         public static void PurgeJobs(this IMonitoringApi monitor)
         {
-            var jobIds = monitor.ScheduledJobs(0, int.MaxValue)
-                .Select(x => x.Key)
-                .Concat(monitor.ProcessingJobs(0, int.MaxValue)
-                    .Select(x => x.Key))
-                .ToList();
+            //RecurringJobs
+            JobStorage.Current.GetConnection().GetRecurringJobs().ForEach(xx => BackgroundJob.Delete(xx.Id));
 
-            foreach (var jobId in jobIds)
-                BackgroundJob.Delete(jobId);
+            //ProcessingJobs
+            monitor.ProcessingJobs(0, int.MaxValue).ForEach(xx => BackgroundJob.Delete(xx.Key));
+
+            //ScheduledJobs
+            monitor.ScheduledJobs(0, int.MaxValue).ForEach(xx => BackgroundJob.Delete(xx.Key));
+
+            //EnqueuedJobs
+            monitor.Queues().ToList().ForEach(xx => monitor.EnqueuedJobs(xx.Name, 0, int.MaxValue).ForEach(x => BackgroundJob.Delete(x.Key)));
         }
     }
 }

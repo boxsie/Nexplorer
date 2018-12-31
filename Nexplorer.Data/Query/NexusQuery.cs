@@ -27,6 +27,9 @@ namespace Nexplorer.Data.Query
         {
             var blockResponse = await _nxsClient.GetBlockAsync(hash);
 
+            if (blockResponse == null)
+                return null;
+
             return await MapResponseToDtoAsync(blockResponse, includeTransactions);
         }
 
@@ -107,13 +110,19 @@ namespace Nexplorer.Data.Query
         {
             var infoResponse = await _nxsClient.GetInfoAsync();
 
+            if (infoResponse == null)
+                return null;
+
             return _mapper.Map<NexusInfoDto>(infoResponse);
         }
 
         public async Task<List<PeerInfoDto>> GetPeerInfo()
         {
             var peerResponses = await _nxsClient.GetPeerInfoAsync();
-            
+
+            if (peerResponses == null || !peerResponses.Any())
+                return null;
+
             var peerDtos = new List<PeerInfoDto>();
 
             foreach (var peerResponse in peerResponses)
@@ -132,12 +141,18 @@ namespace Nexplorer.Data.Query
         {
             var miningResponse = await _nxsClient.GetMiningInfoAsync();
 
+            if (miningResponse == null)
+                return null;
+
             return _mapper.Map<MiningInfoDto>(miningResponse);
         }
 
         public async Task<SupplyRateDto> GetSupplyRate()
         {
             var supplyResponse = await _nxsClient.GetSupplyRatesAsync();
+
+            if (supplyResponse == null)
+                return null;
 
             return _mapper.Map<SupplyRateDto>(supplyResponse);
         }
@@ -146,7 +161,7 @@ namespace Nexplorer.Data.Query
         {
             var trustKeyResponse = await _nxsClient.GetTrustKeysAsync();
 
-            return trustKeyResponse.Keys.Select(x => _mapper.Map<TrustKeyAddressResponse, TrustKeyResponseDto>(x)).ToList();
+            return trustKeyResponse?.Keys.Select(x => _mapper.Map<TrustKeyAddressResponse, TrustKeyResponseDto>(x)).ToList();
         }
         
         public async Task<BlockDto> MapResponseToDtoAsync(BlockResponse blockResponse, bool includeTransactions)

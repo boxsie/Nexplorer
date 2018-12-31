@@ -43,12 +43,12 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="8.0.0" />
-    <PackageReference Include="Boxsie.DotNetNexusClient" Version="1.0.6" />
     <PackageReference Include="Dapper" Version="1.50.5" />
     <PackageReference Include="StackExchange.Redis.StrongName" Version="1.2.6" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\DotNetNexusClient\Boxsie.DotNetNexusClient\Boxsie.DotNetNexusClient.csproj" />
     <ProjectReference Include="..\Nexplorer.Config\Nexplorer.Config.csproj" />
     <ProjectReference Include="..\Nexplorer.Core\Nexplorer.Core.csproj" />
     <ProjectReference Include="..\Nexplorer.Domain\Nexplorer.Domain.csproj" />

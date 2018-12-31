@@ -25,7 +25,6 @@ namespace Nexplorer.Tools.Jobs
 
             await _redisCommand.SetAsync(Settings.Redis.MiningInfoLatest, miningInfo);
 
-            await _redisCommand.SetAsync(Settings.Redis.NodeVersion, (await _nexusQuery.GetInfoAsync()).Version);
         }
     }
 }

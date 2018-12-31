@@ -549,7 +549,6 @@ namespace Nexplorer.Data.Query
                 {
                     NexusAddressPools.USA, new List<string>
                     {
-
                         "2RSWG4zGzJZdkem23CeuqSEVjjbwUbVe2oZRpcA5ZpSqTojzQYy",
                         "2RmF9e5k2W4RvKsZsKXK8y6Md1Hd5joNQFrrEKeLMpv3CfFMjQZ",
                         "2QyxbcfCckkr5HQzxGqrKdChnVwXzwuAjt8ADMBYw5i3jxYu96H",

@@ -63,7 +63,7 @@ namespace Nexplorer.Data.Command
 
         }
 
-        public async Task AggregateAddresses(int startHeight, int count)
+        public async Task AggregateAddresses(int startHeight, int count, bool consoleOutput = false)
         {
             using (var con = new SqlConnection(Settings.Connection.NexusDb))
             {
@@ -78,8 +78,8 @@ namespace Nexplorer.Data.Command
                         foreach (var txIoDto in txIoDtos)
                             await UpdateOrInsertAggregate(con, trans, txIoDto);
 
-
-                        LogProgress((i - startHeight) + 1, count);
+                        if (consoleOutput)
+                            LogProgress((i - startHeight) + 1, count);
                     }
 
                     trans.Commit();
@@ -87,7 +87,7 @@ namespace Nexplorer.Data.Command
             }
         }
 
-        public async Task AggregateAddresses(IEnumerable<Block> blocks)
+        public async Task AggregateAddresses(IEnumerable<Block> blocks, bool consoleOutput = false)
         {
             using (var con = new SqlConnection(Settings.Connection.NexusDb))
             {
@@ -113,7 +113,8 @@ namespace Nexplorer.Data.Command
 
                         await UpdateOrInsertAggregate(con, trans, txIoDto);
 
-                        LogProgress(i + 1, txIoDtos.Count);
+                        if (consoleOutput)
+                            LogProgress(i + 1, txIoDtos.Count);
                     }
 
                     trans.Commit();
