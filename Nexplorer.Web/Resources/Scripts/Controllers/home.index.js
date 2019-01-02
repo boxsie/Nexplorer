@@ -40,9 +40,9 @@ export class HomeViewModel {
 
                 this.connection.on('newBlockPubSub',
                     (blockData) => {
-                        var jsonBlockData = JSON.parse(blockData);
-                        this.$refs.blockTable.addItem(jsonBlockData.block);
-                        document.title = `#${jsonBlockData.block.height} | Nexplorer - A Nexus Block Explorer`;
+                        var b = JSON.parse(blockData);
+                        this.$refs.blockTable.addItem(b);
+                        document.title = `#${b.height} | Nexplorer - A Nexus Block Explorer`;
                     });
 
                 this.connection.on('newTxPubSub',

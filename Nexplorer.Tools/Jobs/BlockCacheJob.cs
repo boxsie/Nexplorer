@@ -22,7 +22,10 @@ namespace Nexplorer.Tools.Jobs
             BackgroundJob.Schedule<AddressStatsJob>(x => x.UpdateStatsAsync(), AddressStatsJob.JobInterval);
             BackgroundJob.Schedule<ExchangeSyncJob>(x => x.SyncAsync(), ExchangeSyncJob.JobInterval);
             BackgroundJob.Enqueue<BlockScanJob>(x => x.ScanAsync(null));
-            BackgroundJob.Enqueue<MiningLatestJob>(x => x.SyncAsync());
+
+            BackgroundJob.Enqueue<StatsJob>(x => x.UpdateTimestamp());
+            BackgroundJob.Enqueue<StatsJob>(x => x.PublishMiningStatsAsync());
+            BackgroundJob.Enqueue<StatsJob>(x => x.UpdateMiningHistoricalAsync());
         }
     }
 

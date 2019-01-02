@@ -28,24 +28,7 @@ namespace Nexplorer.Web.Hubs
 
         private async Task SendLatestBlockDataAsync(BlockLiteDto block)
         {
-            var miningInfo = await _redisCommand.GetAsync<MiningInfoDto>(Settings.Redis.MiningInfoLatest);
-
-            var difficulty = new
-            {
-                Pos = block.Channel == "PoS"
-                    ? block.Difficulty
-                    : await _blockCache.GetChannelDifficultyAsync(BlockChannels.PoS),
-                Hash = miningInfo.HashDifficulty,
-                Prime = miningInfo.PrimeDifficulty
-            };
-
-            var blockDataJson = Helpers.JsonSerialise(new
-            {
-                Difficulty = difficulty,
-                Block = block
-            });
-
-            await _homeContext.Clients.All.SendAsync("NewBlockPubSub", blockDataJson);
+            await _homeContext.Clients.All.SendAsync("NewBlockPubSub", Helpers.JsonSerialise(block));
         }
 
         private Task OnNewTransactionAsync(TransactionLiteDto tx)

@@ -91,7 +91,7 @@ namespace Nexplorer.Tools
             services.AddScoped<NexusAddressCacheJob>();
             services.AddScoped<AddressStatsJob>();
             services.AddScoped<ExchangeSyncJob>();
-            services.AddScoped<MiningLatestJob>();
+            services.AddScoped<StatsJob>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider serviceProvider)

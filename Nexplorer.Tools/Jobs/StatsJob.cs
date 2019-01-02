@@ -11,16 +11,18 @@ using Nexplorer.Domain.Dtos;
 
 namespace Nexplorer.Tools.Jobs
 {
-    public class MiningLatestJob
+    public class StatsJob
     {
-        public static readonly TimeSpan JobInterval = TimeSpan.FromSeconds(30);
+        public static readonly TimeSpan TimestampJobInterval = TimeSpan.FromSeconds(10);
+        public static readonly TimeSpan MiningStatsJobInterval = TimeSpan.FromSeconds(30);
+        public static readonly TimeSpan MiningHistoricalJobInterval = TimeSpan.FromSeconds(30);
 
-        private readonly ILogger<MiningLatestJob> _logger;
+        private readonly ILogger<StatsJob> _logger;
         private readonly RedisCommand _redisCommand;
         private readonly NexusQuery _nexusQuery;
         private readonly StatQuery _statQuery;
 
-        public MiningLatestJob(ILogger<MiningLatestJob> logger, RedisCommand redisCommand, NexusQuery nexusQuery, StatQuery statQuery)
+        public StatsJob(ILogger<StatsJob> logger, RedisCommand redisCommand, NexusQuery nexusQuery, StatQuery statQuery)
         {
             _logger = logger;
             _redisCommand = redisCommand;
@@ -28,23 +30,17 @@ namespace Nexplorer.Tools.Jobs
             _statQuery = statQuery;
         }
 
-        [DisableConcurrentExecution(10)]
-        public async Task SyncAsync()
+        public async Task UpdateTimestamp()
         {
             var latestStats = await _nexusQuery.GetInfoAsync();
 
             await _redisCommand.SetAsync(Settings.Redis.TimestampUtcLatest, latestStats.TimeStampUtc);
             await _redisCommand.PublishAsync(Settings.Redis.TimestampUtcLatest, latestStats.TimeStampUtc);
 
-            await UpdateMiningStatsAsync();
-            await UpdateMiningInfoAsync();
-
-            _logger.LogInformation("Updated mining stats");
-
-            BackgroundJob.Schedule<MiningLatestJob>(x => x.SyncAsync(), JobInterval);
+            BackgroundJob.Schedule<StatsJob>(x => x.UpdateTimestamp(), TimestampJobInterval);
         }
 
-        private async Task UpdateMiningStatsAsync()
+        public async Task PublishMiningStatsAsync()
         {
             var channelStats = await _statQuery.GetChannelStatsAsync();
 
@@ -62,9 +58,11 @@ namespace Nexplorer.Tools.Jobs
 
             await _redisCommand.PublishAsync(Settings.Redis.MiningStatPubSub, statDto);
             await _redisCommand.PublishAsync(Settings.Redis.DifficultyStatPubSub, diffs);
+
+            BackgroundJob.Schedule<StatsJob>(x => x.PublishMiningStatsAsync(), MiningStatsJobInterval);
         }
 
-        private async Task UpdateMiningInfoAsync()
+        public async Task UpdateMiningHistoricalAsync()
         {
             var miningInfo = await _nexusQuery.GetMiningInfoAsync();
 
@@ -80,6 +78,8 @@ namespace Nexplorer.Tools.Jobs
             }
 
             await _redisCommand.SetAsync(Settings.Redis.MiningInfoLatest, miningInfo);
+
+            BackgroundJob.Schedule<StatsJob>(x => x.UpdateMiningHistoricalAsync(), MiningHistoricalJobInterval);
         }
     }
 }
