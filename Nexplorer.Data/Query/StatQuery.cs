@@ -35,6 +35,9 @@ namespace Nexplorer.Data.Query
 
                 var miningInfo = await _redisCommand.GetAsync<MiningInfoDto>(Settings.Redis.MiningInfoLatest);
 
+                if (miningInfo == null)
+                    return null;
+
                 var channelStatTasks = channelResult
                     .Select(async x =>
                     {

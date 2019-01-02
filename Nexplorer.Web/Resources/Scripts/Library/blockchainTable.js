@@ -7,6 +7,7 @@ export default (tableType) => {
 
     var template;
     var url;
+    var filter;
 
     switch (tableType) {
         case 'blocks':
@@ -55,8 +56,8 @@ export default (tableType) => {
                             start: (newPage - 1) * this.itemsPerPage,
                             count: this.itemsPerPage
                         },
-                        success: (items) => {
-                            this.currentPageItems = items;
+                        success: (result) => {
+                            this.currentPageItems = result.results;
                         }
                     });
                 }

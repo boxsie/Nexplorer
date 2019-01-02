@@ -26,10 +26,13 @@ namespace Nexplorer.Domain.Dtos
         public double Difficulty { get; set; }
 
         [ProtoMember(7)]
+        public double Mint { get; set; }
+
+        [ProtoMember(8)]
         public int TransactionCount { get; set; }
 
         public BlockLiteDto() { }
-        
+
         public BlockLiteDto(BlockDto block)
         {
             Height = block.Height;

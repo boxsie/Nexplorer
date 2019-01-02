@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Nexplorer.Data.Cache.Services;
 using Nexplorer.Data.Query;
+using Nexplorer.Domain.Criteria;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Enums;
 using Nexplorer.Domain.Models;
@@ -52,11 +53,9 @@ namespace Nexplorer.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetRecentBlocks(int? start, int? count)
+        public async Task<IActionResult> GetRecentBlocks(int start, int count)
         {
-            var blocks = (await _blockQuery.GetNewBlockCacheAsync()).ToList();
-
-            return Ok(blocks.Skip(start ?? 0).Take(count ?? blocks.Count));
+            return Ok(await _blockQuery.GetBlocksFilteredAsync(new BlockFilterCriteria { OrderBy = OrderBlocksBy.Highest }, start, count, false));
         }
     }
 }

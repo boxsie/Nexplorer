@@ -4,6 +4,30 @@ using Nexplorer.Domain.Enums;
 
 namespace Nexplorer.Domain.Criteria
 {
+    public class BlockFilterCriteria
+    {
+        [JsonProperty("heightFrom")]
+        public int? HeightFrom { get; set; }
+
+        [JsonProperty("heightTo")]
+        public int? HeightTo { get; set; }
+
+        [JsonProperty("minSize")]
+        public double? MinSize { get; set; }
+
+        [JsonProperty("maxSize")]
+        public double? MaxSize { get; set; }
+
+        [JsonProperty("utcFrom")]
+        public DateTime? UtcFrom { get; set; }
+
+        [JsonProperty("utcTo")]
+        public DateTime? UtcTo { get; set; }
+
+        [JsonProperty("orderBy")]
+        public OrderBlocksBy OrderBy { get; set; }
+    }
+
     public class TransactionFilterCriteria
     {
         [JsonProperty("minAmount")]
@@ -33,7 +57,7 @@ namespace Nexplorer.Domain.Criteria
         [JsonProperty("addressHashes")]
         public string[] AddressHashes { get; set; }
 
-        [JsonProperty("fromAddress")]
+        [JsonProperty("orderBy")]
         public OrderTransactionsBy OrderBy { get; set; }
     }
 }

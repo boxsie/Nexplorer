@@ -49,11 +49,6 @@ namespace Nexplorer.Data.Query
 
             return _mapper.Map<TransactionDto>(tx);
         }
-        
-        public async Task<IEnumerable<TransactionLiteDto>> GetNewTransactionCacheAsync()
-        {
-            return await _redisCommand.GetAsync<IEnumerable<TransactionLiteDto>>(Settings.Redis.TransactionLiteCache);
-        }
 
         public async Task<int> GetTransactionCountLastDay()
         {
@@ -174,7 +169,6 @@ namespace Nexplorer.Data.Query
                     if (ioCount >= count)
                         break;
                 }
-
 
                 results.Results = txs;
 

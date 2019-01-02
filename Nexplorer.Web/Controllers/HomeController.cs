@@ -20,26 +20,26 @@ namespace Nexplorer.Web.Controllers
         private readonly BlockQuery _blockQuery;
         private readonly TransactionQuery _txQuery;
         private readonly RedisCommand _redisCommand;
+        private readonly StatQuery _statQuery;
 
-        public HomeController(BlockQuery blockQuery, TransactionQuery txQuery, RedisCommand redisCommand)
+        public HomeController(BlockQuery blockQuery, TransactionQuery txQuery, RedisCommand redisCommand, StatQuery statQuery)
         {
             _blockQuery = blockQuery;
             _txQuery = txQuery;
             _redisCommand = redisCommand;
+            _statQuery = statQuery;
         }
 
         public async Task<IActionResult> Index()
         {
-            var latestBlocks = (await _blockQuery.GetNewBlockCacheAsync()).ToList();
-
-            var miningInfo = await _redisCommand.GetAsync<MiningInfoDto>(Settings.Redis.MiningInfoLatest);
+            var channelStats = await _statQuery.GetChannelStatsAsync();
 
             return View(new HomeViewModel
             { 
-                LastBlock = latestBlocks.FirstOrDefault(),
-                LastPosDifficulty = latestBlocks.FirstOrDefault(x => x.Channel == BlockChannels.PoS.ToString())?.Difficulty ?? 0,
-                LastPrimeDifficulty = miningInfo?.PrimeDifficulty ?? 0,
-                LastHashDifficulty = miningInfo?.HashDifficulty ?? 0
+                LastBlock = await _blockQuery.GetLastBlockAsync(),
+                LastPosDifficulty = channelStats?.FirstOrDefault(x => x.Channel == BlockChannels.PoS.ToString())?.Difficulty ?? 0,
+                LastPrimeDifficulty = channelStats?.FirstOrDefault(x => x.Channel == BlockChannels.Prime.ToString())?.Difficulty ?? 0,
+                LastHashDifficulty = channelStats?.FirstOrDefault(x => x.Channel == BlockChannels.Hash.ToString())?.Difficulty ?? 0
             });
         }
 

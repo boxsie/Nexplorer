@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -51,9 +52,7 @@ namespace Nexplorer.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetRecentTransactions(int? start, int? count)
         {
-            var txs = (await _transactionQuery.GetNewTransactionCacheAsync()).ToList();
-
-            return Ok(txs.Skip(start ?? 0).Take(count ?? txs.Count));
+            return Ok(new List<TransactionLiteDto>());
         }
     }
 }
