@@ -21,6 +21,7 @@ namespace Nexplorer.Tools.Jobs
             BackgroundJob.Schedule<TrustAddressCacheJob>(x => x.UpdateTrustAddressesAsync(), TrustAddressCacheJob.JobInterval);
             BackgroundJob.Schedule<NexusAddressCacheJob>(x => x.CacheNexusAddressesAsync(), NexusAddressCacheJob.JobInterval);
             BackgroundJob.Schedule<AddressStatsJob>(x => x.UpdateStatsAsync(), AddressStatsJob.JobInterval);
+            BackgroundJob.Schedule<ExchangeSyncJob>(x => x.SyncAsync(), ExchangeSyncJob.JobInterval);
         }
     }
 

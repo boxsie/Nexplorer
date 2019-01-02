@@ -88,6 +88,7 @@ namespace Nexplorer.Tools
             services.AddScoped<TrustAddressCacheJob>();
             services.AddScoped<NexusAddressCacheJob>();
             services.AddScoped<AddressStatsJob>();
+            services.AddScoped<ExchangeSyncJob>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider serviceProvider)
