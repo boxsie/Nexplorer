@@ -18,6 +18,7 @@ using Nexplorer.Data.Command;
 using Nexplorer.Data.Context;
 using Nexplorer.Data.Map;
 using Nexplorer.Data.Query;
+using Nexplorer.Infrastructure.Bittrex;
 using Nexplorer.NexusClient;
 using Nexplorer.NexusClient.Core;
 using Nexplorer.Tools.Jobs;
@@ -74,6 +75,7 @@ namespace Nexplorer.Tools
             services.AddScoped<INxsClient, NxsClient>();
             services.AddScoped<INxsClient, NxsClient>(x => new NxsClient(config.GetConnectionString("Nexus")));
             services.AddScoped<NexusBlockStream>();
+            services.AddScoped<BittrexClient>();
 
             services.AddScoped<App>();
             
