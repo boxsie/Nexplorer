@@ -15,13 +15,14 @@ namespace Nexplorer.Tools.Jobs
     {
         public void Start()
         {
-            BackgroundJob.Enqueue<BlockScanJob>(x => x.ScanAsync(null));
             BackgroundJob.Schedule<BlockSyncJob>(x => x.SyncLatestAsync(), BlockSyncJob.JobInterval);
             BackgroundJob.Schedule<BlockCacheCleanupJob>(x => x.CleanUpAsync(), BlockCacheCleanupJob.JobInterval);
             BackgroundJob.Schedule<TrustAddressCacheJob>(x => x.UpdateTrustAddressesAsync(), TrustAddressCacheJob.JobInterval);
             BackgroundJob.Schedule<NexusAddressCacheJob>(x => x.CacheNexusAddressesAsync(), NexusAddressCacheJob.JobInterval);
             BackgroundJob.Schedule<AddressStatsJob>(x => x.UpdateStatsAsync(), AddressStatsJob.JobInterval);
             BackgroundJob.Schedule<ExchangeSyncJob>(x => x.SyncAsync(), ExchangeSyncJob.JobInterval);
+            BackgroundJob.Enqueue<BlockScanJob>(x => x.ScanAsync(null));
+            BackgroundJob.Enqueue<MiningLatestJob>(x => x.SyncAsync());
         }
     }
 
