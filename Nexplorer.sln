@@ -17,9 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nexplorer.Data", "Nexplorer
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nexplorer.Infrastructure", "Nexplorer.Infrastructure\Nexplorer.Infrastructure.csproj", "{DD42FE84-707C-4F38-A3CC-6352BF7C5DA1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nexplorer.Tools", "Nexplorer.Tools\Nexplorer.Tools.csproj", "{9A1A8F3F-45BC-4326-9E89-0C89AEDCD636}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexplorer.NexusClient", "Nexplorer.NexusClient\Nexplorer.NexusClient.csproj", "{DA05DB23-7B5F-462A-90DA-066B73BC0812}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nexplorer.NexusClient", "Nexplorer.NexusClient\Nexplorer.NexusClient.csproj", "{DA05DB23-7B5F-462A-90DA-066B73BC0812}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,10 +53,6 @@ Global
 		{DD42FE84-707C-4F38-A3CC-6352BF7C5DA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD42FE84-707C-4F38-A3CC-6352BF7C5DA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DD42FE84-707C-4F38-A3CC-6352BF7C5DA1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9A1A8F3F-45BC-4326-9E89-0C89AEDCD636}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9A1A8F3F-45BC-4326-9E89-0C89AEDCD636}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9A1A8F3F-45BC-4326-9E89-0C89AEDCD636}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9A1A8F3F-45BC-4326-9E89-0C89AEDCD636}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DA05DB23-7B5F-462A-90DA-066B73BC0812}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DA05DB23-7B5F-462A-90DA-066B73BC0812}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA05DB23-7B5F-462A-90DA-066B73BC0812}.Release|Any CPU.ActiveCfg = Release|Any CPU

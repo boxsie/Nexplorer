@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Hangfire;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,10 +19,11 @@ using Nexplorer.Infrastructure.Bittrex;
 using Nexplorer.Infrastructure.Geolocate;
 using Nexplorer.NexusClient;
 using Nexplorer.NexusClient.Core;
-using Nexplorer.Sync.Nexus;
+using Nexplorer.Sync.Hangfire;
+using Nexplorer.Sync.Hangfire.Catchup;
+using Nexplorer.Sync.Hangfire.Core;
 using NLog.Extensions.Logging;
 using StackExchange.Redis;
-using Nexplorer.Sync.Jobs;
 using NLog;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
@@ -54,8 +58,10 @@ namespace Nexplorer.Sync
             // Migrate EF
             serviceProvider.GetService<NexusDb>().Database.Migrate();
 
+            GlobalConfiguration.Configuration.UseActivator(new HangfireActivator(serviceProvider));
+
             // Run app
-            serviceProvider.GetService<App>().Run().GetAwaiter().GetResult();
+            Task.Run(serviceProvider.GetService<App>().StartAsync);
 
             Console.Read();
         }
@@ -71,6 +77,7 @@ namespace Nexplorer.Sync
             services.AddDbContext<NexusDb>(x => x.UseSqlServer(configuration.GetConnectionString("NexusDb"), y => { y.MigrationsAssembly("Nexplorer.Data"); }), ServiceLifetime.Transient);
 
             services.AddSingleton(ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis")));
+            services.AddSingleton<RedisCommand>();
 
             services.AddSingleton<AutoMapperConfig>();
             services.AddSingleton(x => x.GetService<AutoMapperConfig>().GetMapper());
@@ -78,34 +85,40 @@ namespace Nexplorer.Sync
             services.AddSingleton<BlockCacheService>();
             services.AddSingleton<GeolocationService>();
 
-            services.AddTransient<NexusQuery>();
-            services.AddTransient<BlockQuery>();
-            services.AddTransient<AddressQuery>();
-            services.AddTransient<StatQuery>();
-            services.AddTransient<AddressAggregator>();
+            GlobalConfiguration.Configuration.UseSqlServerStorage(configuration.GetConnectionString("NexplorerDb"));
+            JobStorage.Current.GetMonitoringApi().PurgeJobs();
 
-            services.AddTransient<BlockCacheBuild>();
-            services.AddTransient<LatestBlockPublisher>();
-            services.AddTransient<RollingCountPublisher>();
-            services.AddTransient<RedisCommand>();
+            services.AddSingleton<BlockCacheService>();
 
-            services.AddTransient<BlockSyncCatchup>();
-            services.AddTransient<AddressAggregateCatchup>();
-            services.AddTransient<BlockRewardCatchup>();
-            services.AddTransient<BlockSyncJob>();
-            services.AddTransient<BlockScanJob>();
-            //services.AddTransient<BlockCacheJob>();
-            services.AddTransient<BittrexSyncJob>();
-            services.AddTransient<MiningStatsJob>();
-            services.AddTransient<AddressStatsJob>();
-            services.AddTransient<AddressCacheJob>();
+            services.AddScoped<NexusQuery>();
+            services.AddScoped<BlockQuery>();
+            services.AddScoped<AddressQuery>();
+            services.AddScoped<StatQuery>();
+            services.AddScoped<AddressAggregator>();
 
-            services.AddTransient<INxsClient, NxsClient>();
-            services.AddTransient<INxsClient, NxsClient>(x => new NxsClient(configuration.GetConnectionString("Nexus")));
-            services.AddTransient<BittrexClient>();
-            services.AddTransient<GeolocateIpClient>();
+            services.AddScoped<INxsClient, NxsClient>();
+            services.AddScoped<INxsClient, NxsClient>(x => new NxsClient(configuration.GetConnectionString("Nexus")));
+            services.AddScoped<NexusBlockStream>();
+            services.AddScoped<BittrexClient>();
+            services.AddScoped<GeolocateIpClient>();
+
+            services.AddSingleton<App>();
+
+            services.AddScoped<BlockSyncCatchup>();
+            services.AddScoped<AddressAggregateCatchup>();
+            services.AddScoped<BlockRewardCatchup>();
+            services.AddScoped<BlockScanJob>();
+            services.AddScoped<BlockSyncJob>();
+            services.AddScoped<BlockCacheJob>();
+            services.AddScoped<BlockPublishJob>();
+            services.AddScoped<BlockCacheCleanupJob>();
+            services.AddScoped<TrustAddressCacheJob>();
+            services.AddScoped<NexusAddressCacheJob>();
+            services.AddScoped<AddressStatsJob>();
+            services.AddScoped<ExchangeSyncJob>();
+            services.AddScoped<StatsJob>();
             
-            services.AddTransient<App>();
+            services.AddScoped<App>();
         }
     }
 }

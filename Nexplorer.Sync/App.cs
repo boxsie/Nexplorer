@@ -1,105 +1,66 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Nexplorer.Data.Cache.Block;
+using System.Timers;
+using Hangfire;
+using Nexplorer.Config;
+using Nexplorer.Core;
+using Nexplorer.Data.Cache.Services;
 using Nexplorer.Data.Query;
-using Nexplorer.Sync.Core;
-using Nexplorer.Sync.Jobs;
-using Nexplorer.Sync.Nexus;
-using Quartz;
-using Quartz.Impl;
+using Nexplorer.Sync.Hangfire;
+using Nexplorer.Sync.Hangfire.Catchup;
 
 namespace Nexplorer.Sync
 {
     public class App
     {
-        private readonly ILogger<App> _logger;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly BackgroundJobServer _hangfire;
+        private readonly NexusQuery _nexusQuery;
         private readonly BlockSyncCatchup _blockCatchup;
-        private readonly AddressAggregateCatchup _addressAggregateCatchup;
-        private readonly BlockCacheBuild _blockCacheBuild;
+        private readonly AddressAggregateCatchup _addressCatchup;
+        private readonly BlockCacheJob _blockCacheJob;
+        private readonly BlockCacheService _blockCache;
+        private readonly RedisCommand _redisCommand;
 
-        public App(ILogger<App> logger, IServiceProvider serviceProvider, BlockSyncCatchup blockCatchup, 
-            AddressAggregateCatchup addressAggregateCatchup, BlockCacheBuild blockCacheBuild)
+        public App(NexusQuery nexusQuery, BlockSyncCatchup blockCatchup, AddressAggregateCatchup addressCatchup,
+            BlockCacheJob blockCacheJob, BlockCacheService blockCache, RedisCommand redisCommand)
         {
-            _logger = logger;
-            _serviceProvider = serviceProvider;
+            _nexusQuery = nexusQuery;
             _blockCatchup = blockCatchup;
-            _addressAggregateCatchup = addressAggregateCatchup;
-            _blockCacheBuild = blockCacheBuild;
+            _addressCatchup = addressCatchup;
+            _blockCacheJob = blockCacheJob;
+            _blockCache = blockCache;
+            _redisCommand = redisCommand;
         }
 
-        public async Task Run()
+        public async Task StartAsync()
         {
-            await _blockCatchup.Catchup();
-            await _addressAggregateCatchup.Catchup();
-            await _blockCacheBuild.BuildAsync();
+            await _blockCatchup.CatchupAsync();
+            await _addressCatchup.CatchupAsync();
 
-            await StartJobs();
+            await _redisCommand.SetAsync(Settings.Redis.NodeVersion, (await _nexusQuery.GetInfoAsync()).Version);
+
+            await _blockCacheJob.CreateAsync();
+            await _blockCache.GetBlocksAsync();
+
+            var server = new BackgroundJobServer();
+            
+            BackgroundJob.Schedule(() => StartJobs(), TimeSpan.FromSeconds(10));
         }
 
-        private async Task StartJobs()
+        [DisableConcurrentExecution(10)]
+        public void StartJobs()
         {
-            var schedFact = new StdSchedulerFactory();
-            var jobFact = new JobFactory(_serviceProvider);
+            BackgroundJob.Schedule<BlockSyncJob>(x => x.SyncLatestAsync(), BlockSyncJob.JobInterval);
+            BackgroundJob.Schedule<BlockCacheCleanupJob>(x => x.CleanUpAsync(), BlockCacheCleanupJob.JobInterval);
+            BackgroundJob.Schedule<TrustAddressCacheJob>(x => x.UpdateTrustAddressesAsync(), TrustAddressCacheJob.JobInterval);
+            BackgroundJob.Schedule<NexusAddressCacheJob>(x => x.CacheNexusAddressesAsync(), NexusAddressCacheJob.JobInterval);
+            BackgroundJob.Schedule<AddressStatsJob>(x => x.UpdateStatsAsync(), AddressStatsJob.JobInterval);
+            BackgroundJob.Schedule<ExchangeSyncJob>(x => x.SyncAsync(), ExchangeSyncJob.JobInterval);
+            BackgroundJob.Enqueue<BlockScanJob>(x => x.ScanAsync(null));
 
-            var scheduler = await schedFact.GetScheduler();
-
-            scheduler.JobFactory = jobFact;
-
-            await scheduler.Start();
-
-            var jobs = new Dictionary<string, SyncJob>();
-
-            jobs.Add(nameof(BlockScanJob), (SyncJob)_serviceProvider.GetService(typeof(BlockScanJob)));
-            jobs.Add(nameof(BlockSyncJob), (SyncJob)_serviceProvider.GetService(typeof(BlockSyncJob)));
-            jobs.Add(nameof(BittrexSyncJob), (SyncJob)_serviceProvider.GetService(typeof(BittrexSyncJob)));
-            jobs.Add(nameof(AddressCacheJob), (SyncJob)_serviceProvider.GetService(typeof(AddressCacheJob)));
-            jobs.Add(nameof(AddressStatsJob), (SyncJob)_serviceProvider.GetService(typeof(AddressStatsJob)));
-            jobs.Add(nameof(MiningStatsJob), (SyncJob)_serviceProvider.GetService(typeof(MiningStatsJob)));
-
-            foreach (var jt in jobs)
-            {
-                var jobInstance = jt.Value;
-
-                var job = JobBuilder.Create(jt.Value.GetType())
-                    .WithIdentity($"{jt.Key}Job")
-                    .Build();
-
-                var offsetSecs = 0;
-
-                switch (jt.Key)
-                {
-                    case nameof(BlockScanJob):
-                        offsetSecs = 0;
-                        break;
-                    case nameof(BlockSyncJob):
-                        offsetSecs = 0;
-                        break;
-                    case nameof(AddressCacheJob):
-                        offsetSecs = 30;
-                        break;
-                    case nameof(AddressStatsJob):
-                        offsetSecs = 60;
-                        break;
-                    case nameof(MiningStatsJob):
-                        offsetSecs = 120;
-                        break;
-                }
-
-                var trigger = TriggerBuilder.Create()
-                    .WithIdentity($"{jobInstance.Name}Trigger")
-                    .StartAt(DateTimeOffset.Now.AddSeconds(offsetSecs))
-                    .WithSimpleSchedule(jobInstance.Schedule)
-                    .Build();
-
-                await scheduler.ScheduleJob(job, trigger);
-
-                offsetSecs += 30;
-            }
+            BackgroundJob.Enqueue<StatsJob>(x => x.UpdateTimestamp());
+            BackgroundJob.Enqueue<StatsJob>(x => x.PublishMiningStatsAsync());
+            BackgroundJob.Enqueue<StatsJob>(x => x.UpdateMiningHistoricalAsync());
         }
     }
 }

@@ -59,20 +59,12 @@
 <body>
 <nav id="navbar" class="navbar">
     <div class="navbar-bg">
-        @if (ViewBag.LastBlockTime != null)
-        {
-            var timeSinceBlock = DateTime.Now - (DateTime)ViewBag.LastBlockTime;
-
-            if (timeSinceBlock.Minutes > 10)
-            {
-                <div class="alert alert-warning alert-dismissable text-center" style="margin-bottom: 0;">
-                    <div class="container-fluid max-width text-center">
-                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                        <strong>Potential Connection Issue</strong><br class="visible-xs" /> Nexplorer hasn't seen a new block for @timeSinceBlock.ToReadableString()
-                    </div>
-                </div>
-            }
-        }
+        @*<div class="alert alert-warning alert-dismissable text-center" style="margin-bottom: 0;">
+            <div class="container-fluid max-width text-center">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>Potential Connection Issue</strong><br class="visible-xs" /> Nexplorer hasn't seen a new block for 
+            </div>
+        </div>*@
             
         <div ref="navSearch" class="navbar-search" v-bind:class="searchOpen ? 'open' : 'closed'">
             <form id="navSearchForm" asp-controller="home" asp-action="search" method="post">
