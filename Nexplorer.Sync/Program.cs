@@ -28,6 +28,8 @@ using Nexplorer.NexusClient.Core;
 using NLog.Extensions.Logging;
 using StackExchange.Redis;
 using NLog;
+using NLog.Config;
+using NLog.Targets;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Nexplorer.Sync
@@ -39,7 +41,6 @@ namespace Nexplorer.Sync
             var serviceCollection = new ServiceCollection()
                 .AddLogging(builder =>
                 {
-                    builder.SetMinimumLevel(LogLevel.Trace);
                     builder.AddNLog(new NLogProviderOptions
                     {
                         CaptureMessageTemplates = true,
@@ -53,7 +54,7 @@ namespace Nexplorer.Sync
 
             // Attach Config
             Settings.AttachConfig(serviceProvider);
-            
+
             // Clear Redis
             var endpoints = serviceProvider.GetService<ConnectionMultiplexer>().GetEndPoints(true);
             foreach (var endpoint in endpoints)
@@ -61,6 +62,13 @@ namespace Nexplorer.Sync
                 var redis = serviceProvider.GetService<ConnectionMultiplexer>().GetServer(endpoint);
                 redis.FlushAllDatabases();
             }
+
+            // Set up Nlog
+            ConfigurationItemFactory.Default.Targets.RegisterDefinition("RedisTarget", typeof(RedisTarget));
+            ConfigurationItemFactory.Default.CreateInstance = 
+                (Type type) => type == typeof(RedisTarget) 
+                    ? serviceProvider.GetService<RedisTarget>() 
+                    : Activator.CreateInstance(type);
 
             // Migrate EF
             serviceProvider.GetService<NexusDb>().Database.Migrate();
@@ -76,10 +84,8 @@ namespace Nexplorer.Sync
 
         private static void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<NlogRunner>();
-
             var configuration = Settings.BuildConfig(services);
-                
+
             services.AddDbContext<NexusDb>(x => x.UseSqlServer(configuration.GetConnectionString("NexusDb"), y => { y.MigrationsAssembly("Nexplorer.Data"); }), ServiceLifetime.Transient);
 
             services.AddSingleton(ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis")));
@@ -87,6 +93,8 @@ namespace Nexplorer.Sync
 
             services.AddSingleton<AutoMapperConfig>();
             services.AddSingleton(x => x.GetService<AutoMapperConfig>().GetMapper());
+
+            services.AddTransient<RedisTarget>();
             
             services.AddSingleton<BlockCacheService>();
             services.AddSingleton<GeolocationService>();
@@ -111,10 +119,26 @@ namespace Nexplorer.Sync
             services.AddSingleton<BlockSyncCatchup>();
             services.AddSingleton<AddressAggregateCatchup>();
             services.AddSingleton<BlockRewardCatchup>();
-            
-            services.AddScoped<App>();
 
             JobService.Init(services);
+        }
+    }
+
+    [Target("Redis")]
+    public sealed class RedisTarget : TargetWithLayout
+    {
+        private readonly RedisCommand _redisCommand;
+
+        public RedisTarget(RedisCommand redisCommand)
+        {
+            _redisCommand = redisCommand;
+        }
+
+        protected override void Write(LogEventInfo logEvent)
+        {
+            var logMessage = this.Layout.Render(logEvent);
+
+            _redisCommand.Publish(Settings.Redis.SyncOutputPubSub, logMessage);
         }
     }
 }

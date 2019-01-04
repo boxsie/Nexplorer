@@ -68,6 +68,13 @@ namespace Nexplorer.Core
             });
         }
 
+        public void Publish<T>(string key, T val)
+        {
+            var serialisedVal = Helpers.ProtoSerialize(val);
+
+            _redis.GetSubscriber().Publish(key, serialisedVal);
+        }
+
         public async Task PublishAsync<T>(string key, T val)
         {
             var serialisedVal = Helpers.ProtoSerialize(val);

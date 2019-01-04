@@ -38,6 +38,7 @@ namespace Nexplorer.Config.Core
         public string AddressStatPubSub { get; set; }
 
         public string NodeVersion { get; set; }
+        public string SyncOutputPubSub { get; set; }
 
         public string BuildCachedBlockKey(int height)
         {

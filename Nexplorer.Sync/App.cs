@@ -51,21 +51,4 @@ namespace Nexplorer.Sync
                 JobService.StartJob(typeof(AddressStatsJob), 60));
         }
     }
-
-    public class NlogRunner
-    {
-        private readonly ILogger<NlogRunner> _logger;
-
-        public NlogRunner(ILogger<NlogRunner> logger)
-        {
-            _logger = logger;
-        }
-
-        public void DoAction(string name)
-        {
-            _logger.LogDebug(20, "Doing hard work! {Action}", name);
-        }
-
-
-    }
 }

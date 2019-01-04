@@ -28,6 +28,7 @@
     "MiningInfo10Mins": "nexus:mininginfo:last10mins",
     "SupplyRatesLatest": "nexus:supplyrates:latest",
     "ChannelStatsLatest": "nexus:channels:latest",
-    "NodeVersion": "nexus:stats:nodeversion"
+    "NodeVersion": "nexus:stats:nodeversion",
+    "SyncOutputPubSub": "debug:sync:output"
   }
 }

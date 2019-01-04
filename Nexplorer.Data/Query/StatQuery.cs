@@ -15,7 +15,7 @@ namespace Nexplorer.Data.Query
         private readonly RedisCommand _redisCommand;
         private readonly BlockCacheService _blockCache;
 
-        public StatQuery(RedisCommand redisCommand, BlockCacheService blockCache, NexusQuery nexusQuery)
+        public StatQuery(RedisCommand redisCommand, BlockCacheService blockCache)
         {
             _redisCommand = redisCommand;
             _blockCache = blockCache;
