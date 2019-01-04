@@ -46,7 +46,15 @@ namespace Nexplorer.Jobs.Service
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                await ExecuteAsync();
+                try
+                {
+                    await ExecuteAsync();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
 
                 if (_jobInterval == TimeSpan.Zero)
                     await StopAsync(cancellationToken);

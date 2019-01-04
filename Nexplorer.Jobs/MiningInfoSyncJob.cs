@@ -10,12 +10,12 @@ using Nexplorer.Jobs.Service;
 
 namespace Nexplorer.Jobs
 {
-    public class MiningHistoricalJob : HostedService
+    public class MiningInfoSyncJob : HostedService
     {
         private readonly NexusQuery _nexusQuery;
         private readonly RedisCommand _redisCommand;
 
-        public MiningHistoricalJob(NexusQuery nexusQuery, RedisCommand redisCommand)
+        public MiningInfoSyncJob(NexusQuery nexusQuery, RedisCommand redisCommand)
             : base(10)
         {
             _nexusQuery = nexusQuery;

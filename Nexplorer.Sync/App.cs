@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using System.Timers;
+using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
 using Nexplorer.Core;
 using Nexplorer.Data.Cache.Services;
@@ -40,14 +41,31 @@ namespace Nexplorer.Sync
             await Task.WhenAll(
                 JobService.StartJob(typeof(BlockScanJob)),
                 JobService.StartJob(typeof(TimestampSyncJob)),
-                JobService.StartJob(typeof(MiningStatsJob)),
                 JobService.StartJob(typeof(ExchangeSyncJob)),
+                JobService.StartJob(typeof(MiningInfoSyncJob)),
                 JobService.StartJob(typeof(BlockSyncJob), 20),
                 JobService.StartJob(typeof(NexusAddressCacheJob), 20),
-                JobService.StartJob(typeof(MiningHistoricalJob), 20), 
                 JobService.StartJob(typeof(TrustAddressCacheJob), 40),
                 JobService.StartJob(typeof(BlockCacheCleanupJob), 40),
+                JobService.StartJob(typeof(MiningStatsJob), 40),
                 JobService.StartJob(typeof(AddressStatsJob), 60));
         }
+    }
+
+    public class NlogRunner
+    {
+        private readonly ILogger<NlogRunner> _logger;
+
+        public NlogRunner(ILogger<NlogRunner> logger)
+        {
+            _logger = logger;
+        }
+
+        public void DoAction(string name)
+        {
+            _logger.LogDebug(20, "Doing hard work! {Action}", name);
+        }
+
+
     }
 }

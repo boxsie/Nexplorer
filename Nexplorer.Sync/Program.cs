@@ -36,7 +36,16 @@ namespace Nexplorer.Sync
     {
         public static void Main(string[] args)
         {
-            var serviceCollection = new ServiceCollection();
+            var serviceCollection = new ServiceCollection()
+                .AddLogging(builder =>
+                {
+                    builder.SetMinimumLevel(LogLevel.Trace);
+                    builder.AddNLog(new NLogProviderOptions
+                    {
+                        CaptureMessageTemplates = true,
+                        CaptureMessageProperties = true
+                    });
+                });
 
             ConfigureServices(serviceCollection);
             
@@ -45,11 +54,6 @@ namespace Nexplorer.Sync
             // Attach Config
             Settings.AttachConfig(serviceProvider);
             
-            // Configure NLog
-            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-            loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
-            LogManager.LoadConfiguration("nlog.config");
-
             // Clear Redis
             var endpoints = serviceProvider.GetService<ConnectionMultiplexer>().GetEndPoints(true);
             foreach (var endpoint in endpoints)
@@ -66,13 +70,13 @@ namespace Nexplorer.Sync
             Task.Run(serviceProvider.GetService<App>().StartAsync);
 
             Console.Read();
+
+            NLog.LogManager.Shutdown();
         }
 
         private static void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ILoggerFactory, LoggerFactory>();
-            services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
-            services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Trace));
+            services.AddTransient<NlogRunner>();
 
             var configuration = Settings.BuildConfig(services);
                 
@@ -87,8 +91,8 @@ namespace Nexplorer.Sync
             services.AddSingleton<BlockCacheService>();
             services.AddSingleton<GeolocationService>();
 
-            services.AddSingleton<BlockCacheCommand>();
-            services.AddSingleton<BlockPublishCommand>();
+            services.AddScoped<BlockCacheCommand>();
+            services.AddScoped<BlockPublishCommand>();
 
             services.AddScoped<NexusQuery>();
             services.AddScoped<BlockQuery>();

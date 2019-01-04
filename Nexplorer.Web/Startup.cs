@@ -117,20 +117,25 @@ namespace Nexplorer.Web
             services.AddSingleton(x => x.GetService<AutoMapperConfig>().GetMapper());
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<AddressFavouriteCommand>();
-            
+
             services.AddSingleton<BlockCacheService>();
+            services.AddTransient<BlockCacheCommand>();
+            services.AddTransient<BlockPublishCommand>();
             services.AddScoped<UserService>();
 
-            services.AddScoped<BlockQuery>();
-            services.AddScoped<TransactionQuery>();
-            services.AddScoped<AddressQuery>();
-            services.AddScoped<ExchangeQuery>();
-            services.AddScoped<UserQuery>();
-            services.AddScoped<CurrencyQuery>();
-            services.AddScoped<StatQuery>();
-            services.AddScoped<NexusQuery>();
+            services.AddTransient<INxsClient, NxsClient>();
+            services.AddTransient<INxsClient, NxsClient>(x => new NxsClient(config.GetConnectionString("Nexus")));
 
-            services.AddScoped<CurrencyClient>();
+            services.AddTransient<BlockQuery>();
+            services.AddTransient<TransactionQuery>();
+            services.AddTransient<AddressQuery>();
+            services.AddTransient<ExchangeQuery>();
+            services.AddTransient<UserQuery>();
+            services.AddTransient<CurrencyQuery>();
+            services.AddTransient<StatQuery>();
+            services.AddTransient<NexusQuery>();
+
+            services.AddSingleton<CurrencyClient>();
 
             services.AddScoped<LayoutHub>();
             services.AddSingleton<LayoutMessenger>();
@@ -220,15 +225,7 @@ namespace Nexplorer.Web
             serviceProvider.GetService<TransactionMessenger>();
             serviceProvider.GetService<MiningMessenger>();
             serviceProvider.GetService<AddressMessenger>();
-
-            // Clear Redis
-            var endpoints = serviceProvider.GetService<ConnectionMultiplexer>().GetEndPoints(true);
-            foreach (var endpoint in endpoints)
-            {
-                var redis = serviceProvider.GetService<ConnectionMultiplexer>().GetServer(endpoint);
-                redis.FlushAllDatabases();
-            }
-
+            
             // Migrate EF
             serviceProvider.GetService<NexplorerDb>().Database.Migrate();
         }
