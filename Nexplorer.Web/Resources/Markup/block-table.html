@@ -4,7 +4,7 @@
             <tr>
                 <th>Height</th>
                 <th>Channel</th>
-                <th class="hidden-xs text-right">Size</th>
+                <th class="hidden-xs">Size</th>
                 <th><span class="hidden-xs">Txs</span><span class="visible-xs">TXs</span></th>
                 <th style="width: 100px">Age</th>
             </tr>
@@ -13,7 +13,7 @@
             <tr v-for="block in currentPageItems" v-on:click="selectRow('/blocks/' + block.height)" style="cursor: pointer;">
                 <td><a v-bind:href="'/blocks/' + block.height">{{ block.height.toLocaleString() }}</a></td>
                 <td>{{ block.channel }}</td>
-                <td class="hidden-xs text-right">{{ block.size.toLocaleString() }} <small style="font-size: 10px">B</small></td>
+                <td class="hidden-xs">{{ block.size.toLocaleString() }} <small style="font-size: 10px">B</small></td>
                 <td>{{ block.transactionCount }}</td>
                 <td style="width: 100px"><date-age :fromDate="block.timestamp" :precise="true"></date-age></td>
             </tr>

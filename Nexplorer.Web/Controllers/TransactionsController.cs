@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Nexplorer.Config;
 using Nexplorer.Data.Query;
+using Nexplorer.Domain.Criteria;
 using Nexplorer.Domain.Dtos;
+using Nexplorer.Domain.Enums;
 using Nexplorer.Domain.Models;
 using Nexplorer.Web.Models;
 
@@ -50,9 +52,9 @@ namespace Nexplorer.Web.Controllers
         }
         
         [HttpGet]
-        public async Task<IActionResult> GetRecentTransactions(int? start, int? count)
+        public async Task<IActionResult> GetRecentTransactions(int start, int count)
         {
-            return Ok(new List<TransactionLiteDto>());
+            return Ok(await _transactionQuery.GetTransactionsFilteredAsync(null, new TransactionFilterCriteria { OrderBy = OrderTransactionsBy.MostRecent }, start, count, false));
         }
     }
 }

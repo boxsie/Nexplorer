@@ -25,10 +25,8 @@
                 @if (User.UserHasAccessLevel(UserRoles.Admin))
                 {
                     <li>
+                        <hr style="margin: 5px 0;"/>
                         <a asp-controller="admin" asp-action="index">Admin</a>
-                    </li>
-                    <li>
-                        <a href="/hangfire">Hangfire</a>
                     </li>
                 }
                 <li>

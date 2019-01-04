@@ -156,22 +156,7 @@ namespace Nexplorer.Data.Query
                         results.Results = results.Results.OrderBy(x => x.Inputs.Concat(x.Outputs).Max(y => y.Amount)).ToList();
                         break;
                 }
-
-                var txs = new List<TransactionDto>();
-                var ioCount = 0;
-
-                foreach (var r in results.Results)
-                {
-                    txs.Add(r);
-
-                    ioCount += r.Inputs.Count + r.Outputs.Count;
-
-                    if (ioCount >= count)
-                        break;
-                }
-
-                results.Results = txs;
-
+                
                 return results;
             }
         }
@@ -328,12 +313,13 @@ namespace Nexplorer.Data.Query
         {
             param = new DynamicParameters();
 
-            param.Add(nameof(txIoType), txIoType);
-
             var whereClause = new StringBuilder();
 
             if (txIoType.HasValue)
+            {
+                param.Add(nameof(txIoType), txIoType.Value);
                 whereClause.Append($"AND tInOut.[TransactionInputOutputType] = @txIoType ");
+            }
 
             if (filter.MinAmount.HasValue)
             {

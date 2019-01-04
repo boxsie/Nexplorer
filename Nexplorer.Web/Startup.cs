@@ -149,6 +149,8 @@ namespace Nexplorer.Web
             services.AddSingleton<MiningMessenger>();
             services.AddScoped<AddressHub>();
             services.AddSingleton<AddressMessenger>();
+            services.AddScoped<AdminHub>();
+            services.AddSingleton<AdminMessenger>();
 
 #if DEBUG
             services.AddSignalR(o => { o.EnableDetailedErrors = true; });
@@ -217,6 +219,7 @@ namespace Nexplorer.Web
                 routes.MapHub<TransactionHub>("/transactionhub");
                 routes.MapHub<MiningHub>("/mininghub");
                 routes.MapHub<AddressHub>("/addresshub");
+                routes.MapHub<AdminHub>("/adminhub");
             });
 
             serviceProvider.GetService<HomeMessenger>();
@@ -225,7 +228,8 @@ namespace Nexplorer.Web
             serviceProvider.GetService<TransactionMessenger>();
             serviceProvider.GetService<MiningMessenger>();
             serviceProvider.GetService<AddressMessenger>();
-            
+            serviceProvider.GetService<AdminMessenger>();
+
             // Migrate EF
             serviceProvider.GetService<NexplorerDb>().Database.Migrate();
         }
