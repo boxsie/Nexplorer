@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
-using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
 using Nexplorer.Core;
@@ -17,11 +20,11 @@ using Nexplorer.Data.Publish;
 using Nexplorer.Data.Query;
 using Nexplorer.Infrastructure.Bittrex;
 using Nexplorer.Infrastructure.Geolocate;
+using Nexplorer.Jobs;
+using Nexplorer.Jobs.Catchup;
+using Nexplorer.Jobs.Service;
 using Nexplorer.NexusClient;
 using Nexplorer.NexusClient.Core;
-using Nexplorer.Sync.Hangfire;
-using Nexplorer.Sync.Hangfire.Catchup;
-using Nexplorer.Sync.Hangfire.Core;
 using NLog.Extensions.Logging;
 using StackExchange.Redis;
 using NLog;
@@ -51,16 +54,15 @@ namespace Nexplorer.Sync
             var endpoints = serviceProvider.GetService<ConnectionMultiplexer>().GetEndPoints(true);
             foreach (var endpoint in endpoints)
             {
-                var server = serviceProvider.GetService<ConnectionMultiplexer>().GetServer(endpoint);
-                server.FlushAllDatabases();
+                var redis = serviceProvider.GetService<ConnectionMultiplexer>().GetServer(endpoint);
+                redis.FlushAllDatabases();
             }
 
             // Migrate EF
             serviceProvider.GetService<NexusDb>().Database.Migrate();
 
-            GlobalConfiguration.Configuration.UseActivator(new HangfireActivator(serviceProvider));
+            JobService.Start(serviceProvider.GetService<IEnumerable<IHostedService>>());
 
-            // Run app
             Task.Run(serviceProvider.GetService<App>().StartAsync);
 
             Console.Read();
@@ -81,14 +83,12 @@ namespace Nexplorer.Sync
 
             services.AddSingleton<AutoMapperConfig>();
             services.AddSingleton(x => x.GetService<AutoMapperConfig>().GetMapper());
-
+            
             services.AddSingleton<BlockCacheService>();
             services.AddSingleton<GeolocationService>();
 
-            GlobalConfiguration.Configuration.UseSqlServerStorage(configuration.GetConnectionString("NexplorerDb"));
-            JobStorage.Current.GetMonitoringApi().PurgeJobs();
-
-            services.AddSingleton<BlockCacheService>();
+            services.AddSingleton<BlockCacheCommand>();
+            services.AddSingleton<BlockPublishCommand>();
 
             services.AddScoped<NexusQuery>();
             services.AddScoped<BlockQuery>();
@@ -104,21 +104,13 @@ namespace Nexplorer.Sync
 
             services.AddSingleton<App>();
 
-            services.AddScoped<BlockSyncCatchup>();
-            services.AddScoped<AddressAggregateCatchup>();
-            services.AddScoped<BlockRewardCatchup>();
-            services.AddScoped<BlockScanJob>();
-            services.AddScoped<BlockSyncJob>();
-            services.AddScoped<BlockCacheJob>();
-            services.AddScoped<BlockPublishJob>();
-            services.AddScoped<BlockCacheCleanupJob>();
-            services.AddScoped<TrustAddressCacheJob>();
-            services.AddScoped<NexusAddressCacheJob>();
-            services.AddScoped<AddressStatsJob>();
-            services.AddScoped<ExchangeSyncJob>();
-            services.AddScoped<StatsJob>();
+            services.AddSingleton<BlockSyncCatchup>();
+            services.AddSingleton<AddressAggregateCatchup>();
+            services.AddSingleton<BlockRewardCatchup>();
             
             services.AddScoped<App>();
+
+            JobService.Init(services);
         }
     }
 }

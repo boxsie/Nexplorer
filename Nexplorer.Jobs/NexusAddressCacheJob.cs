@@ -2,33 +2,30 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Hangfire;
 using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
 using Nexplorer.Core;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Dtos;
+using Nexplorer.Jobs.Service;
 
-namespace Nexplorer.Sync.Hangfire
+namespace Nexplorer.Jobs
 {
-    public class NexusAddressCacheJob
+    public class NexusAddressCacheJob : HostedService
     {
-        public static readonly TimeSpan JobInterval = TimeSpan.FromMinutes(3);
-
         private readonly ILogger<NexusAddressCacheJob> _logger;
         private readonly AddressQuery _addressQuery;
         private readonly RedisCommand _redisCommand;
 
-        private const int TimeoutSeconds = 10;
-
-        public NexusAddressCacheJob(ILogger<NexusAddressCacheJob> logger, AddressQuery addressQuery, RedisCommand redisCommand)
+        public NexusAddressCacheJob(ILogger<NexusAddressCacheJob> logger, AddressQuery addressQuery, RedisCommand redisCommand) 
+            : base(180)
         {
             _logger = logger;
             _addressQuery = addressQuery;
             _redisCommand = redisCommand;
         }
 
-        public async Task CacheNexusAddressesAsync()
+        protected override async Task ExecuteAsync()
         {
             var nexusAddresses = new List<AddressLiteDto>();
 
@@ -46,8 +43,6 @@ namespace Nexplorer.Sync.Hangfire
             await _redisCommand.SetAsync(Settings.Redis.NexusAddressCache, nexusAddresses);
 
             _logger.LogInformation($"{nexusAddresses.Count} Nexus addresses updated");
-
-            BackgroundJob.Schedule<NexusAddressCacheJob>(x => x.CacheNexusAddressesAsync(), JobInterval);
         }
     }
 }

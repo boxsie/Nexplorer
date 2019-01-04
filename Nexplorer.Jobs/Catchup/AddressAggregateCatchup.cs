@@ -9,7 +9,7 @@ using Nexplorer.Config;
 using Nexplorer.Data.Command;
 using Nexplorer.Data.Query;
 
-namespace Nexplorer.Sync.Hangfire.Catchup
+namespace Nexplorer.Jobs.Catchup
 {
     public class AddressAggregateCatchup
     {

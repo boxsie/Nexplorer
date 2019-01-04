@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Hangfire;
 using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
 using Nexplorer.Core;
@@ -11,14 +10,12 @@ using Nexplorer.Data.Query;
 using Nexplorer.Domain.Criteria;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Enums;
+using Nexplorer.Jobs.Service;
 
-namespace Nexplorer.Sync.Hangfire
+namespace Nexplorer.Jobs
 {
-    public class AddressStatsJob
+    public class AddressStatsJob : HostedService
     {
-        public static readonly TimeSpan JobInterval = TimeSpan.FromMinutes(5);
-
-        private const int TimeoutSeconds = 10;
         private const int StakeThreshold = 1000;
 
         private readonly ILogger<AddressStatsJob> _logger;
@@ -27,7 +24,8 @@ namespace Nexplorer.Sync.Hangfire
         private readonly BlockQuery _blockQuery;
         private readonly NexusQuery _nexusQuery;
 
-        public AddressStatsJob(ILogger<AddressStatsJob> logger, RedisCommand redisCommand, AddressQuery addressQuery, BlockQuery blockQuery, NexusQuery nexusQuery)
+        public AddressStatsJob(ILogger<AddressStatsJob> logger, RedisCommand redisCommand, AddressQuery addressQuery, BlockQuery blockQuery, NexusQuery nexusQuery) 
+            : base(30)
         {
             _logger = logger;
             _redisCommand = redisCommand;
@@ -36,22 +34,23 @@ namespace Nexplorer.Sync.Hangfire
             _nexusQuery = nexusQuery;
         }
 
-        [DisableConcurrentExecution(TimeoutSeconds)]
-        public async Task UpdateStatsAsync()
+        protected override async Task ExecuteAsync()
         {
             var sw = new Stopwatch();
-            
+
             sw.Start();
 
             _logger.LogInformation("Updating address stats...");
 
             var dormantThreshold = await _blockQuery.GetBlockAsync(DateTime.Now.AddYears(-1));
-            
-            var addressStats = await _redisCommand.GetAsync<AddressStatDto>(Settings.Redis.AddressStatPubSub) ?? new AddressStatDto();
+
+            var addressStats = await _redisCommand.GetAsync<AddressStatDto>(Settings.Redis.AddressStatPubSub) ??
+                               new AddressStatDto();
 
             addressStats.AddressCount = await _addressQuery.GetUniqueAddressCountAsync();
             addressStats.CreatedPerHour = await _addressQuery.GetAddressesCreatedLastHourAsync();
-            addressStats.ZeroBalance = (int)(await _addressQuery.GetCountFilteredAsync(new AddressFilterCriteria { MaxBalance = 0 }));
+            addressStats.ZeroBalance =
+                (int)(await _addressQuery.GetCountFilteredAsync(new AddressFilterCriteria { MaxBalance = 0 }));
 
             var stakeableAddresses = await _addressQuery.GetAddressLitesFilteredAsync(new AddressFilterCriteria
             {
@@ -98,7 +97,8 @@ namespace Nexplorer.Sync.Hangfire
                 {
                     DistributionBand = distributionBand,
                     AddressCount = addCount,
-                    AddressPercent = (addCount / (double)(addressStats.AddressCount - addressStats.ZeroBalance)) * 100,
+                    AddressPercent =
+                        (addCount / (double)(addressStats.AddressCount - addressStats.ZeroBalance)) * 100,
                     CoinBalance = coinBalance,
                     CoinPercent = (coinBalance / supplyInfo.MoneySupply) * 100
                 });
@@ -110,11 +110,9 @@ namespace Nexplorer.Sync.Hangfire
             await _redisCommand.PublishAsync(Settings.Redis.AddressStatPubSub, addressStats);
 
             _logger.LogInformation($"Updated address stats in {sw.Elapsed:g}");
-
-            BackgroundJob.Schedule<AddressStatsJob>(x => x.UpdateStatsAsync(), JobInterval);
         }
 
-        private AddressFilterCriteria GetDistrubutionBands(AddressBalanceDistributionBands band)
+        private static AddressFilterCriteria GetDistrubutionBands(AddressBalanceDistributionBands band)
         {
             switch (band)
             {

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
@@ -11,13 +10,12 @@ using Nexplorer.Data.Context;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Entity.Blockchain;
+using Nexplorer.Jobs.Service;
 
-namespace Nexplorer.Sync.Hangfire
+namespace Nexplorer.Jobs
 {
-    public class TrustAddressCacheJob
+    public class TrustAddressCacheJob : HostedService
     {
-        public static readonly TimeSpan JobInterval = TimeSpan.FromMinutes(3);
-
         private readonly ILogger<TrustAddressCacheJob> _logger;
         private readonly NexusQuery _nexusQuery;
         private readonly BlockQuery _blockQuery;
@@ -25,10 +23,9 @@ namespace Nexplorer.Sync.Hangfire
         private readonly AddressQuery _addressQuery;
         private readonly RedisCommand _redisCommand;
 
-        private const int TimeoutSeconds = 10;
-
         public TrustAddressCacheJob(ILogger<TrustAddressCacheJob> logger, NexusQuery nexusQuery, BlockQuery blockQuery, 
-            NexusDb nexusDb, AddressQuery addressQuery, RedisCommand redisCommand)
+            NexusDb nexusDb, AddressQuery addressQuery, RedisCommand redisCommand) 
+            : base(180)
         {
             _logger = logger;
             _nexusQuery = nexusQuery;
@@ -36,10 +33,9 @@ namespace Nexplorer.Sync.Hangfire
             _nexusDb = nexusDb;
             _addressQuery = addressQuery;
             _redisCommand = redisCommand;
-        }
+        } 
 
-        [DisableConcurrentExecution(TimeoutSeconds)]
-        public async Task UpdateTrustAddressesAsync()
+        protected override async Task ExecuteAsync()
         {
             var trustKeys = await _nexusQuery.GetTrustKeys();
 
@@ -62,8 +58,6 @@ namespace Nexplorer.Sync.Hangfire
             await _redisCommand.SetAsync(Settings.Redis.TrustKeyAddressCache, newKeyAddressCache);
 
             _logger.LogInformation($"Trust keys updated {trustKeys.Count} and expired {expiredKeys.Count}");
-
-            BackgroundJob.Schedule<TrustAddressCacheJob>(x => x.UpdateTrustAddressesAsync(), JobInterval);
         }
 
         private async Task RemoveExpiredKeysAsync(IEnumerable<TrustKeyDto> expiredKeys, List<TrustKeyDto> keyCache)

@@ -10,7 +10,7 @@ using Nexplorer.Data.Command;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Dtos;
 
-namespace Nexplorer.Sync.Hangfire.Catchup
+namespace Nexplorer.Jobs.Catchup
 {
     public class BlockSyncCatchup
     {

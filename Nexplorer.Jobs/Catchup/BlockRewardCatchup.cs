@@ -11,7 +11,7 @@ using Nexplorer.Data.Context;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Enums;
 
-namespace Nexplorer.Sync.Hangfire.Catchup
+namespace Nexplorer.Jobs.Catchup
 {
     public class BlockRewardCatchup
     {

@@ -2,36 +2,31 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Hangfire;
 using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
 using Nexplorer.Core;
 using Nexplorer.Data.Command;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Dtos;
+using Nexplorer.Jobs.Service;
 
-namespace Nexplorer.Sync.Hangfire
+namespace Nexplorer.Jobs
 {
-    public class BlockSyncJob
+    public class BlockSyncJob : HostedService
     {
-        public static readonly TimeSpan JobInterval = TimeSpan.FromMinutes(1);
-
         private readonly ILogger<BlockSyncJob> _logger;
         private readonly NexusQuery _nexusQuery;
         private readonly BlockQuery _blockQuery;
 
-        private const int TimeoutSeconds = 10;
-
         public BlockSyncJob(ILogger<BlockSyncJob> logger, NexusQuery nexusQuery, BlockQuery blockQuery, RedisCommand redisCommand)
+            : base(60)
         {
             _logger = logger;
             _nexusQuery = nexusQuery;
             _blockQuery = blockQuery;
         }
 
-        [AutomaticRetry(Attempts = 0)]
-        [DisableConcurrentExecution(TimeoutSeconds)]
-        public async Task SyncLatestAsync()
+        protected override async Task ExecuteAsync()
         {
             var lastSyncedHeight = await _blockQuery.GetLastSyncedHeightAsync();
             var lastSyncedBlock = await _blockQuery.GetBlockAsync(lastSyncedHeight, false);
@@ -41,7 +36,6 @@ namespace Nexplorer.Sync.Hangfire
             if (syncDelta <= 0)
             {
                 _logger.LogInformation("Block sync found no blocks to sync.");
-                BackgroundJob.Schedule<BlockSyncJob>(x => x.SyncLatestAsync(), JobInterval);
                 return;
             }
 
@@ -91,8 +85,6 @@ namespace Nexplorer.Sync.Hangfire
 
             stopwatch.Stop();
             _logger.LogInformation($"Addresses synced in {stopwatch.Elapsed:g}");
-
-            BackgroundJob.Schedule<BlockSyncJob>(x => x.SyncLatestAsync(), JobInterval);
 
             //await _nexusDb.OrphanBlocks.AddRangeAsync(syncBlocks
             //    .Where(x => newBlocks.All(y => y.Hash != x.Hash))

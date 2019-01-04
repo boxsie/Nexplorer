@@ -10,22 +10,35 @@ using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Enums;
 using Dapper;
 using Microsoft.Extensions.Logging;
+using Nexplorer.Data.Command;
 
 namespace Nexplorer.Data.Cache.Services
 {
     public class BlockCacheService
     {
+        private readonly BlockCacheCommand _cacheCommand;
         private readonly RedisCommand _redisCommand;
         private readonly ILogger<BlockCacheService> _logger;
         private List<BlockDto> _cache;
 
-        public BlockCacheService(RedisCommand redisCommand, ILogger<BlockCacheService> logger)
+        public BlockCacheService(BlockCacheCommand cacheCommand, RedisCommand redisCommand, ILogger<BlockCacheService> logger)
         {
+            _cacheCommand = cacheCommand;
             _redisCommand = redisCommand;
             _logger = logger;
 
 
             _redisCommand.Subscribe<BlockLiteDto>(Settings.Redis.NewBlockPubSub, AddToCache);
+        }
+
+        public async Task CreateAsync()
+        {
+            _cache = await _cacheCommand.CreateAsync();
+        }
+
+        public Task AddAsync(int height, bool publish)
+        {
+            return _cacheCommand.AddAsync(height, publish);
         }
 
         public Task<BlockDto> GetBlockAsync(int height)

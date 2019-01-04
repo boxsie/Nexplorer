@@ -1,56 +1,60 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Hangfire;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
 using Nexplorer.Core;
+using Nexplorer.Data.Context;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Dtos;
+using Nexplorer.Domain.Entity.User;
 
-namespace Nexplorer.Sync.Hangfire
+namespace Nexplorer.Data.Command
 {
-    public class BlockCacheJob
+    public class BlockCacheCommand
     {
-        private readonly ILogger<BlockCacheJob> _logger;
+        private readonly ILogger<BlockCacheCommand> _logger;
         private readonly NexusQuery _nexusQuery;
         private readonly RedisCommand _redisCommand;
+        private readonly BlockPublishCommand _blockPublish;
 
-        private const int TimeoutSeconds = 10;
-
-        public BlockCacheJob(ILogger<BlockCacheJob> logger, NexusQuery nexusQuery, RedisCommand redisCommand)
+        public BlockCacheCommand(ILogger<BlockCacheCommand> logger, NexusQuery nexusQuery, RedisCommand redisCommand, BlockPublishCommand blockPublish)
         {
             _logger = logger;
             _nexusQuery = nexusQuery;
             _redisCommand = redisCommand;
+            _blockPublish = blockPublish;
         }
 
-        [AutomaticRetry(Attempts = 1)]
-        [DisableConcurrentExecution(TimeoutSeconds)]
-        public async Task CreateAsync()
+        public async Task<List<BlockDto>> CreateAsync()
         {
             var chainHeight = await _nexusQuery.GetBlockchainHeightAsync();
             var nextHeight = chainHeight - Settings.App.BlockCacheCount;
 
+            var cache = new List<BlockDto>();
+
             for (var i = 0; i <= Settings.App.BlockCacheCount; i++)
-                await AddAsync(nextHeight + i, false);
+                cache.Add(await AddAsync(nextHeight + i, false));
 
             _logger.LogInformation($"{Settings.App.BlockCacheCount} blocks added to cache");
+
+            return cache;
         }
 
-        [AutomaticRetry(Attempts = 0)]
-        public async Task AddAsync(int blockHeight, bool publish)
+        public async Task<BlockDto> AddAsync(int blockHeight, bool publish)
         {
             try
             {
                 if (blockHeight == 0)
-                    return;
+                    return null;
 
                 if (await CacheBlockExistsAsync(blockHeight))
                 {
                     _logger.LogInformation($"Block {blockHeight} is already in the cache");
-                    return;
+                    return null;
                 }
-                
+
                 var cacheHeight = await _redisCommand.GetAsync<int>(Settings.Redis.CachedHeight);
 
                 if (cacheHeight > 0)
@@ -66,7 +70,7 @@ namespace Nexplorer.Sync.Hangfire
                         cacheHeight++;
                     }
                 }
-                
+
                 var block = await GetBlockAsync(blockHeight);
 
                 await _redisCommand.SetAsync(Settings.Redis.BuildCachedBlockKey(block.Height), block);
@@ -75,7 +79,9 @@ namespace Nexplorer.Sync.Hangfire
                     await _redisCommand.SetAsync(Settings.Redis.CachedHeight, blockHeight);
 
                 if (publish)
-                    BackgroundJob.Enqueue<BlockPublishJob>(x => x.PublishAsync(block.Height));
+                    await _blockPublish.PublishAsync(block.Height);
+
+                return block;
             }
             catch (Exception ex)
             {

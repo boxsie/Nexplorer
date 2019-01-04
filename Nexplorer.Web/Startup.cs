@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -13,7 +12,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
-using Microsoft.Owin;
 using Nexplorer.Config;
 using Nexplorer.Config.Core;
 using Nexplorer.Core;
@@ -24,7 +22,11 @@ using Nexplorer.Data.Context;
 using Nexplorer.Data.Map;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Entity.User;
+using Nexplorer.Infrastructure.Bittrex;
 using Nexplorer.Infrastructure.Currency;
+using Nexplorer.Infrastructure.Geolocate;
+using Nexplorer.NexusClient;
+using Nexplorer.NexusClient.Core;
 using Nexplorer.Web;
 using Nexplorer.Web.Auth;
 using Nexplorer.Web.Enums;
@@ -36,8 +38,6 @@ using Nexplorer.Web.Services.User;
 using NLog.Extensions.Logging;
 using StackExchange.Redis;
 using Swashbuckle.AspNetCore.Swagger;
-
-[assembly: OwinStartup(typeof(Startup))]
 
 namespace Nexplorer.Web
 {
@@ -109,8 +109,6 @@ namespace Nexplorer.Web
                 c.DescribeAllEnumsAsStrings();
                 c.DescribeStringEnumsInCamelCase();
             });
-            
-            services.AddHangfire(x => x.UseSqlServerStorage(config.GetConnectionString("NexplorerDb")));
 
             services.AddSingleton(ConnectionMultiplexer.Connect(config.GetConnectionString("Redis")));
             services.AddSingleton<RedisCommand>();
@@ -130,6 +128,7 @@ namespace Nexplorer.Web
             services.AddScoped<UserQuery>();
             services.AddScoped<CurrencyQuery>();
             services.AddScoped<StatQuery>();
+            services.AddScoped<NexusQuery>();
 
             services.AddScoped<CurrencyClient>();
 
@@ -215,11 +214,6 @@ namespace Nexplorer.Web
                 routes.MapHub<AddressHub>("/addresshub");
             });
 
-            app.UseHangfireDashboard("/hangfire", new DashboardOptions
-            {
-                Authorization = new[] { new HangfireAuthorizationFilter() }
-            });
-
             serviceProvider.GetService<HomeMessenger>();
             serviceProvider.GetService<LayoutMessenger>();
             serviceProvider.GetService<BlockMessenger>();
@@ -227,6 +221,15 @@ namespace Nexplorer.Web
             serviceProvider.GetService<MiningMessenger>();
             serviceProvider.GetService<AddressMessenger>();
 
+            // Clear Redis
+            var endpoints = serviceProvider.GetService<ConnectionMultiplexer>().GetEndPoints(true);
+            foreach (var endpoint in endpoints)
+            {
+                var redis = serviceProvider.GetService<ConnectionMultiplexer>().GetServer(endpoint);
+                redis.FlushAllDatabases();
+            }
+
+            // Migrate EF
             serviceProvider.GetService<NexplorerDb>().Database.Migrate();
         }
     }

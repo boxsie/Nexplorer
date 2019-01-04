@@ -7,8 +7,6 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="1.50.5" />
-    <PackageReference Include="Hangfire.Core" Version="1.6.21" />
-    <PackageReference Include="Hangfire.SqlServer" Version="1.6.21" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -30,6 +28,7 @@
     <ProjectReference Include="..\Nexplorer.Data\Nexplorer.Data.csproj" />
     <ProjectReference Include="..\Nexplorer.Domain\Nexplorer.Domain.csproj" />
     <ProjectReference Include="..\Nexplorer.Infrastructure\Nexplorer.Infrastructure.csproj" />
+    <ProjectReference Include="..\Nexplorer.Jobs\Nexplorer.Jobs.csproj" />
   </ItemGroup>
 
   <ItemGroup>
