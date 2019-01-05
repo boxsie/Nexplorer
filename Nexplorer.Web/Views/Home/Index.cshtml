@@ -38,6 +38,8 @@
     </div>
 }
 
+@{ await Html.RenderPartialAsync("_AdvertBanner"); }
+
 <div class="row">
     <div class="col-md-6">
         <div class="panel">
@@ -71,8 +73,6 @@
         </div>
     </div>
 </div>
-
-@{ await Html.RenderPartialAsync("_AdvertBanner"); }
 
 <div class="panel full-length">
     <div class="row visible-xs">

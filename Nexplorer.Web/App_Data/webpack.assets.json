@@ -1,50 +1,64 @@
 {
-  "manage.enableauthenticator": {
-    "js": "../js/manage.enableauthenticator.js"
-  },
-  "addresses.address": {
-    "js": "../js/addresses.address.js"
-  },
-  "admin.index": {
-    "js": "../js/admin.index.js"
-  },
-  "blocks.block": {
-    "js": "../js/blocks.block.js"
-  },
-  "blocks.index": {
-    "js": "../js/blocks.index.js"
-  },
   "favourites.index": {
     "js": "../js/favourites.index.js"
   },
-  "home.index": {
-    "js": "../js/home.index.js"
-  },
-  "layout": {
-    "js": "../js/layout.js"
-  },
-  "addresses.index": {
-    "js": "../js/addresses.index.js"
+  "addresses.address": {
+    "js": "../js/addresses.address.js",
+    "css": "../css/addresses.address.css"
   },
   "mining.index": {
-    "js": "../js/mining.index.js"
+    "js": "../js/mining.index.js",
+    "css": "../css/mining.index.css"
   },
-  "network.index": {
-    "js": "../js/network.index.js"
-  },
-  "runtime": {
-    "js": "../js/runtime.js"
+  "home.index": {
+    "js": "../js/home.index.js",
+    "css": "../css/home.index.css"
   },
   "transactions.index": {
     "js": "../js/transactions.index.js"
   },
+  "blocks.index": {
+    "js": "../js/blocks.index.js"
+  },
+  "layout": {
+    "js": "../js/layout.js",
+    "css": "../css/layout.css"
+  },
+  "addresses.index": {
+    "js": "../js/addresses.index.js",
+    "css": "../css/addresses.index.css"
+  },
   "validate": {
     "js": "../js/validate.js"
+  },
+  "network.index": {
+    "js": "../js/network.index.js",
+    "css": "../css/network.index.css"
+  },
+  "manage.enableauthenticator": {
+    "js": "../js/manage.enableauthenticator.js"
+  },
+  "blocks.block": {
+    "js": "../js/blocks.block.js",
+    "css": "../css/blocks.block.css"
+  },
+  "admin.index": {
+    "js": "../js/admin.index.js",
+    "css": "../css/admin.index.css"
   },
   "vendor": {
     "js": "../js/vendor.js"
   },
   "": {
-    "png": "../img/nxs-icon.png"
+    "eot": "../font/fontawesome-webfont.eot",
+    "woff": "../font/fontawesome-webfont.woff",
+    "ttf": "../font/fontawesome-webfont.ttf",
+    "svg": "../font/fontawesome-webfont.svg",
+    "jpg": [
+      "../img/hero-img-xs.jpg",
+      "../img/hero-img.jpg"
+    ],
+    "png": "../img/nxs-icon.png",
+    "woff2": "../font/fontawesome-webfont.woff2"
   }
 }
