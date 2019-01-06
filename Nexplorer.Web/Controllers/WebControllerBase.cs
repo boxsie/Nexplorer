@@ -28,6 +28,7 @@ namespace Nexplorer.Web.Controllers
             var actionDesc = (ControllerActionDescriptor)context.ActionDescriptor;
             var pageKey = $"{actionDesc.ControllerName.ToLower()}.{actionDesc.ActionName.ToLower()}";
 
+            ViewBag.RuntimeJs = WebExtensions.JsUrls["runtime"];
             ViewBag.VendorJs = WebExtensions.JsUrls["vendor"];
             ViewBag.ValidateJs = WebExtensions.JsUrls["validate"];
 

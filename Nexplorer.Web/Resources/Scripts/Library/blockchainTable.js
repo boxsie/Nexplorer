@@ -57,7 +57,6 @@ export default (tableType) => {
                             count: this.itemsPerPage
                         },
                         success: (result) => {
-                            console.log(result);
                             this.currentPageItems = result.results;
                         }
                     });

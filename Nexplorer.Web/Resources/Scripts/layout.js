@@ -14,7 +14,6 @@ export class LayoutViewModel {
         Vue.use(Ads.Adsense);
         Vue.use(Ads.InArticleAdsense);
         Vue.use(Ads.InFeedAdsense);
-
         Vue.use(layoutHub, options);
 
         this.navVm = new Vue({

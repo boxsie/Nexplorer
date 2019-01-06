@@ -5,14 +5,12 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const chunkFileNameJs = 'js/[name].js';
 const chunkFileNameCss = 'css/[name].css';
 
+config.mode = 'development';
+
 config.plugins.push(new ExtractTextPlugin({
     filename: chunkFileNameCss
 }));
 
-config.plugins.push(new webpack.optimize.CommonsChunkPlugin({
-    names: ['vendor'],
-    filename: chunkFileNameJs,
-    minChunks: Infinity
-}));
+config.resolve.alias['vue'] = 'vue/dist/vue.js';
 
 module.exports = config;

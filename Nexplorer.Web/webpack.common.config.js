@@ -10,7 +10,6 @@ const chunkFileNameJs = 'js/[name].js';
 
 module.exports = {
     entry: {
-        'vendor': ['babel-polyfill', 'tether', 'bootstrap', 'vue', '@aspnet/signalr', 'moment'],
         'validate': ['jquery-validation', 'jquery-validation-unobtrusive'],
         'layout': baseScriptsPath + 'layout.js',
         'home.index': controllerScriptsPath + 'home.index.js',
@@ -31,6 +30,28 @@ module.exports = {
         chunkFilename: chunkFileNameJs,
         filename: chunkFileNameJs,
         library: 'nexplorer'
+    },
+    optimization: {
+        splitChunks: {
+            cacheGroups: {
+                vendor: {
+                    chunks: 'all',
+                    name: 'vendor',
+                    test: /node_modules/,
+                    enforce: true,
+                    priority: 20
+                },
+                common: {
+                    name: 'common',
+                    minChunks: 2,
+                    chunks: 'async',
+                    priority: 10,
+                    reuseExistingChunk: true,
+                    enforce: true
+                }
+            }            
+        },
+        runtimeChunk: 'single'          
     },
     module: {
         rules: [
@@ -87,7 +108,6 @@ module.exports = {
     },
     resolve: {
         alias: {
-            'vue': 'vue/dist/vue.js',
             'jquery.validation': 'jquery-validation/dist/jquery.validate.js'
         }
     },

@@ -8,12 +8,13 @@ const chunkFileNameCss = 'css/[name].[chunkhash].css';
 config.output.chunkFilename = chunkFileNameJs;
 config.output.filename = chunkFileNameJs;
 
+config.mode = 'production';
+
 config.module.rules.push({
     test: /\.js$/,
-    loader: 'babel-loader',
-    exclude: '/node_modules',
-    query: {
-        presets: ['es2015']
+    exclude: /node_modules/,
+    use: {
+      loader: 'babel-loader'
     }
 });
 
@@ -23,23 +24,10 @@ config.plugins.push(new webpack.DefinePlugin({
     }
 }));
 
-config.plugins.push(new webpack.optimize.UglifyJsPlugin({
-    compress: {
-        warnings: false
-    },
-    output: {
-        comments: false
-    }
-}));
-
 config.plugins.push(new ExtractTextPlugin({
     filename: chunkFileNameCss
 }));
 
-config.plugins.push(new webpack.optimize.CommonsChunkPlugin({
-    names: ['vendor'],
-    filename: chunkFileNameJs,
-    minChunks: Infinity
-}));
+config.resolve.alias['vue'] = 'vue/dist/vue.min.js';
 
 module.exports = config;
