@@ -38,42 +38,6 @@
     </div>
 }
 
-@{ await Html.RenderPartialAsync("_AdvertBanner"); }
-
-<div class="row">
-    <div class="col-md-6">
-        <div class="panel">
-            <div class="row">
-                <div class="col-xs-9">
-                    <h2>LATEST BLOCKS</h2>
-                </div>
-                <div class="col-xs-3 text-right">
-                    <span class="fa fa-cubes"></span>
-                </div>
-            </div>
-
-            <block-table ref="blockTable" v-bind:items-per-page="10" v-bind:paging-disabled="true" style="margin-top: 15px;"></block-table>
-            <h5 class="text-right">@Html.ActionLink("More info", "index", "blocks")</h5>
-        </div>
-    </div>
-
-    <div class="col-md-6">
-        <div class="panel">
-            <div class="row">
-                <div class="col-xs-9">
-                    <h2>LATEST TRANSACTIONS</h2>
-                </div>
-                <div class="col-xs-3 text-right">
-                    <span class="fa fa-exchange"></span>
-                </div>
-            </div>
-
-            <tx-table ref="txTable" v-bind:items-per-page="10" v-bind:paging-disabled="true" style="margin-top: 15px;"></tx-table>
-            <h5 class="text-right">@Html.ActionLink("More info", "index", "transactions")</h5>
-        </div>
-    </div>
-</div>
-
 <div class="panel full-length">
     <div class="row visible-xs">
         <div class="col-xs-9">
@@ -110,6 +74,42 @@
         </div>
         <div class="col-sm-1 text-right hidden-xs">
             <span class="fa fa-btc"></span>
+        </div>
+    </div>
+</div>
+
+@{ await Html.RenderPartialAsync("_AdvertBanner"); }
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel">
+            <div class="row">
+                <div class="col-xs-9">
+                    <h2>LATEST BLOCKS</h2>
+                </div>
+                <div class="col-xs-3 text-right">
+                    <span class="fa fa-cubes"></span>
+                </div>
+            </div>
+
+            <block-table ref="blockTable" v-bind:items-per-page="10" v-bind:paging-disabled="true" style="margin-top: 15px;"></block-table>
+            <h5 class="text-right">@Html.ActionLink("More info", "index", "blocks")</h5>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="panel">
+            <div class="row">
+                <div class="col-xs-9">
+                    <h2>LATEST TRANSACTIONS</h2>
+                </div>
+                <div class="col-xs-3 text-right">
+                    <span class="fa fa-exchange"></span>
+                </div>
+            </div>
+
+            <tx-table ref="txTable" v-bind:items-per-page="10" v-bind:paging-disabled="true" style="margin-top: 15px;"></tx-table>
+            <h5 class="text-right">@Html.ActionLink("More info", "index", "transactions")</h5>
         </div>
     </div>
 </div>
