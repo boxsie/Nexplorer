@@ -140,27 +140,26 @@
     <div class="container-fluid bg">
         <div class="main-body">
             @RenderBody()
-            
-            @if (!User.Identity.IsAuthenticated)
-            {
-                <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-                <!-- Bottom -->
-                <ins class="adsbygoogle"
-                     style="display: block; margin-bottom: 30px;"
-                     data-ad-client="ca-pub-6209150577224148"
-                     data-ad-slot="8047084634"
-                     data-ad-format="auto"
-                     data-full-width-responsive="true"></ins>
-                <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
-            }
         </div>
     </div>
         
     @RenderSection("Modals", false)
 </div>
     
+@if (!User.Identity.IsAuthenticated)
+{
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <!-- Bottom -->
+    <ins class="adsbygoogle"
+         style="display: block; margin-bottom: 30px;"
+         data-ad-client="ca-pub-6209150577224148"
+         data-ad-slot="8047084634"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+}
 
 <div id="layout">
     <table id="tickerTable" class="text-center">
