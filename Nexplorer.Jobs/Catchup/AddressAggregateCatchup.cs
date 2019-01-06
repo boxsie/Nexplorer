@@ -58,7 +58,7 @@ namespace Nexplorer.Jobs.Catchup
 
                     Console.WriteLine($"Aggregating block addresses... {LogProgress(lastBlockHeight, dbHeight, out var blockPct)} {blockPct:N4}% ({lastBlockHeight:N0}/{dbHeight:N0})");
 
-                    await addAgg.AggregateAddresses(nextBlockHeight, bulkSaveCount);
+                    await addAgg.AggregateAddresses(nextBlockHeight, bulkSaveCount, true);
 
                     lastBlockHeight = await GetLastBlockHeight();
 
