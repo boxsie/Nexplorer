@@ -134,7 +134,7 @@ namespace Nexplorer.Web.Extensions
             {
                 var role = (UserRoles) i;
 
-                if (i <= accessIndex && user.HasClaim(ClaimTypes.Role, role.ToString()))
+                if (i <= accessIndex && user.IsInRole(role.ToString()))
                     return true;
                 else
                     continue;

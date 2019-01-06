@@ -29,7 +29,7 @@ namespace Nexplorer.Jobs
         {
             var nexusAddresses = new List<AddressLiteDto>();
 
-            var hashes = AddressQuery.NexusAddresses.Values.SelectMany(x => x.SelectMany(y => y));
+            var hashes = AddressQuery.NexusAddresses.Values.SelectMany(x => x);
 
             foreach (var nexusAmbassadorAddress in hashes)
             {
