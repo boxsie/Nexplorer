@@ -120,11 +120,12 @@ namespace Nexplorer.Data.Cache.Services
                 : cache.Count(x => x.Channel == (int)channel && x.Height <= height);
         }
 
-        public async Task<double> GetChannelDifficultyAsync(BlockChannels channel)
+        public async Task<double> GetLastBlockDifficultyAsync(BlockChannels? channel = null)
         {
             var cache = await GetCacheAsync();
 
-            return cache.LastOrDefault(x => x.Channel == (int)channel)?.Difficulty ?? 0;
+            return cache.OrderByDescending(x => x.Height)
+                        .FirstOrDefault(x => !channel.HasValue || (int)channel.Value == x.Channel)?.Difficulty ?? 0;
         }
 
         public async Task<double> GetPosBlockRewardAsync()

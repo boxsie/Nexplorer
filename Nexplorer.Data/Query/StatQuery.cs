@@ -50,7 +50,7 @@ namespace Nexplorer.Data.Query
                         switch (channel)
                         {
                             case BlockChannels.PoS:
-                                diff = await _blockCache.GetChannelDifficultyAsync(channel);
+                                diff = await _blockCache.GetLastBlockDifficultyAsync(channel);
                                 reward = await _blockCache.GetPosBlockRewardAsync();
                                 break;
                             case BlockChannels.Prime:
