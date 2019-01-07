@@ -54,10 +54,10 @@
     <div class="col-sm-4">
         <div class="panel">
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-9">
                     <h2>VALUE</h2>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-3 text-right">
                     <span class="fa fa-balance-scale"></span>
                 </div>
             </div>
@@ -75,10 +75,10 @@
     <div class="col-sm-5">
         <div class="panel">
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-9">
                     <h2>TRANSACTIONS</h2>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-3 text-right">
                     <span class="fa fa-exchange"></span>
                 </div>
             </div>
@@ -104,10 +104,10 @@
     <div class="col-sm-3">
         <div class="panel no-pad">
             <div class="row add-pad">
-                <div class="col-xs-6">
+                <div class="col-6">
                     <h2>QR</h2>
                 </div>
-                <div class="col-xs-6 text-right">
+                <div class="col-6 text-right">
                     <span class="fa fa-qrcode"></span>
                 </div>
             </div>
@@ -121,16 +121,16 @@
 @if (Model.TrustKey != null)
 {
     <div class="panel full-length">
-        <div class="row visible-xs">
-            <div class="col-xs-9">
+        <div class="row d-sm-none">
+            <div class="col-9">
                 <h2>PROOF OF STAKE</h2>
             </div>
-            <div class="col-xs-3 text-right">
+            <div class="col-3 text-right">
                 <span class="fa fa-bolt"></span>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-2 hidden-xs">
+            <div class="col-sm-2 d-none d-sm-block">
                 <h2>PROOF OF STAKE</h2>
             </div>
             <div class="col-sm-3">
@@ -151,7 +151,7 @@
                 <h3>Last Block</h3>
                 <p class="val">@Model.TrustKey.TimeSinceLastBlock.ToString(@"hh\:mm\:ss")</p>
             </div>
-            <div class="col-sm-1 text-right hidden-xs">
+            <div class="col-sm-1 text-right d-none d-sm-block">
                 <span class="fa fa-bolt"></span>
             </div>
         </div>
@@ -160,10 +160,10 @@
 
 <div class="panel full-length">
     <div class="row">
-        <div class="col-xs-8">
+        <div class="col-8">
             <h2>BALANCE ACTIVITY</h2>
         </div>
-        <div class="col-xs-4 text-right">
+        <div class="col-4 text-right">
             <span class="fa fa-line-chart"></span>
         </div>
     </div>
@@ -172,10 +172,10 @@
 
 <div class="panel">
     <div class="row">
-        <div class="col-xs-8">
+        <div class="col-8">
             <h2>TRANSACTION HISTORY</h2>
         </div>
-        <div class="col-xs-4 text-right">
+        <div class="col-4 text-right">
             <span class="fa fa-list-alt"></span>
         </div>
     </div>
@@ -185,7 +185,7 @@
             <div id="sentReceiveButtons" class="form-group">
                 <div class="text-toggle">
                     <a href="#" v-on:click.prevent.stop="getHistory('both')"
-                       v-bind:class="currentFilter == 'both' ? 'active-link' : ''">Sent / Rec<span class="hidden-xs">eived</span></a>
+                       v-bind:class="currentFilter == 'both' ? 'active-link' : ''">Sent / Rec<span class="d-none d-sm-inline">eived</span></a>
                     <span class="toggle-seperator fa fa-ellipsis-v"></span>
                     <a href="#" v-on:click.prevent.stop="getHistory('input')"
                        v-bind:class="currentFilter == 'input' ? 'active-link' : ''">Sent</a>

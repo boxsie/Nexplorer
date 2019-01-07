@@ -1,6 +1,11 @@
 ﻿@import "~bootstrap/scss/bootstrap";
-@import "Components/_form-input.scss";
-@import "_variables.scss";
+@import '~font-awesome/css/font-awesome.css';
+@import "Components/_form-input";
+@import "_variables";
+
+html {
+    font-size: 14px;
+}
 
 body, h1, h2, h3, h4, h5, h6, p {
     font-family: 'Roboto', sans-serif;
@@ -28,6 +33,12 @@ body, h1, h2, h3, h4, h5, h6, p {
 
 .text-center-sm {
     text-align: left;
+}
+
+.table {
+    th {
+        border-top: 0;
+    }
 }
 
 .preloader {
@@ -90,6 +101,7 @@ body, h1, h2, h3, h4, h5, h6, p {
     min-height: 0;
     border: none;
     border-radius: 0;
+    padding: 0;
 
     .navbar-bg {
         position: relative;

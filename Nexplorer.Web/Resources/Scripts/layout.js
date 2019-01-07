@@ -5,7 +5,6 @@ import Ads from 'vue-google-adsense';
 
 import layoutHub from './layoutHub';
 
-import 'font-awesome/scss/font-awesome.scss';
 import '../Style/layout.scss';
 
 export class LayoutViewModel {

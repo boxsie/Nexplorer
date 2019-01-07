@@ -39,7 +39,7 @@
 }
 
 <div class="panel full-length">
-    <div class="row visible-xs">
+    <div class="row d-sm-none">
         <div class="col-xs-9">
             <h2>LATEST PRICE</h2>
         </div>
@@ -48,7 +48,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-2 hidden-xs">
+        <div class="col-sm-2 d-none d-sm-block">
             <h2>LATEST PRICE</h2>
         </div>
         <div class="col-sm-3">
@@ -72,7 +72,7 @@
                 <span class="fa fa-btc inline-fa"></span>
             </p>
         </div>
-        <div class="col-sm-1 text-right hidden-xs">
+        <div class="col-sm-1 text-right d-none d-sm-block">
             <span class="fa fa-btc"></span>
         </div>
     </div>
@@ -81,35 +81,45 @@
 @{ await Html.RenderPartialAsync("_AdvertBanner"); }
 
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-lg-6">
         <div class="panel">
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-9">
                     <h2>LATEST BLOCKS</h2>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-3 text-right">
                     <span class="fa fa-cubes"></span>
                 </div>
             </div>
 
             <block-table ref="blockTable" v-bind:items-per-page="10" v-bind:paging-disabled="true" style="margin-top: 15px;"></block-table>
-            <h5 class="text-right">@Html.ActionLink("More info", "index", "blocks")</h5>
+
+            <div class="text-right">
+                <a asp-action="index" asp-controller="blocks">
+                    <strong>More info</strong>
+                </a>
+            </div>
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-lg-6">
         <div class="panel">
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-9">
                     <h2>LATEST TRANSACTIONS</h2>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-3 text-right">
                     <span class="fa fa-exchange"></span>
                 </div>
             </div>
 
             <tx-table ref="txTable" v-bind:items-per-page="10" v-bind:paging-disabled="true" style="margin-top: 15px;"></tx-table>
-            <h5 class="text-right">@Html.ActionLink("More info", "index", "transactions")</h5>
+            
+            <div class="text-right">
+                <a asp-action="index" asp-controller="transactions">
+                    <strong>More info</strong>
+                </a>
+            </div>
         </div>
     </div>
 </div>

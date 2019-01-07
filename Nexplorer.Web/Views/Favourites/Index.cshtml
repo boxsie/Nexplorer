@@ -44,14 +44,14 @@
                                 {{ favourite.alias }}
                             </div>
                             <div v-if="!favourite.alias">
-                                <span class="visible-xs">{{ truncateHash(favourite.addressDto.hash, 5) }}</span>
-                                <span class="visible-sm">{{ truncateHash(favourite.addressDto.hash, 20) }}</span>
-                                <span class="hidden-xs hidden-sm">{{ favourite.addressDto.hash }}</span>
+                                <span class="d-sm-none">{{ truncateHash(favourite.addressDto.hash, 5) }}</span>
+                                <span class="d-none d-sm-block d-md-none">{{ truncateHash(favourite.addressDto.hash, 20) }}</span>
+                                <span class="d-none d-lg-block">{{ favourite.addressDto.hash }}</span>
                             </div>
                         </a>
                     </td>
                     <td class="text-right">{{ favourite.addressDto.balance.toLocaleString() }} <span style="font-size: 10px;">NXS</span></td>
-                    <td class="hidden-xs text-right"><a v-bind:href="'/blocks/' + favourite.addressDto.lastBlockHeight">{{ favourite.addressDto.lastBlockHeight.toLocaleString() }}</a></td>
+                    <td class="d-none d-sm-block text-right"><a v-bind:href="'/blocks/' + favourite.addressDto.lastBlockHeight">{{ favourite.addressDto.lastBlockHeight.toLocaleString() }}</a></td>
                 </tr>
             </tbody>
         </table>

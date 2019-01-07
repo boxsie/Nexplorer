@@ -57,7 +57,7 @@ export class AddressViewModel {
                     },
                     {
                         title: '<span class="fa fa-cube"></span>',
-                        className: 'block-col hidden-xs',
+                        className: 'block-col d-none d-sm-table-cell',
                         data: 'blockHeight',
                         width: '7%',
                         render: (data, type, row) => {
@@ -87,9 +87,9 @@ export class AddressViewModel {
 
                                 for (let i = 0; i < data.length; i++) {
                                     const hash = data[i].addressHash;
-                                    txAddressHashes += `<li><a class="hidden-xs hidden-sm" href="/addresses/${hash}">${hash}</a>
-                                                    <a class="visible-sm" href="/addresses/${hash}">${this.vm.truncateHash(hash, 32)}</a>
-                                                    <a class="visible-xs" href="/addresses/${hash}">${this.vm.truncateHash(hash, 8)}</a></li>`;
+                                    txAddressHashes += `<li><a class="d-none d-md-block" href="/addresses/${hash}">${hash}</a>
+                                                    <a class="d-none d-sm-block d-md-none" href="/addresses/${hash}">${this.vm.truncateHash(hash, 32)}</a>
+                                                    <a class="d-sm-none" href="/addresses/${hash}">${this.vm.truncateHash(hash, 8)}</a></li>`;
                                 }
 
                                 txAddressHashes += '</ul>';

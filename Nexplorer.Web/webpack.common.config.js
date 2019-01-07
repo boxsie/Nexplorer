@@ -10,6 +10,7 @@ const chunkFileNameJs = 'js/[name].js';
 
 module.exports = {
     entry: {
+        'vendor': ['bootstrap', 'vue', '@aspnet/signalr', 'moment'],
         'validate': ['jquery-validation', 'jquery-validation-unobtrusive'],
         'layout': baseScriptsPath + 'layout.js',
         'home.index': controllerScriptsPath + 'home.index.js',
@@ -96,13 +97,6 @@ module.exports = {
             {
                 test: /bootstrap\/dist\/js\/umd\//,
                 use: 'imports-loader?jQuery=jquery'
-            },
-            {
-                test: /font-awesome\.config\.js/,
-                use: [
-                    { loader: 'style-loader' },
-                    { loader: 'font-awesome-loader' }
-                ]
             }
         ]
     },

@@ -46,9 +46,9 @@ export class AddressIndexViewModel {
                         title: '<span class="fa fa-hashtag"></span>',
                         data: 'hash',
                         render: (data, type, row) => {
-                            return `<a class="hidden-xs hidden-sm" href="/addresses/${data}">${data}</a>
-                                            <a class="visible-sm" href="/addresses/${data}">${this.vm.truncateHash(data, 32)}</a>
-                                            <a class="visible-xs" href="/addresses/${data}">${this.vm.truncateHash(data, 4)}</a>`;
+                            return `<a class="d-none d-md-block" href="/addresses/${data}">${data}</a>
+                                            <a class="d-none d-sm-block" href="/addresses/${data}">${this.vm.truncateHash(data, 32)}</a>
+                                            <a class="d-sm-none" href="/addresses/${data}">${this.vm.truncateHash(data, 4)}</a>`;
                         }
                     },
                     {
