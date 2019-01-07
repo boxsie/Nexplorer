@@ -1,5 +1,6 @@
 ﻿import $ from 'jquery';
 import Vue from 'vue';
+import 'bootstrap';
 import { HubConnectionBuilder, LogLevel } from '@aspnet/signalr';
 import Ads from 'vue-google-adsense';
 
@@ -26,12 +27,6 @@ export class LayoutViewModel {
                 xsNav: false
             },
             computed: {
-                expandableNavCss() {
-                    return this.xsNav ? '' : this.navExpanded ? 'nav-pad-out' : 'nav-pad-in';
-                },
-                expandableIconCss() {
-                    return this.xsNav ? '' : this.navExpanded ? 'icon-pad-out' : 'icon-pad-in';
-                },
                 userMenuCss() {
                     const openClose = this.userOpen ? 'open' : 'closed';
                     const signInOut = this.isSignedIn ? 'signed-in' : '';

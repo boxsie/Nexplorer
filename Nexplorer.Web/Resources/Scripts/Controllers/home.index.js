@@ -23,10 +23,10 @@ export class HomeViewModel {
                     return (this.$layoutHub.latestPrice.last ? this.$layoutHub.latestPrice.last : 0).toFixed(8);
                 },
                 spread() {
-                    return (this.$layoutHub.latestPrice.ask ? (this.$layoutHub.latestPrice.ask - this.$layoutHub.latestPrice.bid) : 0).toFixed(8);
+                    return Math.trunc((this.$layoutHub.latestPrice.ask ? this.$layoutHub.latestPrice.ask - this.$layoutHub.latestPrice.bid : 0) * Math.pow(10, 8)).toLocaleString();
                 },
                 volume() {
-                    return (this.$layoutHub.latestPrice.baseVolume ? this.$layoutHub.latestPrice.baseVolume : 0).toFixed(8);
+                    return (this.$layoutHub.latestPrice.baseVolume ? this.$layoutHub.latestPrice.baseVolume : 0).toFixed(4);
                 }
             },
             components: {

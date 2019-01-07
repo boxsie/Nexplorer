@@ -1,7 +1,7 @@
-﻿@import "~bootstrap/scss/bootstrap";
+﻿@import "_variables";
+@import "~bootstrap/scss/bootstrap";
 @import '~font-awesome/css/font-awesome.css';
 @import "Components/_form-input";
-@import "_variables";
 
 html {
     font-size: 14px;
@@ -13,6 +13,10 @@ body, h1, h2, h3, h4, h5, h6, p {
 
 [v-cloak] {
     display: none
+}
+
+p {
+    margin: 0;
 }
 
 .container-fluid.max-width {
@@ -93,149 +97,128 @@ body, h1, h2, h3, h4, h5, h6, p {
     word-wrap: break-word; /* Internet Explorer 5.5+ */
 }
 
-.navbar {
-    position: fixed;
-    z-index: 3;
-    width: 100%;
-    margin-bottom: 0;
-    min-height: 0;
-    border: none;
-    border-radius: 0;
-    padding: 0;
-
+#navbar {
     .navbar-bg {
-        position: relative;
-        z-index: 2;
-        border: none;
-        border-radius: 0;
+        position: fixed;
+        z-index: 3;
         left: 0;
         right: 0;
-        -webkit-box-shadow: 0px 9px 14px -4px rgba(0,0,0,0.3);
-        -moz-box-shadow: 0px 9px 14px -4px rgba(0,0,0,0.3);
+        height: $nav-height-full;
         box-shadow: 0px 9px 14px -4px rgba(0,0,0,0.3);
-        width: 100%;
         background-color: $primary;
+    }
 
-        .navbar-header {
-            .navbar-toggle {
-                float: left;
-                margin-right: 10px;
+    .nav-icon {
+        padding-left: 15px;
+        padding-right: 15px;
 
-                .icon-bar {
-                    background-color: $nav-primary;
-                }
+        span {
+            &:hover, &.active {
+                color: darken($nav-primary, 10%);
             }
         }
 
-        .nav-icon {
-            float: right;
-
-            span {
-                &:hover, &.active {
-                    color: darken($nav-primary, 10%);
-                }
-            }
-
-            .icon {
-                font-size: 26px;
-                color: $nav-primary;
-                padding: 12px;
-            }
-        }
-
-        .navbar-brand {
+        .icon {
+            font-size: 26px;
             color: $nav-primary;
-            font-size: 20px;
-            font-weight: 500;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            padding: 15px 0;
-            height: auto;
+        }
+    }
+
+    .navbar-brand {
+        color: $nav-primary;
+        font-size: 20px;
+        font-weight: 500;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        padding: 0 15px;
+    }
+
+    .navbar-search {
+        position: absolute;
+        z-index: 101;
+        height: $search-height-xs;
+        background-color: $search-bg;
+        width: 100%;
+        height: $search-height-xs;
+        transition: top $search-open-speed;
+        text-align: center;
+        top: -($search-height-full + 10px);
+
+        &.open {
+            top: 0;
         }
 
-        .navbar-search {
-            position: absolute;
-            z-index: 101;
-            top: -70px;
-            background-color: $search-bg;
-            width: 100%;
-            height: $search-height-xs;
-            transition: top $search-open-speed;
-            text-align: center;
+        &.closed {
+            top: -($search-height-xs + 10px);
+        }
 
-            &.open {
-                top: 0;
+        .nav-search-col {
+            position: relative;
+            display: inline-block;
+
+            .search-icon {
+                font-size: 28px;
+                color: $input-primary;
+                line-height: $search-height-xs;
             }
 
-            &.closed {
-                top: -$nav-height-full;
+            #navSearchClose span:hover {
+                color: $input-secondary;
             }
 
-            .nav-search-col {
+            .form-group {
+                margin-top: 0;
+                margin-bottom: 0;
+
+                label {
+                    margin: 5px 0 0 0;
+                }
+
+                input {
+                    padding: 0;
+                    height: 28px;
+                }
+            }
+
+            &.nav-search-col-input {
                 position: relative;
-                display: inline-block;
-
-                .search-icon {
-                    font-size: 28px;
-                    color: $input-primary;
-                    line-height: $search-height-xs;
-                }
-
-                #navSearchClose span:hover {
-                    color: $input-secondary;
-                }
-
-                .form-group {
-                    margin-top: 0;
-                    margin-bottom: 0;
-
-                    label {
-                        margin: 5px 0 0 0;
-                    }
-
-                    input {
-                        padding: 0;
-                        height: 28px;
-                    }
-                }
-
-                &.nav-search-col-input {
-                    position: relative;
-                    width: 80%;
-                }
-            }
-
-            & button {
-                top: -8px;
-                height: $search-height-xs;
-                width: $search-height-xs * 0.5;
-                outline: none;
-                border: none;
-                text-decoration: none;
+                width: 80%;
             }
         }
 
-        .navbar-nav {
-            li {
-                a {
-                    padding: 15px;
-                    font-weight: 400;
-                    font-size: 16px;
-                    color: $nav-primary;
+        & button {
+            top: -8px;
+            height: $search-height-xs;
+            width: $search-height-xs * 0.5;
+            outline: none;
+            border: none;
+            text-decoration: none;
+        }
+    }
 
-                    &:hover, &:focus {
-                        background-color: $nav-secondary;
-                    }
+    #navbarLinks {
+        li {
+            a {
+                padding-left: 10px;
+                padding-right: 10px;
+                font-weight: 400;
+                font-size: 16px;
+                color: $nav-primary;
+                background-color: $primary;
+
+                &:hover, &:focus {
+                    background-color: $nav-secondary;
                 }
             }
+        }
 
-            > .active a {
-                background-color: $nav-secondary;
-            }
+        > .active a {
+            background-color: $nav-secondary;
         }
     }
 
     #userMenu {
+        z-index: 2;
         position: absolute;
         left: 15px;
         right: 15px;
@@ -251,7 +234,7 @@ body, h1, h2, h3, h4, h5, h6, p {
         overflow: hidden;
 
         &.open {
-            top: 0;
+            top: $nav-height-full;
         }
 
         &.closed {
@@ -298,26 +281,6 @@ body, h1, h2, h3, h4, h5, h6, p {
     }
 }
 
-.nav-pad-in {
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
-}
-
-.nav-pad-out {
-    padding-top: 20px !important;
-    padding-bottom: 20px !important;
-}
-
-.icon-pad-in {
-    padding-top: 6px !important;
-    padding-bottom: 9px !important;
-}
-
-.icon-pad-out {
-    padding-top: 17px !important;
-    padding-bottom: 17px !important;
-}
-
 #hero {
     position: absolute;
     height: $hero-height-xs + $nav-height-xs;
@@ -358,8 +321,14 @@ body, h1, h2, h3, h4, h5, h6, p {
         }
 
         h1 {
+            font-size: 3rem;
             margin-top: 10px;
             margin-bottom: 10px;
+        }
+
+        .lead {
+            padding-left: 5px;
+            padding-right: 5px;
         }
     }
 
@@ -703,39 +672,36 @@ body, h1, h2, h3, h4, h5, h6, p {
         }
     }
 
-    .navbar {
-        .navbar-bg {
-            .nav-icon {
-                .icon {
-                    padding: 17px;
-                    transition: padding $nav-resize-speed;
+    #navbar {
+        .navbar-search {
+            height: $search-height-full;
+
+            &.closed {
+                top: -($search-height-full + 10px);
+            }
+
+            .nav-search-col {
+                .search-icon {
+                    font-size: 34px;
+                }
+
+                &.nav-search-col-input {
+                    width: 80%;
                 }
             }
+        }
 
-            .navbar-brand {
-                padding: 20px;
-                transition: padding $nav-resize-speed;
-            }
-
-            .navbar-search {
-                height: $nav-height-full;
-
-                .nav-search-col {
-                    .search-icon {
-                        font-size: 34px;
-                    }
-
-                    &.nav-search-col-input {
-                        width: 80%;
-                    }
-                }
-            }
+        .navbar-collapse {
+            height: 100%;
 
             .navbar-nav {
+                height: 100%;
+
                 li {
                     a {
-                        padding: 20px;
-                        transition: padding $nav-resize-speed;
+                        display: flex;
+                        align-items: center;
+                        height: 100%;
                     }
                 }
             }
@@ -748,6 +714,10 @@ body, h1, h2, h3, h4, h5, h6, p {
 
             &.signed-in {
                 width: 200px;
+            }
+
+            &.open {
+                top: $nav-height-xs;
             }
         }
     }
@@ -770,6 +740,10 @@ body, h1, h2, h3, h4, h5, h6, p {
             .container-fluid {
                 padding-left: 30px;
                 padding-right: 30px;
+
+                h1 {
+                    font-size: 5.25rem;
+                }
             }
         }
 

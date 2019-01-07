@@ -16,7 +16,7 @@
         <div class="container-fluid max-width">
             <div id="heroHeader">
                 <h1>BLOCK <span class="block-number">#@Model.Height</span></h1>
-                <a href="/blocks/@(Model.Height - 1)">PREVIOUS</a>
+                <a class="lead" href="/blocks/@(Model.Height - 1)">PREVIOUS</a>
                 <span v-if="showNext">
                     <span class="toggle-seperator fa fa-ellipsis-v"></span> <a href="/blocks/@(Model.Height + 1)">NEXT</a>
                     <span class="toggle-seperator fa fa-ellipsis-v"></span> <a href="/blocks/latest"> LAST</a>
@@ -28,10 +28,10 @@
 
 <div class="panel full-length">
     <div class="row d-sm-none">
-        <div class="col-xs-9">
+        <div class="col-9">
             <h2>CONTENTS</h2>
         </div>
-        <div class="col-xs-3 text-right">
+        <div class="col-3 text-right">
             <span class="fa fa-cube"></span>
         </div>
     </div>
@@ -55,7 +55,7 @@
             <h3>Sent Amount</h3>
             <p class="val">@Model.TransactionsTotal.ToString("N6", CultureInfo.InvariantCulture) <span style="font-size: 10px;">NXS</span></p>
         </div>
-        <div class="col-sm-1 text-right hidden-xs">
+        <div class="col-sm-1 text-right d-none d-sm-block">
             <span class="fa fa-cube"></span>
         </div>
     </div>
@@ -65,10 +65,10 @@
     <div class="col-sm-4">
         <div class="panel">
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-9">
                     <h2>CHAIN</h2>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-3 text-right">
                     <span class="fa fa-link"></span>
                 </div>
             </div>
@@ -84,10 +84,10 @@
     <div class="col-sm-4">
         <div class="panel">
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-9">
                     <h2>MINING</h2>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-3 text-right">
                     <span class="fa fa-cogs"></span>
                 </div>
             </div>
@@ -103,10 +103,10 @@
     <div class="col-sm-4">
         <div class="panel">
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-9">
                     <h2>DATA</h2>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-3 text-right">
                     <span class="fa fa-database"></span>
                 </div>
             </div>
@@ -123,13 +123,13 @@
 @{ await Html.RenderPartialAsync("_AdvertBanner"); }
 
 <div class="row">
-    <div class="col-xs-12">
+    <div class="col-12">
         <div class="panel">
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-9">
                     <h2>HASHES</h2>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-3 text-right">
                     <span class="fa fa-hashtag"></span>
                 </div>
             </div>
@@ -142,20 +142,20 @@
 </div>
 
 <div class="row">
-    <div class="col-xs-12">
+    <div class="col-12">
         <div class="panel">
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-9">
                     <h2>TRANSACTIONS</h2>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-3 text-right">
                     <span class="fa fa-exchange"></span>
                 </div>
             </div>
             <h3>Transactions</h3>
             @foreach (var tx in Model.Transactions)
             {
-                Html.RenderPartial("_TransactionItem", new TransactionItemViewModel { Transaction = tx, ShowHash = true });
+                <partial name="_TransactionItem" model="new TransactionItemViewModel { Transaction = tx, ShowHash = true }" />
                 <hr />
             }
         </div>

@@ -10,7 +10,6 @@ const chunkFileNameJs = 'js/[name].js';
 
 module.exports = {
     entry: {
-        'vendor': ['bootstrap', 'vue', '@aspnet/signalr', 'moment'],
         'validate': ['jquery-validation', 'jquery-validation-unobtrusive'],
         'layout': baseScriptsPath + 'layout.js',
         'home.index': controllerScriptsPath + 'home.index.js',

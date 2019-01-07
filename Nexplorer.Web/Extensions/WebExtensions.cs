@@ -61,7 +61,7 @@ namespace Nexplorer.Web.Extensions
             var currentControllerName = (string)helper.ViewContext.RouteData.Values["controller"];
 
             return currentControllerName.Equals(controllerName, StringComparison.CurrentCultureIgnoreCase) 
-                ? helper.Raw("class=\"active\"") 
+                ? helper.Raw("active") 
                 : helper.Raw("") ;
         }
 

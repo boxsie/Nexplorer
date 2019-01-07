@@ -17,7 +17,14 @@
             <div id="heroHeader">
                 <h1>NEXPLORER</h1>
                 <p class="lead">
-                    A cryptocurrency block explorer for <a href="https://nexusearth.com/" target="_blank">Nexus (NXS)<img class="nxs-icon hidden-xs" src="img/nxs-icon.png" alt="Nexus (NXS)" /></a><br />
+                    A cryptocurrency block explorer for 
+                    <a href="https://nexusearth.com/" target="_blank">
+                        Nexus
+                        <span class="d-none d-sm-inline-block">
+                            (NXS)<img class="nxs-icon" src="img/nxs-icon.png"/>
+                        </span>
+                    </a>
+                    <br />
                     <em>nex·usˈneksəs' : a connection or series of connections linking two or more things.</em>
                 </p>
             </div>
@@ -28,7 +35,7 @@
                         <span class="fa fa-search"></span>
                         <input class="form-control" name="searchTerm" type="text" />
                         <button type="submit" href="#" class="btn btn-flat">
-                            Go
+                            GO
                         </button>
                     </div>
                     <span class="instructions">Search for blocks, transactions or addresses</span>
@@ -40,10 +47,10 @@
 
 <div class="panel full-length">
     <div class="row d-sm-none">
-        <div class="col-xs-9">
+        <div class="col-9">
             <h2>LATEST PRICE</h2>
         </div>
-        <div class="col-xs-3 text-right">
+        <div class="col-3 text-right">
             <span class="fa fa-btc"></span>
         </div>
     </div>
@@ -61,8 +68,7 @@
         <div class="col-sm-3">
             <h3>Spread</h3>
             <p class="val" v-cloak>
-                {{ spread }}
-                <span class="fa fa-btc inline-fa"></span>
+                {{ spread }} sats
             </p>
         </div>
         <div class="col-sm-3">
