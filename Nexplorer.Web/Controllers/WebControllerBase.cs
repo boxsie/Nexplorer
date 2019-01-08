@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
 using Nexplorer.Config;
 using Nexplorer.Core;
-using Nexplorer.Data.Cache.Services;
 using Nexplorer.Web.Cookies;
 using Nexplorer.Web.Extensions;
 

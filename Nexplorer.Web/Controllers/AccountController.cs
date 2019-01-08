@@ -22,7 +22,7 @@ namespace Nexplorer.Web.Controllers
     [Authorize(Policy = UserConfig.AdminUserPolicy)]
     public class AdminController : WebControllerBase
     {
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             return View();
         }

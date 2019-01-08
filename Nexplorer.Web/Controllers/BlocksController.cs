@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Nexplorer.Data.Cache.Services;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Criteria;
 using Nexplorer.Domain.Dtos;
@@ -20,7 +19,7 @@ namespace Nexplorer.Web.Controllers
             _blockQuery = blockQuery;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             return View();
         }
@@ -33,8 +32,8 @@ namespace Nexplorer.Web.Controllers
             var usingHeight = int.TryParse(blockId, out var height);
             
             var block = usingHeight
-                ? await _blockQuery.GetBlockAsync(height) 
-                : await _blockQuery.GetBlockAsync(blockId);
+                ? await _blockQuery.GetBlockAsync(height, true) 
+                : await _blockQuery.GetBlockAsync(blockId, true);
 
             if (block == null)
                 return RedirectToAction("index");

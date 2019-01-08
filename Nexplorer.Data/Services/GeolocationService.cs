@@ -4,7 +4,7 @@ using AutoMapper;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Infrastructure.Geolocate;
 
-namespace Nexplorer.Data.Cache.Services
+namespace Nexplorer.Data.Services
 {
     public class GeolocationService
     {

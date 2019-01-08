@@ -9,6 +9,7 @@ using Nexplorer.Data.Context;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Entity.User;
+using Nexplorer.Domain.Enums;
 
 namespace Nexplorer.Data.Command
 {
@@ -67,6 +68,8 @@ namespace Nexplorer.Data.Command
 
                         await _redisCommand.SetAsync(Settings.Redis.BuildCachedBlockKey(prevBlock.Height), prevBlock);
 
+                        await CheckBlockForAddress(prevBlock);
+
                         cacheHeight++;
                     }
                 }
@@ -74,6 +77,7 @@ namespace Nexplorer.Data.Command
                 var block = await GetBlockAsync(blockHeight);
 
                 await _redisCommand.SetAsync(Settings.Redis.BuildCachedBlockKey(block.Height), block);
+                await CheckBlockForAddress(block);
 
                 if (cacheHeight < blockHeight)
                     await _redisCommand.SetAsync(Settings.Redis.CachedHeight, blockHeight);
@@ -101,14 +105,49 @@ namespace Nexplorer.Data.Command
         {
             var block = await _nexusQuery.GetBlockAsync(height, true);
 
-            if (block == null)
+            if (block != null)
+                return block;
+
+            _logger.LogWarning($"Nexus returned null for {height}");
+            throw new NullReferenceException($"Nexus returned null for {height}");
+        }
+
+        private async Task CheckBlockForAddress(BlockDto block)
+        {
+            foreach (var txDto in block.Transactions)
             {
-                _logger.LogWarning($"Nexus returned null for {height}");
+                foreach (var txIn in txDto.Inputs)
+                    await AddAddressTransaction(txIn.AddressHash, block.Height, txDto.Timestamp, txDto.Hash, txIn.Amount, TransactionInputOutputType.Input);
 
-                throw new NullReferenceException($"Nexus returned null for {height}");
+                foreach (var txOut in txDto.Outputs)
+                    await AddAddressTransaction(txOut.AddressHash, block.Height, txDto.Timestamp, txDto.Hash, txOut.Amount, TransactionInputOutputType.Output);
             }
+        }
 
-            return block;
+        private async Task AddAddressTransaction(string addressHash, int blockHeight, DateTime date, string txHash, double amount, TransactionInputOutputType txIoType)
+        {
+            var existingAddress = await _redisCommand.GetAsync<CachedAddressDto>(Settings.Redis.BuildCachedAddressKey(addressHash));
+
+            var address = existingAddress ?? new CachedAddressDto
+            {
+                Hash = addressHash,
+                FirstBlockHeight = blockHeight,
+                Aggregate = new AddressAggregateDto(),
+                AddressTransactions = new List<AddressTransactionDto>()
+            };
+
+            address.Aggregate.ModifyAggregateProperties(txIoType, amount, blockHeight);
+
+            address.AddressTransactions.Add(new AddressTransactionDto
+            {
+                BlockHeight = blockHeight,
+                TimeUtc = date,
+                TransactionHash = txHash,
+                Amount = amount,
+                TxIoType = txIoType
+            });
+
+            await _redisCommand.SetAsync(Settings.Redis.BuildCachedAddressKey(addressHash), address);
         }
     }
 }

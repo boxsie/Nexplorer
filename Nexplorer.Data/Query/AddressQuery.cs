@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Nexplorer.Config;
 using Nexplorer.Core;
-using Nexplorer.Data.Cache.Services;
+using Nexplorer.Data.Services;
 using Nexplorer.Domain.Criteria;
 using Nexplorer.Domain.Enums;
 

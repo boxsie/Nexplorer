@@ -9,8 +9,8 @@ using Dapper;
 using Microsoft.EntityFrameworkCore;
 using Nexplorer.Config;
 using Nexplorer.Core;
-using Nexplorer.Data.Cache.Services;
 using Nexplorer.Data.Context;
+using Nexplorer.Data.Services;
 using Nexplorer.Domain.Criteria;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Entity.Blockchain;
@@ -60,7 +60,7 @@ namespace Nexplorer.Data.Query
         public async Task<int> GetChannelHeight(BlockChannels channel, int height = 0)
         {
             var count = await  _cache.GetChannelHeightAsync(channel, height);
-
+            
             count += height == 0 
                 ? await _nexusDb.Blocks.CountAsync(x => x.Channel == (int)channel) 
                 : await _nexusDb.Blocks.CountAsync(x => x.Channel == (int)channel && x.Height <= height);
@@ -68,43 +68,41 @@ namespace Nexplorer.Data.Query
             return count;
         }
 
-        public async Task<BlockDto> GetBlockAsync(int height, bool includeTransactions = true)
+        public async Task<BlockDto> GetBlockAsync(int height, bool includeTransactions)
         {
             var cacheBlock = await _cache.GetBlockAsync(height);
 
             if (cacheBlock != null)
                 return cacheBlock;
-            
-            var blockQuery = _nexusDb.Blocks.Where(x => x.Height == height);
 
-            if (includeTransactions)
-            {
-                blockQuery
-                    .Include(x => x.Transactions)
-                    .ThenInclude(x => x.InputOutputs)
-                    .ThenInclude(x => x.Address);
-            }
-            
-            var block = await blockQuery.FirstOrDefaultAsync();
-
-            return _mapper.Map<BlockDto>(block);
+            return await GetBlockAsync(height, null, includeTransactions);
         }
 
-        public async Task<BlockDto> GetBlockAsync(string hash)
+        public async Task<BlockDto> GetBlockAsync(string hash, bool includeTransactions)
         {
             var cacheBlock = await _cache.GetBlockAsync(hash);
 
             if (cacheBlock != null)
                 return cacheBlock;
 
-            const string sqlQ = @"
+            return await GetBlockAsync(0, hash, includeTransactions);
+        }
+
+        private async Task<BlockDto> GetBlockAsync(int height, string hash, bool includeTransactions)
+        {
+            const string txSqlQ = @"
+                INNER JOIN [dbo].[Transaction] t ON t.[BlockHeight] = b.[Height] 
+                INNER JOIN [dbo].[TransactionInputOutput] tIo ON tIo.[TransactionId] = t.[TransactionId]
+                INNER JOIN [dbo].[Address] a ON a.[AddressId] = tIo.[AddressId] ";
+
+            var sqlQ = $@"
                 SELECT 
 	              *
-                FROM [dbo].[Block] b
-                INNER JOIN [dbo].[Transaction] t ON t.[BlockHeight] = b.[Height]
-                INNER JOIN [dbo].[TransactionInputOutput] tIo ON tIo.[TransactionId] = t.[TransactionId]
-                INNER JOIN [dbo].[Address] a ON a.[AddressId] = tIo.[AddressId]
-                WHERE b.[Hash] = @hash";
+                FROM [dbo].[Block] b 
+                {(includeTransactions ? txSqlQ : "")}
+                WHERE {(hash != null
+                ? "b.[Hash] = @hash "
+                : "b.[Height] = @height ")}";
 
             using (var connection = new SqlConnection(Settings.Connection.NexusDb))
             {
@@ -112,37 +110,43 @@ namespace Nexplorer.Data.Query
 
                 Block b = null;
 
-                var block = connection.Query<Block, Transaction, TransactionInputOutput, Address, Block>(
-                    sqlQ, (bk, tx, txIo, add) =>
-                    {
-                        if (b == null)
+                if (includeTransactions)
+                {
+                    var results = await connection.QueryAsync<Block, Transaction, TransactionInputOutput, Address, Block>(
+                        sqlQ, (bk, tx, txIo, add) =>
                         {
-                            b = bk;
-                            b.Transactions = new List<Transaction>();
-                        }
+                            if (b == null)
+                            {
+                                b = bk;
+                                b.Transactions = new List<Transaction>();
+                            }
 
-                        var t = b.Transactions.FirstOrDefault(x => x.TransactionId == tx.TransactionId);
+                            var t = b.Transactions.FirstOrDefault(x => x.TransactionId == tx.TransactionId);
 
-                        if (t == null)
-                        {
-                            t = tx;
-                            t.Block = b;
-                            t.InputOutputs = new List<TransactionInputOutput>();
-                            b.Transactions.Add(t);
-                        }
+                            if (t == null)
+                            {
+                                t = tx;
+                                t.Block = b;
+                                t.InputOutputs = new List<TransactionInputOutput>();
+                                b.Transactions.Add(t);
+                            }
 
-                        txIo.Transaction = t;
-                        txIo.Address = add;
-                        t.InputOutputs.Add(txIo);
+                            txIo.Transaction = t;
+                            txIo.Address = add;
+                            t.InputOutputs.Add(txIo);
 
-                        return b;
-                    },
-                    splitOn: "TransactionId,TransactionInputOutputId,AddressId",
-                    param: new { hash })
-                    .Distinct()
-                    .FirstOrDefault();
+                            return b;
+                        },
+                        splitOn: "TransactionId,TransactionInputOutputId,AddressId",
+                        param: new { height, hash });
 
-                return _mapper.Map<BlockDto>(block);
+                    return _mapper.Map<BlockDto>(results.Distinct().FirstOrDefault());
+                }
+                else
+                {
+                    var results = await connection.QueryAsync<Block>(sqlQ, new { height, hash });
+                    return _mapper.Map<BlockDto>(results.FirstOrDefault());
+                }
             }
         }
 
@@ -288,7 +292,7 @@ namespace Nexplorer.Data.Query
 
         public async Task<BlockDto> GetLastBlockAsync()
         {
-            return await GetBlockAsync(await GetLastHeightAsync());
+            return await GetBlockAsync(await GetLastHeightAsync(), true);
         }
 
         public async Task<Transaction> GetLastTransaction()

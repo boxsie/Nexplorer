@@ -24,7 +24,7 @@ namespace Nexplorer.Web.Controllers
             _transactionQuery = transactionQuery;
         }
         
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             return View();
         }
