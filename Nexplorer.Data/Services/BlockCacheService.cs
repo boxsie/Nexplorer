@@ -1,18 +1,14 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
 using Nexplorer.Core;
+using Nexplorer.Data.Command;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Enums;
-using Dapper;
-using Microsoft.Extensions.Logging;
-using Nexplorer.Data.Command;
 
-namespace Nexplorer.Data.Cache.Services
+namespace Nexplorer.Data.Services
 {
     public class BlockCacheService
     {
@@ -87,12 +83,7 @@ namespace Nexplorer.Data.Cache.Services
         {
             return GetCachedAddressAsync(hash);
         }
-
-        public Task<List<CachedAddressDto>> GetAddressesAsync()
-        {
-            return GetAddressCacheAsync();
-        }
-
+        
         public async Task<List<AddressTransactionDto>> GetAddressTransactions(string hash)
         {
             var address = await GetCachedAddressAsync(hash);
@@ -173,26 +164,9 @@ namespace Nexplorer.Data.Cache.Services
             _logger.LogInformation($"Added new block {blockDto.Height} to the local block cache");
         }
 
-        private async Task<List<CachedAddressDto>> GetAddressCacheAsync()
-        {
-            var cache = await _redisCommand.GetAsync<List<CachedAddressDto>>(Settings.Redis.AddressCache);
-
-            return cache ?? new List<CachedAddressDto>();
-        }
-
         private Task<CachedAddressDto> GetCachedAddressAsync(string hash)
         { 
             return _redisCommand.GetAsync<CachedAddressDto>(Settings.Redis.BuildCachedAddressKey(hash));
-        }
-
-        private Task<List<BlockLiteDto>> GetBlockLiteCacheAsync()
-        {
-            return _redisCommand.GetAsync<List<BlockLiteDto>>(Settings.Redis.BlockLiteCache);
-        }
-
-        private Task<List<TransactionLiteDto>> GetTransactionLiteCacheAsync()
-        {
-            return _redisCommand.GetAsync<List<TransactionLiteDto>>(Settings.Redis.TransactionLiteCache);
         }
     }
 }

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using Nexplorer.Data.Cache;
-using Nexplorer.Data.Cache.Services;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Enums;
 using Nexplorer.NexusClient.Core;

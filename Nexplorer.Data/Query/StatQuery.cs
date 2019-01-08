@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Dapper;
 using Nexplorer.Config;
 using Nexplorer.Core;
-using Nexplorer.Data.Cache.Services;
+using Nexplorer.Data.Services;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Enums;
 

@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Nexplorer.Config;
 using Nexplorer.Core;
 using Nexplorer.Data.Api;
-using Nexplorer.Data.Cache.Services;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Criteria;
 using Nexplorer.Domain.Dtos;
