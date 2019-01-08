@@ -75,19 +75,16 @@ namespace Nexplorer.Data.Query
             if (cacheBlock != null)
                 return cacheBlock;
             
-            var blockQuery = _nexusDb.Blocks.Where(x => x.Height == height);
-
             if (includeTransactions)
             {
-                blockQuery
+                return _mapper.Map<BlockDto>(await _nexusDb.Blocks
                     .Include(x => x.Transactions)
                     .ThenInclude(x => x.InputOutputs)
-                    .ThenInclude(x => x.Address);
+                    .ThenInclude(x => x.Address)
+                    .FirstOrDefaultAsync(x => x.Height == height));
             }
-            
-            var block = await blockQuery.FirstOrDefaultAsync();
-
-            return _mapper.Map<BlockDto>(block);
+            else
+                return _mapper.Map<BlockDto>(_nexusDb.Blocks.FirstOrDefaultAsync(x => x.Height == height));
         }
 
         public async Task<BlockDto> GetBlockAsync(string hash)
