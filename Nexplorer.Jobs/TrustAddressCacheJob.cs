@@ -91,7 +91,7 @@ namespace Nexplorer.Jobs
                 if (trustKey == null)
                 {
                     var address = await _addressQuery.GetAddressAsync(latestKeyDto.AddressHash);
-                    var block = await _blockQuery.GetBlockAsync(latestKeyDto.GenesisBlockHash);
+                    var block = await _blockQuery.GetBlockAsync(latestKeyDto.GenesisBlockHash, true);
                     var tx = block?.Transactions.FirstOrDefault(x => x.Hash == latestKeyDto.TransactionHash);
 
                     if (address == null || block == null || tx == null)

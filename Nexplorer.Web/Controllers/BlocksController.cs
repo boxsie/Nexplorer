@@ -32,8 +32,8 @@ namespace Nexplorer.Web.Controllers
             var usingHeight = int.TryParse(blockId, out var height);
             
             var block = usingHeight
-                ? await _blockQuery.GetBlockAsync(height) 
-                : await _blockQuery.GetBlockAsync(blockId);
+                ? await _blockQuery.GetBlockAsync(height, true) 
+                : await _blockQuery.GetBlockAsync(blockId, true);
 
             if (block == null)
                 return RedirectToAction("index");

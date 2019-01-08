@@ -29,7 +29,7 @@ namespace Nexplorer.Web.Hubs
 
         public async Task<BlockDto> GetLatestBlock()
         {
-            return await _blockQuery.GetBlockAsync(await _blockQuery.GetLastHeightAsync());
+            return await _blockQuery.GetBlockAsync(await _blockQuery.GetLastHeightAsync(), true);
         }
 
         public Task<BittrexSummaryDto> GetLatestPrice()
