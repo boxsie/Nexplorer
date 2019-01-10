@@ -23,9 +23,9 @@ namespace Nexplorer.Data.Query
         private readonly NexusDb _nexusDb;
         private readonly IMapper _mapper;
         private readonly RedisCommand _redisCommand;
-        private readonly BlockCacheService _cache;
+        private readonly CacheService _cache;
         
-        public TransactionQuery(NexusDb nexusDb, IMapper mapper, RedisCommand redisCommand, BlockCacheService cache)
+        public TransactionQuery(NexusDb nexusDb, IMapper mapper, RedisCommand redisCommand, CacheService cache)
         {
             _nexusDb = nexusDb;
             _mapper = mapper;

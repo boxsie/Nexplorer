@@ -13,12 +13,12 @@ namespace Nexplorer.Data.Query
     public class StatQuery
     {
         private readonly RedisCommand _redisCommand;
-        private readonly BlockCacheService _blockCache;
+        private readonly CacheService _cache;
 
-        public StatQuery(RedisCommand redisCommand, BlockCacheService blockCache)
+        public StatQuery(RedisCommand redisCommand, CacheService cache)
         {
             _redisCommand = redisCommand;
-            _blockCache = blockCache;
+            _cache = cache;
         }
 
         public async Task<List<ChannelStatDto>> GetChannelStatsAsync()
@@ -50,8 +50,8 @@ namespace Nexplorer.Data.Query
                         switch (channel)
                         {
                             case BlockChannels.PoS:
-                                diff = await _blockCache.GetLastBlockDifficultyAsync(channel);
-                                reward = await _blockCache.GetPosBlockRewardAsync();
+                                diff = await _cache.GetLastBlockDifficultyAsync(channel);
+                                reward = await _cache.GetPosBlockRewardAsync();
                                 break;
                             case BlockChannels.Prime:
                                 diff = miningInfo.PrimeDifficulty;
@@ -70,7 +70,7 @@ namespace Nexplorer.Data.Query
                         return new ChannelStatDto
                         {
                             Channel = ((BlockChannels)x.Channel).ToString(),
-                            Height = (int)x.Height + await _blockCache.GetChannelHeightAsync((BlockChannels)x.Channel),
+                            Height = (int)x.Height + await _cache.GetChannelHeightAsync((BlockChannels)x.Channel),
                             Difficulty = diff,
                             Reward = reward,
                             RatePerSecond = rateSec,

@@ -16,7 +16,6 @@ namespace Nexplorer.Jobs
 {
     public class TrustAddressCacheJob : HostedService
     {
-        private readonly ILogger<TrustAddressCacheJob> _logger;
         private readonly NexusQuery _nexusQuery;
         private readonly BlockQuery _blockQuery;
         private readonly NexusDb _nexusDb;
@@ -25,9 +24,8 @@ namespace Nexplorer.Jobs
 
         public TrustAddressCacheJob(ILogger<TrustAddressCacheJob> logger, NexusQuery nexusQuery, BlockQuery blockQuery, 
             NexusDb nexusDb, AddressQuery addressQuery, RedisCommand redisCommand) 
-            : base(180)
+            : base(180, logger)
         {
-            _logger = logger;
             _nexusQuery = nexusQuery;
             _blockQuery = blockQuery;
             _nexusDb = nexusDb;
@@ -57,7 +55,7 @@ namespace Nexplorer.Jobs
             await _redisCommand.SetAsync(Settings.Redis.TrustKeyCache, keyCache);
             await _redisCommand.SetAsync(Settings.Redis.TrustKeyAddressCache, newKeyAddressCache);
 
-            _logger.LogInformation($"Trust keys updated {trustKeys.Count} and expired {expiredKeys.Count}");
+            Logger.LogInformation($"Trust keys updated {trustKeys.Count} and expired {expiredKeys.Count}");
         }
 
         private async Task RemoveExpiredKeysAsync(IEnumerable<TrustKeyDto> expiredKeys, List<TrustKeyDto> keyCache)

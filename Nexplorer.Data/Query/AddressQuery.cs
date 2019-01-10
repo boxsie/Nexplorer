@@ -18,13 +18,13 @@ namespace Nexplorer.Data.Query
     {
         private readonly NexusDb _nexusDb;
         private readonly RedisCommand _redisCommand;
-        private readonly BlockCacheService _blockCache;
+        private readonly CacheService _cache;
         
-        public AddressQuery(NexusDb nexusDb, RedisCommand redisCommand, BlockCacheService blockCache)
+        public AddressQuery(NexusDb nexusDb, RedisCommand redisCommand, CacheService cache)
         {
             _nexusDb = nexusDb;
             _redisCommand = redisCommand;
-            _blockCache = blockCache;
+            _cache = cache;
         }
 
         public async Task<AddressDto> GetAddressAsync(string addressHash)
@@ -118,7 +118,7 @@ namespace Nexplorer.Data.Query
 
                 return addressHash == null 
                     ? dbAddress 
-                    : MapCacheAddressToAddress(await _blockCache.GetAddressAsync(addressHash), dbAddress);
+                    : MapCacheAddressToAddress(await _cache.GetAddressAsync(addressHash), dbAddress);
             }
         }
 
@@ -140,7 +140,7 @@ namespace Nexplorer.Data.Query
 
                 return addressHash == null 
                     ? dbAddress 
-                    : MapCacheAddressToAddressLite(await _blockCache.GetAddressAsync(addressHash), dbAddress);
+                    : MapCacheAddressToAddressLite(await _cache.GetAddressAsync(addressHash), dbAddress);
             }
         }
 
@@ -310,7 +310,7 @@ namespace Nexplorer.Data.Query
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
-                var cacheTxs = (await _blockCache.GetAddressTransactions(addressHash))
+                var cacheTxs = (await _cache.GetAddressTransactions(addressHash))
                     .Where(x => txIoType.HasValue && x.TxIoType == txIoType.Value).ToList();
                     
                 var cacheTxCount = cacheTxs.Count;
@@ -373,7 +373,7 @@ namespace Nexplorer.Data.Query
                         Balance = (double)((int)x.TransactionInputOutputType == (int)TransactionInputOutputType.Input ? x.Amount : -x.Amount)
                     }).ToList();
                 
-                var cacheBalances = (await _blockCache.GetAddressTransactions(addressHash))
+                var cacheBalances = (await _cache.GetAddressTransactions(addressHash))
                     .Select(x => new
                     {
                         x.TimeUtc.Date,

@@ -10,19 +10,18 @@ using Nexplorer.Domain.Enums;
 
 namespace Nexplorer.Data.Services
 {
-    public class BlockCacheService
+    public class CacheService
     {
         private readonly BlockCacheCommand _cacheCommand;
         private readonly RedisCommand _redisCommand;
-        private readonly ILogger<BlockCacheService> _logger;
+        private readonly ILogger<CacheService> _logger;
         private List<BlockDto> _cache;
 
-        public BlockCacheService(BlockCacheCommand cacheCommand, RedisCommand redisCommand, ILogger<BlockCacheService> logger)
+        public CacheService(BlockCacheCommand cacheCommand, RedisCommand redisCommand, ILogger<CacheService> logger)
         {
             _cacheCommand = cacheCommand;
             _redisCommand = redisCommand;
             _logger = logger;
-
 
             _redisCommand.Subscribe<BlockLiteDto>(Settings.Redis.NewBlockPubSub, AddToCache);
         }
@@ -160,7 +159,7 @@ namespace Nexplorer.Data.Services
         {
             _cache.Insert(0, await _redisCommand.GetAsync<BlockDto>(Settings.Redis.BuildCachedBlockKey(blockDto.Height)));
             _cache.RemoveAt(_cache.Count - 1);
-
+            
             _logger.LogInformation($"Added new block {blockDto.Height} to the local block cache");
         }
 

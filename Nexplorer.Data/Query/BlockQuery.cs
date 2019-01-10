@@ -20,12 +20,12 @@ namespace Nexplorer.Data.Query
 {
     public class BlockQuery
     {
-        private readonly BlockCacheService _cache;
+        private readonly CacheService _cache;
         private readonly RedisCommand _redisCommand;
         private readonly NexusDb _nexusDb;
         private readonly IMapper _mapper;
 
-        public BlockQuery(BlockCacheService cache, RedisCommand redisCommand, NexusDb nexusDb, IMapper mapper)
+        public BlockQuery(CacheService cache, RedisCommand redisCommand, NexusDb nexusDb, IMapper mapper)
         {
             _cache = cache;
             _redisCommand = redisCommand;

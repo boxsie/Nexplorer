@@ -13,14 +13,12 @@ namespace Nexplorer.Jobs
 {
     public class NexusAddressCacheJob : HostedService
     {
-        private readonly ILogger<NexusAddressCacheJob> _logger;
         private readonly AddressQuery _addressQuery;
         private readonly RedisCommand _redisCommand;
 
         public NexusAddressCacheJob(ILogger<NexusAddressCacheJob> logger, AddressQuery addressQuery, RedisCommand redisCommand) 
-            : base(180)
+            : base(180, logger)
         {
-            _logger = logger;
             _addressQuery = addressQuery;
             _redisCommand = redisCommand;
         }
@@ -42,7 +40,7 @@ namespace Nexplorer.Jobs
 
             await _redisCommand.SetAsync(Settings.Redis.NexusAddressCache, nexusAddresses);
 
-            _logger.LogInformation($"{nexusAddresses.Count} Nexus addresses updated");
+            Logger.LogInformation($"{nexusAddresses.Count} Nexus addresses updated");
         }
     }
 }

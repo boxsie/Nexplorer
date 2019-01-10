@@ -14,14 +14,12 @@ namespace Nexplorer.Jobs
 {
     public class BlockSyncJob : HostedService
     {
-        private readonly ILogger<BlockSyncJob> _logger;
         private readonly NexusQuery _nexusQuery;
         private readonly BlockQuery _blockQuery;
 
         public BlockSyncJob(ILogger<BlockSyncJob> logger, NexusQuery nexusQuery, BlockQuery blockQuery, RedisCommand redisCommand)
-            : base(60)
+            : base(60, logger)
         {
-            _logger = logger;
             _nexusQuery = nexusQuery;
             _blockQuery = blockQuery;
         }
@@ -35,7 +33,7 @@ namespace Nexplorer.Jobs
 
             if (syncDelta <= 0)
             {
-                _logger.LogInformation("Block sync found no blocks to sync.");
+                Logger.LogInformation("Block sync found no blocks to sync.");
                 return;
             }
 
@@ -55,7 +53,7 @@ namespace Nexplorer.Jobs
                 {
                     var msg = $"Orphan block found at height {nextBlock.Height + 1} with hash {nextBlockHash}";
 
-                    _logger.LogCritical(msg);
+                    Logger.LogCritical(msg);
 
                     throw new Exception(msg);
                 }
@@ -67,7 +65,8 @@ namespace Nexplorer.Jobs
                 nextBlockHash = nextBlock.NextBlockHash;
             }
 
-            _logger.LogInformation($"Syncing {saveCount} blocks from {lastSyncedHeight + 1} - {lastSyncedHeight + saveCount}...");
+            Logger.LogInformation("===== SYNCING BLOCKS =====");
+            Logger.LogInformation($"Syncing {saveCount} blocks from {lastSyncedHeight + 1} - {lastSyncedHeight + saveCount}...");
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -75,16 +74,16 @@ namespace Nexplorer.Jobs
             var newBlocks = await newBlockDtos.InsertBlocksAsync();
 
             stopwatch.Stop();
-            _logger.LogInformation($"{saveCount} blocks synced in {stopwatch.Elapsed:g}");
+            Logger.LogInformation($"{saveCount} blocks synced in {stopwatch.Elapsed:g}");
 
-            _logger.LogInformation($"Syncing addresses from new blocks...");
+            Logger.LogInformation($"Syncing addresses from new blocks...");
             stopwatch.Restart();
 
             using (var addAgg = new AddressAggregator())
                 await addAgg.AggregateAddresses(newBlocks);
 
             stopwatch.Stop();
-            _logger.LogInformation($"Addresses synced in {stopwatch.Elapsed:g}");
+            Logger.LogInformation($"Addresses synced in {stopwatch.Elapsed:g}");
 
             //await _nexusDb.OrphanBlocks.AddRangeAsync(syncBlocks
             //    .Where(x => newBlocks.All(y => y.Hash != x.Hash))

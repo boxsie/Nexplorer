@@ -11,14 +11,12 @@ namespace Nexplorer.Jobs
     {
         private readonly NexusQuery _nexusQuery;
         private readonly RedisCommand _redisCommand;
-        private readonly ILogger<TimestampSyncJob> _logger;
 
         public TimestampSyncJob(NexusQuery nexusQuery, RedisCommand redisCommand, ILogger<TimestampSyncJob> logger) 
-            : base(10)
+            : base(10, logger)
         {
             _nexusQuery = nexusQuery;
             _redisCommand = redisCommand;
-            _logger = logger;
         }
 
         protected override async Task ExecuteAsync()
@@ -28,7 +26,7 @@ namespace Nexplorer.Jobs
             await _redisCommand.SetAsync(Settings.Redis.TimestampUtcLatest, latestStats.TimeStampUtc);
             await _redisCommand.PublishAsync(Settings.Redis.TimestampUtcLatest, latestStats.TimeStampUtc);
 
-            _logger.LogInformation($"Latest UTC - {latestStats.TimeStampUtc:G}");
+            Logger.LogInformation($"Latest UTC - {latestStats.TimeStampUtc:G}");
         }
     }
 }
