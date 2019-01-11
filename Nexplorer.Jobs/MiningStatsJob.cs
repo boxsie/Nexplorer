@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
 using Nexplorer.Core;
 using Nexplorer.Data.Query;
@@ -14,8 +16,8 @@ namespace Nexplorer.Jobs
         private readonly RedisCommand _redisCommand;
         private readonly StatQuery _statQuery;
 
-        public MiningStatsJob(NexusQuery nexusQuery, RedisCommand redisCommand, StatQuery statQuery)
-            : base(10)
+        public MiningStatsJob(NexusQuery nexusQuery, RedisCommand redisCommand, StatQuery statQuery, ILogger<MiningStatsJob> logger)
+            : base(10, logger)
         {
             _nexusQuery = nexusQuery;
             _redisCommand = redisCommand;
@@ -24,6 +26,9 @@ namespace Nexplorer.Jobs
 
         protected override async Task ExecuteAsync()
         {
+            var sw = new Stopwatch();
+            sw.Start();
+            
             var channelStats = await _statQuery.GetChannelStatsAsync();
 
             var statDto = new MiningStatDto
@@ -40,6 +45,9 @@ namespace Nexplorer.Jobs
 
             await _redisCommand.PublishAsync(Settings.Redis.MiningStatPubSub, statDto);
             await _redisCommand.PublishAsync(Settings.Redis.DifficultyStatPubSub, diffs);
+
+            sw.Stop();
+            Logger.LogInformation($"Mining stats job completed in {sw.Elapsed:c}");
         }
     }
 }

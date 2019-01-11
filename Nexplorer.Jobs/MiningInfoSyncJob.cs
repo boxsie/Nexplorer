@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
 using Nexplorer.Core;
 using Nexplorer.Data.Query;
@@ -15,8 +17,8 @@ namespace Nexplorer.Jobs
         private readonly NexusQuery _nexusQuery;
         private readonly RedisCommand _redisCommand;
 
-        public MiningInfoSyncJob(NexusQuery nexusQuery, RedisCommand redisCommand)
-            : base(10)
+        public MiningInfoSyncJob(NexusQuery nexusQuery, RedisCommand redisCommand, ILogger<MiningInfoSyncJob> logger)
+            : base(10, logger)
         {
             _nexusQuery = nexusQuery;
             _redisCommand = redisCommand;
@@ -24,6 +26,9 @@ namespace Nexplorer.Jobs
 
         protected override async Task ExecuteAsync()
         {
+            var sw = new Stopwatch();
+            sw.Start();
+
             var miningInfo = await _nexusQuery.GetMiningInfoAsync();
 
             var recentMiningInfos = await _redisCommand.GetAsync<List<MiningInfoDto>>(Settings.Redis.MiningInfo10Mins) ??
@@ -38,6 +43,9 @@ namespace Nexplorer.Jobs
             }
 
             await _redisCommand.SetAsync(Settings.Redis.MiningInfoLatest, miningInfo);
+
+            sw.Stop();
+            Logger.LogInformation($"Mining info sync completed in {sw.Elapsed:c}");
         }
     }
 }

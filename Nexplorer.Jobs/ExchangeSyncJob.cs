@@ -16,7 +16,6 @@ namespace Nexplorer.Jobs
     {
         private readonly BittrexClient _bittrexClient;
         private readonly NexusDb _nexusDb;
-        private readonly ILogger<ExchangeSyncJob> _logger;
         private readonly RedisCommand _redis;
 
         private const string Market = "BTC-NXS";
@@ -26,11 +25,10 @@ namespace Nexplorer.Jobs
         private const int DbSaveRunInterval = 5;
 
         public ExchangeSyncJob(BittrexClient bittrexClient, NexusDb nexusDb, ILogger<ExchangeSyncJob> logger, RedisCommand redis) 
-            : base(5)
+            : base(5, logger)
         {
             _bittrexClient = bittrexClient;
             _nexusDb = nexusDb;
-            _logger = logger;
             _redis = redis;
         }
 
@@ -44,7 +42,7 @@ namespace Nexplorer.Jobs
 
             if (nxsSummary == null)
             {
-                _logger.LogInformation("Bittrex data not availible");
+                Logger.LogInformation("Bittrex data not availible");
                 return;
             }
 
@@ -62,7 +60,7 @@ namespace Nexplorer.Jobs
                 
                 Interlocked.Exchange(ref _runCount, 0);
 
-                _logger.LogInformation("Latest Bittrex data saved to DB");
+                Logger.LogInformation("Latest Bittrex data saved to DB");
             }
 
             var summaryDto = new BittrexSummaryDto(summary);

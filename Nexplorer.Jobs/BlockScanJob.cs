@@ -12,16 +12,14 @@ namespace Nexplorer.Jobs
     {
         private readonly NexusQuery _nexusQuery;
         private readonly BlockCacheCommand _cacheCommand;
-        private readonly ILogger<BlockScanJob> _logger;
 
         private int _nextHeight = 0;
 
         public BlockScanJob(NexusQuery nexusQuery, BlockCacheCommand cacheCommand, ILogger<BlockScanJob> logger) 
-            : base(3)
+            : base(3, logger)
         {
             _nexusQuery = nexusQuery;
             _cacheCommand = cacheCommand;
-            _logger = logger;
         }
 
         protected override async Task ExecuteAsync()
@@ -33,7 +31,7 @@ namespace Nexplorer.Jobs
 
             while (newBlock != null)
             {
-                _logger.LogInformation($"Found new block {_nextHeight}");
+                Logger.LogInformation($"Found new block {_nextHeight}");
 
                 var block = newBlock;
 

@@ -18,16 +18,14 @@ namespace Nexplorer.Jobs
     {
         private const int StakeThreshold = 1000;
 
-        private readonly ILogger<AddressStatsJob> _logger;
         private readonly RedisCommand _redisCommand;
         private readonly AddressQuery _addressQuery;
         private readonly BlockQuery _blockQuery;
         private readonly NexusQuery _nexusQuery;
 
         public AddressStatsJob(ILogger<AddressStatsJob> logger, RedisCommand redisCommand, AddressQuery addressQuery, BlockQuery blockQuery, NexusQuery nexusQuery) 
-            : base(30)
+            : base(30, logger)
         {
-            _logger = logger;
             _redisCommand = redisCommand;
             _addressQuery = addressQuery;
             _blockQuery = blockQuery;
@@ -40,7 +38,7 @@ namespace Nexplorer.Jobs
 
             sw.Start();
 
-            _logger.LogInformation("Updating address stats...");
+            Logger.LogInformation("Updating address stats...");
 
             var dormantThreshold = await _blockQuery.GetBlockAsync(DateTime.Now.AddYears(-1));
 
@@ -109,7 +107,7 @@ namespace Nexplorer.Jobs
             await _redisCommand.SetAsync(Settings.Redis.AddressStatPubSub, addressStats);
             await _redisCommand.PublishAsync(Settings.Redis.AddressStatPubSub, addressStats);
 
-            _logger.LogInformation($"Updated address stats in {sw.Elapsed:g}");
+            Logger.LogInformation($"Updated address stats in {sw.Elapsed:g}");
         }
 
         private static AddressFilterCriteria GetDistrubutionBands(AddressBalanceDistributionBands band)

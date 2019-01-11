@@ -17,14 +17,14 @@ namespace Nexplorer.Web.Hubs
     {
         private readonly RedisCommand _redisCommand;
         private readonly IHubContext<MiningHub> _miningContext;
-        private readonly BlockCacheService _blockCache;
+        private readonly CacheService _cache;
 
         public MiningMessenger(RedisCommand redisCommand, IHubContext<MiningHub> miningContext,
-            BlockCacheService blockCache)
+            CacheService cache)
         {
             _redisCommand = redisCommand;
             _miningContext = miningContext;
-            _blockCache = blockCache;
+            _cache = cache;
 
             _redisCommand.Subscribe<MiningStatDto>(Settings.Redis.MiningStatPubSub, OnStatPublishAsync);
         }

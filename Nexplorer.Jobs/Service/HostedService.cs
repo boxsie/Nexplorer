@@ -2,12 +2,15 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Nexplorer.Jobs.Service
 {
     public abstract class HostedService : IHostedService
     {
         public bool IsRunning => _executingTask != null && _executingTask.IsCompleted;
+
+        protected readonly ILogger Logger;
 
         private readonly TimeSpan _jobInterval;
 
@@ -16,8 +19,9 @@ namespace Nexplorer.Jobs.Service
 
         protected abstract Task ExecuteAsync();
         
-        protected HostedService(int intervalSeconds)
+        protected HostedService(int intervalSeconds, ILogger logger)
         {
+            Logger = logger;
             _jobInterval = TimeSpan.FromSeconds(intervalSeconds);
         }
 
@@ -52,7 +56,8 @@ namespace Nexplorer.Jobs.Service
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    Logger.LogCritical(e.Message);
+                    Logger.LogCritical(e.StackTrace);
                     throw;
                 }
 

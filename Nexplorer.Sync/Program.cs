@@ -94,7 +94,7 @@ namespace Nexplorer.Sync
 
             services.AddTransient<RedisTarget>();
             
-            services.AddSingleton<BlockCacheService>();
+            services.AddSingleton<CacheService>();
             services.AddSingleton<GeolocationService>();
 
             services.AddScoped<BlockCacheCommand>();
