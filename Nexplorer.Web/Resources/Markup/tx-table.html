@@ -13,8 +13,8 @@
             <tr v-for="tx in currentPageItems" v-on:click="selectRow('/transactions/' + tx.hash)" style="cursor: pointer;">
                 <td><a v-bind:href="'/transactions/' + tx.hash">{{ $layoutHub.parseTxType(tx.transactionType) }}</a></td>
                 <td class="text-right">{{ tx.amount.toLocaleString() }} <span style="font-size: 10px;">NXS</span></td>
-                <td class="hidden-xs text-center">{{ tx.inputs ? tx.inputs.length.toLocaleString() : '0' }}</td>
-                <td class="hidden-xs text-center">{{ tx.outputs ? tx.outputs.length.toLocaleString() : '0' }}</td>
+                <td class="hidden-xs text-center">{{ tx.inputs.toLocaleString() }}</td>
+                <td class="hidden-xs text-center">{{ tx.outputs.toLocaleString() }}</td>
                 <td><date-age :fromDate="tx.timestamp" :precise="true"></date-age></td>
             </tr>
         </tbody>

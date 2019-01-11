@@ -31,31 +31,30 @@ namespace Nexplorer.Jobs
             sw.Start();
 
             var lastSyncedHeight = await _blockQuery.GetLastSyncedHeightAsync();
-            var heightToDelete = await GetLowestUnremovedHeight(lastSyncedHeight);
-            var cache = await GetCachedBlocks(heightToDelete);
+            var lowestUnremovedHeight = await GetLowestUnremovedHeight(lastSyncedHeight);
+            var cache = await GetCachedBlocks(lowestUnremovedHeight);
+            
+            var addressesToKeep = cache
+                .Where(x => x.Height > lastSyncedHeight)
+                .SelectMany(x => x.Transactions
+                    .SelectMany(y => y.Inputs.Concat(y.Outputs))
+                    .Select(y => y.AddressHash)
+                    .Distinct())
+                .ToList();
 
             var blocksToDelete = cache
-                .Where(x => x.Height <= heightToDelete)
+                .Where(x => x.Height <= lastSyncedHeight)
                 .ToList();
 
             if (!blocksToDelete.Any())
                 return;
 
-            var addressesToDelete = blocksToDelete
-                .SelectMany(x => x.Transactions
-                    .SelectMany(y => y.Inputs.Concat(y.Outputs))
-                    .Select(y => y.AddressHash))
-                .Where(x => cache
-                    .Any(y => y.Transactions
-                        .Any(z => z.Inputs.Concat(z.Outputs)
-                            .Any(xx => xx.AddressHash == x))))
-                .Distinct()
-                .ToList();
+            var addressesToDelete = GetAddressesToDelete(addressesToKeep, blocksToDelete);
 
             foreach (var blockDto in blocksToDelete)
             {
                 Logger.LogInformation($"Deleting block {blockDto.Height} from the cache");
-                await _redisCommand.DeleteAsync(Settings.Redis.BuildCachedBlockKey(heightToDelete));
+                await _redisCommand.DeleteAsync(Settings.Redis.BuildCachedBlockKey(blockDto.Height));
             }
 
             foreach (var addressHash in addressesToDelete)
@@ -103,6 +102,22 @@ namespace Nexplorer.Jobs
             }
 
             return cache;
+        }
+
+        private static IEnumerable<string> GetAddressesToDelete(IEnumerable<string> addressesToKeep, IEnumerable<BlockDto> blocksToDelete)
+        {
+            var addressesToDelete = new List<string>();
+
+            foreach (var deleteBlock in blocksToDelete)
+            {
+                var deleteBlockAddresses = deleteBlock.Transactions
+                    .SelectMany(x => x.Inputs.Concat(x.Outputs)
+                        .Select(y => y.AddressHash));
+
+                addressesToDelete.AddRange(deleteBlockAddresses.Where(hash => addressesToKeep.All(x => x != hash)));
+            }
+
+            return addressesToDelete;
         }
     }
 }
