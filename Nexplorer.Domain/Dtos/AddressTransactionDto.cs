@@ -21,5 +21,8 @@ namespace Nexplorer.Domain.Dtos
 
         [ProtoMember(5)]
         public DateTime TimeUtc { get; set; }
+        
+        [ProtoMember(6)]
+        public TransactionType TxType { get; set; }
     }
 }

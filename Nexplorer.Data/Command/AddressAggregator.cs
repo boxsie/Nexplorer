@@ -73,10 +73,10 @@ namespace Nexplorer.Data.Command
                 {
                     for (var i = startHeight; i < startHeight + count; i++)
                     {
-                        var txIoDtos = await con.QueryAsync<TransactionInputOutputDto>(BlockTxSelectSql, new {BlockHeight = i}, trans);
+                        var txIos = await con.QueryAsync<TransactionInputOutput>(BlockTxSelectSql, new {BlockHeight = i}, trans);
 
-                        foreach (var txIoDto in txIoDtos)
-                            await UpdateOrInsertAggregate(con, trans, txIoDto);
+                        foreach (var txIo in txIos)
+                            await UpdateOrInsertAggregate(con, trans, txIo, i);
 
                         if (consoleOutput)
                             LogProgress((i - startHeight) + 1, count);
@@ -87,7 +87,7 @@ namespace Nexplorer.Data.Command
             }
         }
 
-        public async Task AggregateAddresses(IEnumerable<Block> blocks, bool consoleOutput = false)
+        public async Task AggregateAddresses(IEnumerable<Block> blocks)
         {
             using (var con = new SqlConnection(Settings.Connection.NexusDb))
             {
@@ -95,26 +95,12 @@ namespace Nexplorer.Data.Command
 
                 using (var trans = con.BeginTransaction())
                 {
-                    var txIoDtos = blocks
-                        .SelectMany(x => x.Transactions
-                            .SelectMany(y => y.InputOutputs.Select(z => new { TransactionIoType = z.TransactionInputOutputType, z.AddressId, z.Amount })
-                                .Select(z => new TransactionInputOutputDto
-                                {
-                                    AddressId = z.AddressId,
-                                    Amount = z.Amount,
-                                    BlockHeight = x.Height,
-                                    TransactionInputOutputType = z.TransactionIoType
-                                })))
-                        .ToList();
-
-                    for (var i = 0; i < txIoDtos.Count; i++)
+                    foreach (var block in blocks)
                     {
-                        var txIoDto = txIoDtos[i];
+                        var txIos = block.Transactions.SelectMany(x => x.InputOutputs);
 
-                        await UpdateOrInsertAggregate(con, trans, txIoDto);
-
-                        if (consoleOutput)
-                            LogProgress(i + 1, txIoDtos.Count);
+                        foreach (var txIo in txIos)
+                            await UpdateOrInsertAggregate(con, trans, txIo, block.Height);
                     }
 
                     trans.Commit();
@@ -122,7 +108,7 @@ namespace Nexplorer.Data.Command
             }
         }
 
-        private async Task UpdateOrInsertAggregate(IDbConnection sqlCon, IDbTransaction trans, TransactionInputOutputDto txIo)
+        private async Task UpdateOrInsertAggregate(IDbConnection sqlCon, IDbTransaction trans, TransactionInputOutput txIo, int blockHeight)
         {
             AddressAggregate addAgg;
 
@@ -130,7 +116,7 @@ namespace Nexplorer.Data.Command
             {
                 addAgg = _addressAggregates[txIo.AddressId];
 
-                addAgg.ModifyAggregateProperties(txIo.TransactionInputOutputType, txIo.Amount, txIo.BlockHeight);
+                addAgg.ModifyAggregateProperties(txIo.TransactionInputOutputType, txIo.Amount, blockHeight);
 
                 await UpdateOrInsertAggregate(sqlCon, trans, addAgg, false);
             }
@@ -144,7 +130,7 @@ namespace Nexplorer.Data.Command
                     ? new AddressAggregate { AddressId = txIo.AddressId }
                     : response.First();
 
-                addAgg.ModifyAggregateProperties(txIo.TransactionInputOutputType, txIo.Amount, txIo.BlockHeight);
+                addAgg.ModifyAggregateProperties(txIo.TransactionInputOutputType, txIo.Amount, blockHeight);
 
                 await UpdateOrInsertAggregate(sqlCon, trans, addAgg, isNew);
 
@@ -171,7 +157,7 @@ namespace Nexplorer.Data.Command
         {
             var pct = ((double)i / total) * 100;
 
-            var progress = Math.Floor((double)pct / 5);
+            var progress = Math.Floor(pct / 5);
             var bar = "";
 
             for (var o = 0; o < 20; o++)

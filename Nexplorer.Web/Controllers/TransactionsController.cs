@@ -54,7 +54,7 @@ namespace Nexplorer.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetRecentTransactions(int start, int count)
         {
-            return Ok(await _transactionQuery.GetTransactionsFilteredAsync(null, new TransactionFilterCriteria { OrderBy = OrderTransactionsBy.MostRecent }, start, count, false));
+            return Ok(await _transactionQuery.GetTransactionsFilteredAsync(new TransactionFilterCriteria { OrderBy = OrderTransactionsBy.MostRecent }, start, count, false));
         }
     }
 }

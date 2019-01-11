@@ -12,17 +12,15 @@ import '../../Style/addresses.address.scss';
 
 export class AddressViewModel {
     constructor(options) {
-        const defaultFilter = 'both';
-
         const defaultCriteria = {
+            txType: "All",
+            txInputOutputType: null,
             minAmount: null,
             maxAmount: null,
             heightFrom: null,
             heightTo: null,
             utcFrom: null,
             utcTo: null,
-            isStakeReward: null,
-            isMiningReward: null,
             addressHashes: [options.addressHash],
             orderBy: 0
         };
@@ -41,7 +39,6 @@ export class AddressViewModel {
                 addressOnShowLink: 'Show address',
                 identiconSvg: '',
                 waitingForFavouriteResponse: false,
-                currentFilter: defaultFilter,
                 filterCriteria: defaultCriteria,
                 includeRewards: 0,
                 transactionTableAjaxUrl: '/addresses/getaddresstxs',
@@ -75,7 +72,7 @@ export class AddressViewModel {
                             } if (options.txTypes[row.transactionType] === 'CoinbasePrime') {
                                 return `<span>Coinbase prime reward</span>`;
                             } else if (options.txTypes[row.transactionType] === 'Coinstake') {
-                                const rewardOrTx = this.vm.currentFilter === 'both' ? 'reward' : 'transaction';
+                                const rewardOrTx = this.vm.filterCriteria.txInputOutputType === null ? 'reward' : 'transaction';
                                 return `<span>Coinstake ${rewardOrTx}</span>`;
                             } else if (data.length > 0) {
                                 const id = `addTx${row.i}`;
@@ -128,7 +125,7 @@ export class AddressViewModel {
                             }
 
                             var txCount = !row.isStakingReward && !row.isMiningReward && data.length > 1 ? `<span>(${data.length})</span>` : ' ';
-                            return `<span class="fa ${icon} tx-type-icon"></span> ${txCount}`;
+                            return `<span class="fa ${icon} tx-type-icon"></span> <span style="font-size: 12px;">${txCount}</span>`;
                         }
                     },
                     {
@@ -137,21 +134,28 @@ export class AddressViewModel {
                         data: 'inputOutputs',
                         width: '28%',
                         render: (data, type, row) => {
-                            var amounts = '<ul class="list">';
-                            var dFirst = data[0];
+                            var txType = options.txTypes[row.transactionType];
 
-                            if (options.txTypes[row.transactionType] === 'Coinstake') {
-                                const stakeAmount = data[1] ? parseFloat(data[1].amount) - parseFloat(dFirst.amount) : parseFloat(dFirst.amount);
-                                const addOrSub = this.vm.currentFilter === 'input' ? '-' : '+';
-                                amounts += `<li><strong>${addOrSub}${stakeAmount.toLocaleString()}</strong> <small>NXS</small></li>`;
-                            } else if (options.txTypes[row.transactionType] === 'CoinbasePrime' || options.txTypes[row.transactionType] === 'CoinbaseHash') {
-                                amounts += `<li><strong>${parseFloat(dFirst.amount.toFixed(4)).toLocaleString()}</strong> <small>NXS</small></li>`;
-                            } else {
-                                const sub = dFirst.transactionIoType === 0 ? '-' : '+';
-                                amounts += `<li><strong>${sub}${parseFloat(data.reduce((a, b) => +a + +b.amount.toFixed(4), 0)).toLocaleString()}</strong> <small>NXS</small></li>`;
+                            switch (txType) {
+                                case 'Coinstake':
+                                    break;
                             }
 
-                            amounts += '</ul>';
+                            console.log(data);
+
+                            var balanceTotal = parseFloat(data.reduce((a, b) => +a + +b.amount.toFixed(4), 0)).toLocaleString();
+                            var balanceText = "";
+
+                            switch (data[0].transactionIoType) {
+                                case 0:
+                                    balanceText = `-${balanceTotal}`;
+                                    break;
+                                case 1:
+                                    balanceText = `+${balanceTotal}`;
+                                    break;
+                            }
+
+                            var amounts = `<strong>${balanceText}</strong> <small>NXS</small>`;
 
                             return amounts;
                         }
@@ -159,13 +163,13 @@ export class AddressViewModel {
                 ]
             },
             components: {
-                TransactionTable: dataTableVue(defaultFilter, defaultCriteria, 'first_last_numbers'),
+                TransactionTable: dataTableVue(defaultCriteria, 'first_last_numbers'),
                 CurrencyHelper: currencyHelper,
                 ActivityChart: activityChart
             },
             methods: {
-                getHistory(txType) {
-                    this.currentFilter = txType;
+                getHistory(txIoType) {
+                    this.filterCriteria.txInputOutputType = txIoType;
                     this.reloadData();
                 },
                 watchAddress() {
@@ -199,22 +203,12 @@ export class AddressViewModel {
                     }
                 },
                 reloadData() {
-                    switch (this.includeRewards) {
-                        case '0':
-                            this.filterCriteria.isStakeReward = null;
-                            this.filterCriteria.isMiningReward = null;
-                            break;
-                        case '1':
-                            this.filterCriteria.isStakeReward = true;
-                            this.filterCriteria.isMiningReward = true;
-                            break;
-                        case '2':
-                            this.filterCriteria.isStakeReward = false;
-                            this.filterCriteria.isMiningReward = false;
-                            break;
-                    }
-
-                    this.$refs.txTable.dataReload(this.currentFilter, this.filterCriteria);
+                    const reloadCriteria = JSON.parse(JSON.stringify(this.filterCriteria));
+                    
+                    if (reloadCriteria.txType === "All")
+                        reloadCriteria.txType = null;
+                    
+                    this.$refs.txTable.dataReload(reloadCriteria);
                 },
                 truncateHash(hash, len) {
                     const start = hash.substring(0, len);

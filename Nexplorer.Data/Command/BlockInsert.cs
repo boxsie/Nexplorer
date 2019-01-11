@@ -155,7 +155,7 @@ namespace Nexplorer.Data.Command
         }
 
         private static async Task<Dictionary<string, int>> InsertAddressesAsync(IDbConnection sqlCon,
-            IDbTransaction trans, IEnumerable<TransactionInputOutputLiteDto> txInOuts, int blockHeight)
+            IDbTransaction trans, IEnumerable<TransactionInputOutputDto> txInOuts, int blockHeight)
         {
             var addressCache = new Dictionary<string, int>();
             var addressHashes = txInOuts.Select(y => y.AddressHash).Distinct();

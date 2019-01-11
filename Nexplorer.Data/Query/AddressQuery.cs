@@ -55,20 +55,6 @@ namespace Nexplorer.Data.Query
             return await GetAddressLiteAsync(addressId, addressHash);
         }
 
-        public async Task<List<AddressTransactionDto>> GetAddressTransactionsAsync(int addressId, TransactionInputOutputType txIoType, int? start = null, int? count = null)
-        {
-            var addressHash = await GetAddressHashAsync(addressId);
-
-            return await GetAddressTransactionsInOutAsync(txIoType, addressId, addressHash, start, count);
-        }
-
-        public async Task<List<AddressTransactionDto>> GetAddressTransactionsAsync(string addressHash, TransactionInputOutputType txIoType, int? start = null, int? count = null)
-        {
-            var addressId = await GetAddressIdAsync(addressHash);
-
-            return await GetAddressTransactionsInOutAsync(txIoType, addressId, addressHash, start, count);
-        }
-
         public async Task<TrustKeyDto> GetAddressTrustKey(string addressHash)
         {
             var truskKeyCache = await _redisCommand.GetAsync<List<TrustKeyDto>>(Settings.Redis.TrustKeyCache);
@@ -81,7 +67,7 @@ namespace Nexplorer.Data.Query
             return NexusAddresses.Sum(x => x.Value.Count);
         }
 
-        public async Task<string> GetAddressHashAsync(int addressId)
+        private async Task<string> GetAddressHashAsync(int addressId)
         {
             return await _nexusDb.Addresses
                 .Where(x => x.AddressId == addressId)
@@ -89,7 +75,7 @@ namespace Nexplorer.Data.Query
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<int> GetAddressIdAsync(string addressHash)
+        private async Task<int> GetAddressIdAsync(string addressHash)
         {
             return await _nexusDb.Addresses
                 .Where(x => x.Hash == addressHash)
@@ -288,66 +274,6 @@ namespace Nexplorer.Data.Query
             }
         }
 
-        public async Task<List<AddressTransactionDto>> GetAddressTransactionsInOutAsync(TransactionInputOutputType? txIoType, int addressId, string addressHash, int? start = null, int? count = null)
-        {
-            var sqlQ = @"SELECT
-                         tInOut.[TransactionInputOutputType],
-                         t.[BlockHeight],
-                         t.[Hash] AS TransactionHash,
-                         tInOut.[Amount],
-                         t.[Timestamp]
-                         FROM [dbo].[Transaction] t
-                         INNER JOIN [dbo].[TransactionInputOutput] tInOut ON tInOut.[TransactionId] = t.[TransactionId]
-                         WHERE a.[AddressId] = @addressId";
-
-            if (txIoType.HasValue)
-                sqlQ += " AND tInOut.[TransactionInputOutputType] = @txType";
-
-            sqlQ += " ORDER BY t.[Timestamp] DESC";
-
-            if (start.HasValue && count.HasValue)
-                sqlQ += " OFFSET @start ROWS FETCH NEXT @count ROWS ONLY; ";
-
-            using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
-            {
-                var cacheTxs = (await _cache.GetAddressTransactions(addressHash))
-                    .Where(x => txIoType.HasValue && x.TxIoType == txIoType.Value).ToList();
-                    
-                var cacheTxCount = cacheTxs.Count;
-                    
-                cacheTxs = cacheTxs
-                    .Skip(start ?? 0)
-                    .Take(count ?? 5)
-                    .ToList();
-
-                if (cacheTxs.Count >= count)
-                    return cacheTxs;
-
-                var dbStart = (start ?? 0) - cacheTxCount;
-                var dbCount = (count ?? 5) - cacheTxs.Count;
-
-                if (dbStart < 0)
-                    dbStart = 0;
-
-                var response = await sqlCon.QueryAsync(sqlQ, new { addressId, start = dbStart, count = dbCount });
-
-                var dbTxs = response.Select(x => new AddressTransactionDto
-                    {
-                        TxIoType = (TransactionInputOutputType)x.TransactionInputOutputType,
-                        BlockHeight = x.BlockHeight,
-                        TransactionHash = x.TransactionHash,
-                        Amount = x.Amount,
-                        TimeUtc = x.Timestamp
-                    }).ToList();
-
-                return dbTxs
-                    .Concat(cacheTxs)
-                    .OrderByDescending(x => x.TimeUtc)
-                    .ThenByDescending(x => (int)x.TxIoType)
-                    .ToList();
-            }
-        }
-
         public async Task<List<AddressBalanceDto>> GetAddressBalance(string addressHash, int days)
         {
             var addressId = await GetAddressIdAsync(addressHash);
@@ -542,6 +468,8 @@ namespace Nexplorer.Data.Query
 
             return address;
         }
+
+
 
         public static readonly Dictionary<NexusAddressPools, List<string>> NexusAddresses =
             new Dictionary<NexusAddressPools, List<string>>

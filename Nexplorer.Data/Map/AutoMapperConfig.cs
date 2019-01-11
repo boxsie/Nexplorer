@@ -29,7 +29,7 @@ namespace Nexplorer.Data.Map
                     .ForMember(d => d.Confirmations, o => o.Ignore())
                     .ForMember(d => d.Inputs, o => o.MapFrom(s => s.InputOutputs.Where(y => y.TransactionInputOutputType == TransactionInputOutputType.Input)))
                     .ForMember(d => d.Outputs, o => o.MapFrom(s => s.InputOutputs.Where(y => y.TransactionInputOutputType == TransactionInputOutputType.Output)));
-                x.CreateMap<TransactionInputOutput, TransactionInputOutputLiteDto>()
+                x.CreateMap<TransactionInputOutput, TransactionInputOutputDto>()
                     .ForMember(d => d.AddressHash, o => o.MapFrom(s => s.Address.Hash));
 
                 x.CreateMap<BlockDto, OrphanBlock>()
@@ -49,7 +49,7 @@ namespace Nexplorer.Data.Map
                     .ForMember(d => d.BlockHeight, o => o.Ignore())
                     .ForMember(d => d.TransactionType, o => o.Ignore());
 
-                x.CreateMap<TransactionInputOutputResponse, TransactionInputOutputLiteDto>()
+                x.CreateMap<TransactionInputOutputResponse, TransactionInputOutputDto>()
                     .ForMember(d => d.TransactionInputOutputType, o => o.Ignore());
 
                 x.CreateMap<InfoResponse, NexusInfoDto>()

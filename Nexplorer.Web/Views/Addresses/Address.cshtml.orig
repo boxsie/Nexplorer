@@ -184,8 +184,13 @@
         <div class="col-sm-5">
             <div id="sentReceiveButtons" class="form-group">
                 <div class="text-toggle">
+<<<<<<< Updated upstream
+                    <a href="#" v-on:click.prevent.stop="getHistory('both')"
+                       v-bind:class="currentFilter == 'both' ? 'active-link' : ''">Sent / Rec<span class="d-none d-sm-inline">eived</span></a>
+=======
                     <a href="#" v-on:click.prevent.stop="getHistory()"
                        v-bind:class="filterCriteria.txInputOutputType == null ? 'active-link' : ''">Sent / Rec<span class="hidden-xs">eived</span></a>
+>>>>>>> Stashed changes
                     <span class="toggle-seperator fa fa-ellipsis-v"></span>
                     <a href="#" v-on:click.prevent.stop="getHistory(0)"
                        v-bind:class="filterCriteria.txInputOutputType == 0 ? 'active-link' : ''">Sent</a>

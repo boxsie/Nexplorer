@@ -117,62 +117,48 @@ namespace Nexplorer.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> GetAddressTxs(DataTablePostModel<TransactionFilterCriteria> model)
         {
-            TransactionInputOutputType? txType = null;
-
-            switch (model.Filter)
-            {
-                case "input":
-                    txType = TransactionInputOutputType.Input;
-                    break;
-                case "output":
-                    txType = TransactionInputOutputType.Output;
-                    break;
-            }
-
             var count = model.Length > MaxAddressesPerFilterPage
                 ? MaxAddressesPerFilterPage
                 : model.Length;
 
             var filterCriteria = model.FilterCriteria ?? new TransactionFilterCriteria();
 
-            var data = await _transactionQuery.GetTransactionsFilteredAsync(txType, filterCriteria, model.Start, count, true);
-
-            var txAddressHashes = await _transactionQuery.GetTransactionAddresses(data.Results);
-
-            var response = new
-            {
-                Draw = model.Draw,
-                RecordsTotal = 0,
-                RecordsFiltered = data.ResultCount,
-                Data = data.Results.Select(x =>
-                {
-                    var inputOutputs = x.Inputs.Concat(x.Outputs).ToList();
-                    var addressHashes = txAddressHashes[x.Hash];
-                    var oppositeAddresses = addressHashes
-                        .Where(y => inputOutputs.Any() && y.TransactionInputOutputType != inputOutputs.First().TransactionInputOutputType)
-                        .GroupBy(y => y.AddressHash)
-                        .Select(y => y.First())
-                        .ToList();
+            var data = await _transactionQuery.GetTransactionsFilteredAsync(filterCriteria, model.Start, count, true);
+            
+            //var response = new
+            //{
+            //    Draw = model.Draw,
+            //    RecordsTotal = 0,
+            //    RecordsFiltered = data.ResultCount,
+            //    Data = data.Results.Select(x =>
+            //    {
+            //        var inputOutputs = x.Inputs.Concat(x.Outputs).ToList();
+            //        var addressHashes = txAddressHashes[x.Hash];
+            //        var oppositeAddresses = addressHashes
+            //            .Where(y => inputOutputs.Any() && y.TransactionInputOutputType != inputOutputs.First().TransactionInputOutputType)
+            //            .GroupBy(y => y.AddressHash)
+            //            .Select(y => y.First())
+            //            .ToList();
                     
-                    return new
-                    {
-                        x.Hash,
-                        x.BlockHeight,
-                        x.Timestamp,
-                        x.Amount,
-                        x.TransactionType,
-                        InputOutputs = inputOutputs.Select(y => new
-                        {
-                            y.AddressHash,
-                            y.Amount,
-                            TransactionIoType = y.TransactionInputOutputType
-                        }),
-                        OppositeAddresses = oppositeAddresses.Where(y => y.AddressHash != model.FilterCriteria.AddressHashes.First()),
-                    };
-                })
-            };
+            //        return new
+            //        {
+            //            x.Hash,
+            //            x.BlockHeight,
+            //            x.Timestamp,
+            //            x.Amount,
+            //            x.TransactionType,
+            //            InputOutputs = inputOutputs.Select(y => new
+            //            {
+            //                y.AddressHash,
+            //                y.Amount,
+            //                TransactionIoType = y.TransactionInputOutputType
+            //            }),
+            //            OppositeAddresses = oppositeAddresses.Where(y => y.AddressHash != model.FilterCriteria.AddressHashes.First()),
+            //        };
+            //    })
+            //};
 
-            return Ok(response);
+            return Ok();
         }
 
         [HttpPost]

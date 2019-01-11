@@ -10,7 +10,7 @@ namespace Nexplorer.Domain.Models
         public double Amount { get; set; }
         public DateTime SyncTime { get; set; }
         
-        public TransactionInputOutputModel(TransactionInputOutputLiteDto txInOut, string transactionHash)
+        public TransactionInputOutputModel(TransactionInputOutputDto txInOut, string transactionHash)
         {
             TransactionHash = transactionHash;
             AddressHash = txInOut.AddressHash;

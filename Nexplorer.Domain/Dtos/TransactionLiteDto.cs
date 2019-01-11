@@ -33,10 +33,13 @@ namespace Nexplorer.Domain.Dtos
         public TransactionType TransactionType { get; set; }
 
         public TransactionLiteDto() { }
-        
+
+        public TransactionLiteDto(TransactionDto tx) : this(tx, tx.BlockHeight, tx.Confirmations) { }
+
         public TransactionLiteDto(TransactionDto tx, int height, int confirmations)
         {
             BlockHeight = height;
+            Confirmations = confirmations;
             TransactionHash = tx.Hash;
             Amount = tx.Amount;
             Timestamp = tx.Timestamp;
