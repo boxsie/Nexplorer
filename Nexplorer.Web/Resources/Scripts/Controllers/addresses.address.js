@@ -48,6 +48,7 @@ export class AddressViewModel {
                         data: 'timestamp',
                         width: '5%',
                         render: (data, type, row) => {
+                            console.log(row);
                             var timestamp = Moment(data).format('DD/MMM/YY');
                             return `<span>${timestamp}</span>`;
                         }
@@ -64,7 +65,7 @@ export class AddressViewModel {
                     {
                         title: '<span class="fa fa-hashtag"></span>',
                         className: '',
-                        data: 'oppositeAddresses',
+                        data: 'oppositeItems',
                         width: '55%',
                         render: (data, type, row) => {
                             if (options.txTypes[row.transactionType] === 'CoinbaseHash') {
@@ -106,10 +107,9 @@ export class AddressViewModel {
                     {
                         title: '<span class="fa fa-exchange"></span>',
                         className: 'in-out-col',
-                        data: 'inputOutputs',
+                        data: 'transactionInputOutputType',
                         width: '5%',
                         render: (data, type, row) => {
-                            var dataFirst = data[0];
                             var icon = '';
                             
                             if (options.txTypes[row.transactionType] === 'Coinstake') {
@@ -117,7 +117,7 @@ export class AddressViewModel {
                             } else if (options.txTypes[row.transactionType] === 'CoinbasePrime' || options.txTypes[row.transactionType] === 'CoinbaseHash') {
                                 icon = 'fa-cube mining';
                             } else {
-                                if (dataFirst.transactionIoType === 0) {
+                                if (data === 0) {
                                     icon = 'fa-arrow-left red';
                                 } else {
                                     icon = 'fa-arrow-right green';
@@ -131,22 +131,20 @@ export class AddressViewModel {
                     {
                         title: '<span class="fa fa-paper-plane-o"></span>',
                         className: 'balance-col',
-                        data: 'inputOutputs',
+                        data: 'amount',
                         width: '28%',
                         render: (data, type, row) => {
-                            var txType = options.txTypes[row.transactionType];
-
-                            switch (txType) {
+                            console.log(data);
+                            
+                            switch (row.transactionType) {
                                 case 'Coinstake':
                                     break;
                             }
-
-                            console.log(data);
-
-                            var balanceTotal = parseFloat(data.reduce((a, b) => +a + +b.amount.toFixed(4), 0)).toLocaleString();
+                            
+                            var balanceTotal = parseFloat(data.toFixed(4)).toLocaleString();
                             var balanceText = "";
 
-                            switch (data[0].transactionIoType) {
+                            switch (row.transactionInputOutputType) {
                                 case 0:
                                     balanceText = `-${balanceTotal}`;
                                     break;
@@ -215,7 +213,7 @@ export class AddressViewModel {
                     return start + '...';
                 },
                 selectTransaction(tx) {
-                    window.location.href = `/transactions/${tx.hash}`;
+                    window.location.href = `/transactions/${tx.transactionHash}`;
                 }
             },
             mounted() {

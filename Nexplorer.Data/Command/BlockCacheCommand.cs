@@ -141,10 +141,10 @@ namespace Nexplorer.Data.Command
             address.AddressTransactions.Add(new AddressTransactionDto
             {
                 BlockHeight = blockHeight,
-                TimeUtc = date,
+                Timestamp = date,
                 TransactionHash = txHash,
                 Amount = amount,
-                TxIoType = txIoType
+                TransactionInputOutputType = txIoType
             });
 
             await _redisCommand.SetAsync(Settings.Redis.BuildCachedAddressKey(addressHash), address);

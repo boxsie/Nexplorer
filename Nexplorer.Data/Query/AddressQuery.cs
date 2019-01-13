@@ -4,6 +4,7 @@ using Nexplorer.Data.Context;
 using Nexplorer.Domain.Dtos;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Nexplorer.Config;
@@ -302,8 +303,8 @@ namespace Nexplorer.Data.Query
                 var cacheBalances = (await _cache.GetAddressTransactions(addressHash))
                     .Select(x => new
                     {
-                        x.TimeUtc.Date,
-                        Balance = (int)x.TxIoType == (int)TransactionInputOutputType.Input ? x.Amount : -x.Amount
+                        x.Timestamp.Date,
+                        Balance = (int)x.TransactionInputOutputType == (int)TransactionInputOutputType.Input ? x.Amount : -x.Amount
                     }).ToList();
                 
                 var allBalances = dbBalances
@@ -392,6 +393,232 @@ namespace Nexplorer.Data.Query
             return _redisCommand.GetAsync<List<AddressDistrubtionBandDto>>(Settings.Redis.AddressDistributionStats);
         }
 
+        public async Task<FilterResult<AddressTransactionDto>> GetAddressTransactionsFilteredAsync(AddressTransactionFilterCriteria filter, int start, int count, bool countResults, int? maxResults = null)
+        {
+            const string from = @"
+                FROM [dbo].[Transaction] t
+                INNER JOIN [dbo].[TransactionInputOutput] tInOut ON tInOut.[TransactionId] = t.[TransactionId] 
+                INNER JOIN [dbo].[Address] a ON a.[AddressId] = tInOut.[AddressId]
+                WHERE 1 = 1 ";
+
+            var where = BuildWhereClause(filter, out var param);
+
+            var sqlOrderBy = "ORDER BY ";
+
+            switch (filter.OrderBy)
+            {
+                case OrderTransactionsBy.LowestAmount:
+                    sqlOrderBy += "tInOut.[Amount] ";
+                    break;
+                case OrderTransactionsBy.HighestAmount:
+                    sqlOrderBy += "tInOut.[Amount] DESC ";
+                    break;
+                case OrderTransactionsBy.LeastRecent:
+                    sqlOrderBy += "t.[Timestamp] ";
+                    break;
+                case OrderTransactionsBy.MostRecent:
+                    sqlOrderBy += "t.[Timestamp] DESC ";
+                    break;
+                default:
+                    sqlOrderBy += "t.[Timestamp] DESC ";
+                    break;
+            }
+
+            var sqlAddressTxs = $@"
+                          SELECT
+                          a.[Hash] AS AddressHash,
+                          t.[TransactionId],
+                          t.[Hash] AS TransactionHash,
+                          t.[BlockHeight],
+                          t.[Timestamp],
+                          tInOut.[Amount],
+                          t.[TransactionType],
+                          tInOut.[TransactionInputOutputType]
+                          {from}
+                          {where}                                          
+                          {sqlOrderBy}                           
+                          OFFSET @start ROWS FETCH NEXT @count ROWS ONLY;";
+
+            var sqlOppositeItems = @"
+                        SELECT
+                        t.[TransactionId],
+                        a.[Hash],
+                        tInOut.[Amount],
+                        tInOut.[TransactionInputOutputType]
+                        FROM [dbo].[Transaction] t
+                        INNER JOIN [dbo].[TransactionInputOutput] tInOut ON tInOut.[TransactionId] = t.[TransactionId] 
+                        INNER JOIN [dbo].[Address] a ON a.[AddressId] = tInOut.[AddressId]
+                        WHERE t.[TransactionId] IN @txIds";
+
+            var sqlC = $@"
+                         SELECT 
+                         COUNT(*)
+                         FROM (SELECT TOP (@maxResults)
+                               1 AS Cnt
+                               {from}
+                               {where}) AS resultCount;";
+
+            using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
+            {
+                var results = new FilterResult<AddressTransactionDto>();
+
+                var cacheTxs = FilterCacheBlocks(await _cache.GetBlocksAsync(), filter)
+                    .Skip(start)
+                    .ToList();
+
+                param.Add(nameof(count), count);
+                param.Add(nameof(start), start);
+                param.Add(nameof(maxResults), maxResults ?? int.MaxValue);
+
+                if (cacheTxs.Count >= count)
+                {
+                    results.Results = cacheTxs.Take(count).ToList();
+                    results.ResultCount = countResults
+                        ? cacheTxs.Count + (int)(await sqlCon.QueryAsync<int>(sqlC, param)).FirstOrDefault()
+                        : -1;
+                }
+                else
+                {
+                    using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlAddressTxs, sqlC), param))
+                    {
+                        results.Results = cacheTxs.Concat(await multi.ReadAsync<AddressTransactionDto>()).ToList();
+                        results.ResultCount = countResults
+                            ? cacheTxs.Count + (int)(await multi.ReadAsync<int>()).FirstOrDefault()
+                            : -1;
+                    }
+                }
+
+                switch (filter.OrderBy)
+                {
+                    case OrderTransactionsBy.MostRecent:
+                        results.Results = results.Results.OrderByDescending(x => x.Timestamp).ToList();
+                        break;
+                    case OrderTransactionsBy.LeastRecent:
+                        results.Results = results.Results.OrderBy(x => x.Timestamp).ToList();
+                        break;
+                    case OrderTransactionsBy.HighestAmount:
+                        results.Results = results.Results.OrderByDescending(x => x.Amount).ToList();
+                        break;
+                    case OrderTransactionsBy.LowestAmount:
+                        results.Results = results.Results.OrderBy(x => x.Amount).ToList();
+                        break;
+                }
+                
+                var oppositeItems = (await sqlCon.QueryAsync(sqlOppositeItems, new { txIds = results.Results.Select(x => x.TransactionId).Distinct() })).ToList();
+                
+                foreach (var addressTx in results.Results)
+                {
+                    addressTx.OppositeItems = oppositeItems
+                        .Where(x => x.TransactionId == addressTx.TransactionId &&
+                                    x.TransactionInputOutputType != (int)addressTx.TransactionInputOutputType)
+                        .Select(x => new AddressTransactionItemDto
+                        {
+                            AddressHash = x.Hash,
+                            Amount = x.Amount
+                        })
+                        .ToList();
+                }
+
+                return results;
+            }
+        }
+
+        private static IEnumerable<AddressTransactionDto> FilterCacheBlocks(IEnumerable<BlockDto> blocks, AddressTransactionFilterCriteria filter)
+        {
+            return blocks.SelectMany(x => x.Transactions
+                .Where(y => (!filter.TxType.HasValue || y.TransactionType == filter.TxType) &&
+                            (!filter.MinAmount.HasValue || y.Amount >= filter.MinAmount) &&
+                            (!filter.MaxAmount.HasValue || y.Amount <= filter.MaxAmount) &&
+                            (!filter.HeightFrom.HasValue || y.BlockHeight >= filter.HeightFrom) &&
+                            (!filter.HeightTo.HasValue || y.BlockHeight <= filter.HeightTo) &&
+                            (!filter.UtcFrom.HasValue || y.Timestamp >= filter.UtcFrom) &&
+                            (!filter.UtcTo.HasValue || y.Timestamp <= filter.UtcTo))
+                .SelectMany(y => y.Inputs.Concat(y.Outputs)
+                    .Where(z => filter.AddressHashes.Any(xx => xx == z.AddressHash))
+                    .Select(z => new AddressTransactionDto
+                    {
+                        AddressHash = z.AddressHash,
+                        TransactionInputOutputType = z.TransactionInputOutputType,
+                        BlockHeight = y.BlockHeight,
+                        TransactionHash = y.Hash,
+                        Amount = z.Amount,
+                        Timestamp = y.Timestamp,
+                        TransactionType = y.TransactionType
+                    })));
+        }
+
+        private static string BuildWhereClause(AddressTransactionFilterCriteria filter, out DynamicParameters param)
+        {
+            param = new DynamicParameters();
+
+            var whereClause = new StringBuilder();
+
+            if (filter.AddressHashes.Any())
+            {
+                var addressHashes = filter.AddressHashes;
+                param.Add(nameof(addressHashes), addressHashes);
+                whereClause.Append($"AND a.[Hash] IN @addressHashes ");
+            }
+
+            if (filter.TxType.HasValue)
+            {
+                var txType = (int)filter.TxType.Value;
+                param.Add(nameof(txType), txType);
+                whereClause.Append($"AND t.[TransactionType] = @txType ");
+            }
+
+            if (filter.TxInputOutputType.HasValue)
+            {
+                var txInputOutputType = (int)filter.TxInputOutputType.Value;
+                param.Add(nameof(txInputOutputType), txInputOutputType);
+                whereClause.Append($"AND tInOut.[TransactionInputOutputType] = @txInputOutputType ");
+            }
+
+            if (filter.MinAmount.HasValue)
+            {
+                var min = filter.MinAmount.Value;
+                param.Add(nameof(min), min);
+                whereClause.Append($"AND t.[Amount] >= @min ");
+            }
+
+            if (filter.MaxAmount.HasValue)
+            {
+                var max = filter.MaxAmount.Value;
+                param.Add(nameof(max), max);
+                whereClause.Append($"AND t.[Amount] <= @max ");
+            }
+
+            if (filter.HeightFrom.HasValue)
+            {
+                var fromHeight = filter.HeightFrom.Value;
+                param.Add(nameof(fromHeight), fromHeight);
+                whereClause.Append($"AND t.[BlockHeight] <= @fromHeight ");
+            }
+
+            if (filter.HeightTo.HasValue)
+            {
+                var toHeight = filter.HeightTo.Value;
+                param.Add(nameof(toHeight), toHeight);
+                whereClause.Append($"AND t.[BlockHeight] >= @toHeight ");
+            }
+
+            if (filter.UtcFrom.HasValue)
+            {
+                var fromDate = filter.UtcFrom.Value;
+                param.Add(nameof(fromDate), fromDate);
+                whereClause.Append($"AND t.[Timestamp] <= @fromDate ");
+            }
+
+            if (filter.UtcTo.HasValue)
+            {
+                var toDate = filter.UtcTo.Value;
+                param.Add(nameof(toDate), toDate);
+                whereClause.Append($"AND t.[Timestamp] >= @toDate ");
+            }
+
+            return whereClause.ToString();
+        }
+
         private IEnumerable<AddressLiteDto> OrderAddresses(IEnumerable<AddressLiteDto> addresses, OrderAddressesBy orderBy)
         {
             switch (orderBy)
@@ -468,8 +695,6 @@ namespace Nexplorer.Data.Query
 
             return address;
         }
-
-
 
         public static readonly Dictionary<NexusAddressPools, List<string>> NexusAddresses =
             new Dictionary<NexusAddressPools, List<string>>
