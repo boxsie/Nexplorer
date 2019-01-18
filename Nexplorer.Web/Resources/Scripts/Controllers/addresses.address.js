@@ -22,6 +22,7 @@ export class AddressViewModel {
             utcFrom: null,
             utcTo: null,
             addressHashes: [options.addressHash],
+            grouped: true,
             orderBy: 0
         };
 
@@ -48,7 +49,6 @@ export class AddressViewModel {
                         data: 'timestamp',
                         width: '5%',
                         render: (data, type, row) => {
-                            console.log(row);
                             var timestamp = Moment(data).format('DD/MMM/YY');
                             return `<span>${timestamp}</span>`;
                         }
@@ -134,13 +134,6 @@ export class AddressViewModel {
                         data: 'amount',
                         width: '28%',
                         render: (data, type, row) => {
-                            console.log(data);
-                            
-                            switch (row.transactionType) {
-                                case 'Coinstake':
-                                    break;
-                            }
-                            
                             var balanceTotal = parseFloat(data.toFixed(4)).toLocaleString();
                             var balanceText = "";
 

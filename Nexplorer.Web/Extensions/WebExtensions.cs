@@ -86,12 +86,21 @@ namespace Nexplorer.Web.Extensions
             return formatted;
         }
 
-        public static string ToCurrencyString(this double val, bool isNegative = false)
-        {
-            var minus = isNegative ? "-" : "";
+        //public static string ToCurrencyString(this double val)
+        //{
 
-            return val > 0 
-                ? $"{minus}{val:##,###.####}" 
+        //}
+
+        public static string ToLocaleString(this object val)
+        {
+            if (!double.TryParse(val.ToString(), out var dVal))
+                return val.ToString();
+
+            if (dVal > Math.Pow(10, 7))
+                return dVal.ToString("E6");
+
+            return dVal > 0
+                ? $"{val:##,###.####}"
                 : "0";
         }
 

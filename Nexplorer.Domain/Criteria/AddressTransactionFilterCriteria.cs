@@ -33,6 +33,9 @@ namespace Nexplorer.Domain.Criteria
         [JsonProperty("utcTo")]
         public DateTime? UtcTo { get; set; }
 
+        [JsonProperty("grouped")]
+        public bool Grouped { get; set; }
+
         [JsonProperty("orderBy")]
         public OrderTransactionsBy OrderBy { get; set; }
     }

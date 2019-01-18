@@ -62,13 +62,13 @@
                 </div>
             </div>
             <h3>Balance</h3>
-            <p class="val">@Model.Address.Balance.ToCurrencyString() <span style="font-size: 10px;">NXS</span></p>
+            <p class="val">@Model.Address.Balance.ToLocaleString() <span style="font-size: 10px;">NXS</span></p>
             <h3>Fiat Value</h3>
             <p class="val">
                 <currency-helper :currency-index="'@Model.NxsCurrency.Currency.ToString()'" :currency-value="@Model.NxsCurrency.NXSValue"></currency-helper>
             </p>
             <h3>Bitcoin Value</h3>
-            <p class="val">@Model.NxsCurrency.BTCValue.ToCurrencyString() <span class="fa fa-btc fa-inline-lg"></span></p>
+            <p class="val">@Model.NxsCurrency.BTCValue.ToLocaleString() <span class="fa fa-btc fa-inline-lg"></span></p>
         </div>
     </div>
 
@@ -85,17 +85,17 @@
             <div class="row">
                 <div class="col-sm-4">
                     <h3>Received</h3>
-                    <p class="val">@Model.Address.ReceivedCount.ToString("N0")</p>
+                    <p class="val">@Model.Address.ReceivedCount.ToLocaleString()</p>
                     <h3>Sent</h3>
-                    <p class="val">@Model.Address.SentCount.ToString("N0")</p>
+                    <p class="val">@Model.Address.SentCount.ToLocaleString()</p>
                     <h3>Total</h3>
-                    <p class="val">@((Model.Address.ReceivedCount + Model.Address.SentCount).ToString("N0"))</p>
+                    <p class="val">@((Model.Address.ReceivedCount + Model.Address.SentCount).ToLocaleString())</p>
                 </div>
                 <div class="col-sm-8">
                     <h3>Received</h3>
-                    <p class="val">@Model.Address.ReceivedAmount.ToCurrencyString() <span style="font-size: 10px;">NXS</span></p>
+                    <p class="val">@Model.Address.ReceivedAmount.ToLocaleString() <span style="font-size: 10px;">NXS</span></p>
                     <h3>Sent</h3>
-                    <p class="val">@Model.Address.SentAmount.ToCurrencyString(true) <span style="font-size: 10px;">NXS</span></p>
+                    <p class="val">@Model.Address.SentAmount.ToLocaleString() <span style="font-size: 10px;">NXS</span></p>
                 </div>
             </div>
         </div>
@@ -200,7 +200,8 @@
                 <div class="form-group">
                     <h3>ORDER BY </h3>
                     <select asp-items="Html.GetEnumSelectList<OrderTransactionsBy>()" v-on:change="reloadData()" class="form-control" v-model="filterCriteria.orderBy"></select>
-                    <br />
+                </div>
+                <div class="form-group">
                     <h3>TX TYPE </h3>
                     @{
                         var selectList = new List<SelectListItem> { new SelectListItem("All", null) };
@@ -208,6 +209,11 @@
                     }
 
                     <select asp-items="selectList" v-on:change="reloadData()" class="form-control" v-model="filterCriteria.txType"></select>
+                </div>
+                <div class="form-group">
+                    <label class="h3">
+                        <input type="checkbox" class="big-checkbox" v-on:change="reloadData()" v-model="filterCriteria.grouped" /> Grouped 
+                    </label>
                 </div>
             </form>
         </div>

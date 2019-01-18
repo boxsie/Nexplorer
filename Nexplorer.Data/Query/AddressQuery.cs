@@ -398,11 +398,10 @@ namespace Nexplorer.Data.Query
             const string from = @"
                 FROM [dbo].[Transaction] t
                 INNER JOIN [dbo].[TransactionInputOutput] tInOut ON tInOut.[TransactionId] = t.[TransactionId] 
-                INNER JOIN [dbo].[Address] a ON a.[AddressId] = tInOut.[AddressId]
-                WHERE 1 = 1 ";
+                INNER JOIN [dbo].[Address] a ON a.[AddressId] = tInOut.[AddressId] ";
 
             var where = BuildWhereClause(filter, out var param);
-
+           
             var sqlOrderBy = "ORDER BY ";
 
             switch (filter.OrderBy)
@@ -424,39 +423,39 @@ namespace Nexplorer.Data.Query
                     break;
             }
 
-            var sqlAddressTxs = $@"
-                          SELECT
-                          a.[Hash] AS AddressHash,
-                          t.[TransactionId],
-                          t.[Hash] AS TransactionHash,
-                          t.[BlockHeight],
-                          t.[Timestamp],
-                          tInOut.[Amount],
-                          t.[TransactionType],
-                          tInOut.[TransactionInputOutputType]
-                          {from}
-                          {where}                                          
-                          {sqlOrderBy}                           
-                          OFFSET @start ROWS FETCH NEXT @count ROWS ONLY;";
+            var sqlQ = $@"
+                ;WITH cte AS(
+	                SELECT 
+		            t.TransactionId
+	                {from} 
+                    WHERE 1 = 1 
+                    {where} 
+	                {sqlOrderBy}
+	                OFFSET @start ROWS FETCH NEXT @count ROWS ONLY
+                )
 
-            var sqlOppositeItems = @"
-                        SELECT
-                        t.[TransactionId],
-                        a.[Hash],
-                        tInOut.[Amount],
-                        tInOut.[TransactionInputOutputType]
-                        FROM [dbo].[Transaction] t
-                        INNER JOIN [dbo].[TransactionInputOutput] tInOut ON tInOut.[TransactionId] = t.[TransactionId] 
-                        INNER JOIN [dbo].[Address] a ON a.[AddressId] = tInOut.[AddressId]
-                        WHERE t.[TransactionId] IN @txIds";
+                SELECT DISTINCT
+                t.[TransactionId],
+                t.[TransactionType],
+                t.[BlockHeight],
+                t.[Timestamp],
+                t.[Hash] AS TransactionHash,
+                a.[Hash] AS AddressHash,
+                tInOut.[TransactionInputOutputType],
+                tInOut.[Amount] AS Amount 
+                {from}
+                INNER JOIN cte ON cte.[TransactionId] = t.[TransactionId]
+                WHERE 1 = 1 
+                {sqlOrderBy}, tInOut.[TransactionInputOutputType] DESC ";
 
             var sqlC = $@"
-                         SELECT 
-                         COUNT(*)
-                         FROM (SELECT TOP (@maxResults)
-                               1 AS Cnt
-                               {from}
-                               {where}) AS resultCount;";
+                SELECT 
+                COUNT(*)
+                FROM (SELECT TOP (@maxResults)
+                      1 AS Cnt
+                      {from}
+                      WHERE 1 = 1 
+                      {where}) AS resultCount;";
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
@@ -479,44 +478,108 @@ namespace Nexplorer.Data.Query
                 }
                 else
                 {
-                    using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlAddressTxs, sqlC), param))
+                    using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
                     {
-                        results.Results = cacheTxs.Concat(await multi.ReadAsync<AddressTransactionDto>()).ToList();
+                        var r = (await multi.ReadAsync()).ToList();
+
+                        results.Results = cacheTxs
+                            .Concat(r
+                                .Where(x => filter.AddressHashes.Any(y => y == x.AddressHash))
+                                .Select(x => new AddressTransactionDto
+                                {
+                                    AddressHash = x.AddressHash,
+                                    BlockHeight = x.BlockHeight,
+                                    TransactionHash = x.TransactionHash,
+                                    Amount = x.Amount,
+                                    Timestamp = x.Timestamp,
+                                    TransactionType = (TransactionType)x.TransactionType,
+                                    TransactionId = x.TransactionId,
+                                    TransactionInputOutputType = (TransactionInputOutputType)x.TransactionInputOutputType,
+                                    OppositeItems = r
+                                        .Where(y => y.TransactionId == x.TransactionId && y.TransactionInputOutputType != x.TransactionInputOutputType)
+                                        .Select(y => new AddressTransactionItemDto
+                                        {
+                                            AddressHash = y.AddressHash,
+                                            Amount = y.Amount
+                                        })
+                                        .ToList()
+                                }))
+                            .ToList();
                         results.ResultCount = countResults
                             ? cacheTxs.Count + (int)(await multi.ReadAsync<int>()).FirstOrDefault()
                             : -1;
                     }
                 }
 
+                if (filter.Grouped)
+                {
+                    var grouped = results.Results.GroupBy(x => x.TransactionHash);
+
+                    results.Results = grouped.Select(x =>
+                    {
+                        var first = x.First();
+                        var outTx = x.FirstOrDefault(y => y.TransactionInputOutputType == TransactionInputOutputType.Output);
+
+                        switch (first.TransactionType)
+                        {
+                            case TransactionType.Coinstake:
+                                first = outTx ?? throw new NullReferenceException("Coinstake transactions must have an in and out");
+
+                                first.Amount = outTx.Amount - outTx.OppositeItems.Sum(z => z.Amount);
+                                break;
+                            case TransactionType.User:
+                                var inTx = x.FirstOrDefault(y => y.TransactionInputOutputType == TransactionInputOutputType.Input);
+
+                                // This transaction is returning change to the sending address
+                                if (inTx != null && outTx != null)
+                                {
+                                    first = inTx; 
+                                    first.Amount = inTx.Amount - outTx.Amount;
+                                }
+                                else
+                                    first.Amount = x.Sum(y => y.Amount);
+
+                                first.OppositeItems = first.OppositeItems.GroupBy(y => y.AddressHash).Select(y => new AddressTransactionItemDto
+                                {
+                                    AddressHash = y.Key,
+                                    Amount = y.Sum(z => z.Amount)
+                                })
+                                .ToList();
+                                break;
+                        }
+
+                        return first;
+                    })
+                    .ToList();
+                }
+
                 switch (filter.OrderBy)
                 {
                     case OrderTransactionsBy.MostRecent:
-                        results.Results = results.Results.OrderByDescending(x => x.Timestamp).ToList();
+                        results.Results = results.Results
+                            .OrderByDescending(x => x.Timestamp)
+                            .ThenByDescending(x => x.TransactionInputOutputType) 
+                            .Take(count)
+                            .ToList();
                         break;
                     case OrderTransactionsBy.LeastRecent:
-                        results.Results = results.Results.OrderBy(x => x.Timestamp).ToList();
+                        results.Results = results.Results.OrderBy(x => x.Timestamp)
+                            .ThenByDescending(x => x.TransactionInputOutputType)
+                            .Take(count)
+                            .ToList();
                         break;
                     case OrderTransactionsBy.HighestAmount:
-                        results.Results = results.Results.OrderByDescending(x => x.Amount).ToList();
+                        results.Results = results.Results.OrderByDescending(x => x.Amount)
+                            .ThenByDescending(x => x.TransactionInputOutputType)
+                            .Take(count)
+                            .ToList();
                         break;
                     case OrderTransactionsBy.LowestAmount:
-                        results.Results = results.Results.OrderBy(x => x.Amount).ToList();
+                        results.Results = results.Results.OrderBy(x => x.Amount)
+                            .ThenByDescending(x => x.TransactionInputOutputType)
+                            .Take(count)
+                            .ToList();
                         break;
-                }
-                
-                var oppositeItems = (await sqlCon.QueryAsync(sqlOppositeItems, new { txIds = results.Results.Select(x => x.TransactionId).Distinct() })).ToList();
-                
-                foreach (var addressTx in results.Results)
-                {
-                    addressTx.OppositeItems = oppositeItems
-                        .Where(x => x.TransactionId == addressTx.TransactionId &&
-                                    x.TransactionInputOutputType != (int)addressTx.TransactionInputOutputType)
-                        .Select(x => new AddressTransactionItemDto
-                        {
-                            AddressHash = x.Hash,
-                            Amount = x.Amount
-                        })
-                        .ToList();
                 }
 
                 return results;
@@ -525,7 +588,7 @@ namespace Nexplorer.Data.Query
 
         private static IEnumerable<AddressTransactionDto> FilterCacheBlocks(IEnumerable<BlockDto> blocks, AddressTransactionFilterCriteria filter)
         {
-            return blocks.SelectMany(x => x.Transactions
+            var all = blocks.SelectMany(x => x.Transactions
                 .Where(y => (!filter.TxType.HasValue || y.TransactionType == filter.TxType) &&
                             (!filter.MinAmount.HasValue || y.Amount >= filter.MinAmount) &&
                             (!filter.MaxAmount.HasValue || y.Amount <= filter.MaxAmount) &&
@@ -534,7 +597,6 @@ namespace Nexplorer.Data.Query
                             (!filter.UtcFrom.HasValue || y.Timestamp >= filter.UtcFrom) &&
                             (!filter.UtcTo.HasValue || y.Timestamp <= filter.UtcTo))
                 .SelectMany(y => y.Inputs.Concat(y.Outputs)
-                    .Where(z => filter.AddressHashes.Any(xx => xx == z.AddressHash))
                     .Select(z => new AddressTransactionDto
                     {
                         AddressHash = z.AddressHash,
@@ -544,7 +606,26 @@ namespace Nexplorer.Data.Query
                         Amount = z.Amount,
                         Timestamp = y.Timestamp,
                         TransactionType = y.TransactionType
-                    })));
+                    })))
+                .ToList();
+
+            var filtered = all
+                .Where(x => filter.AddressHashes.Any(y => y == x.AddressHash))
+                .ToList();
+
+            foreach (var addressTx in filtered)
+            {
+                addressTx.OppositeItems = all
+                    .Where(x => x.TransactionHash == addressTx.TransactionHash && x.TransactionInputOutputType != addressTx.TransactionInputOutputType)
+                    .Select(x => new AddressTransactionItemDto
+                    {
+                        AddressHash = x.AddressHash,
+                        Amount = x.Amount
+                    })
+                    .ToList();
+            }
+
+            return filtered;
         }
 
         private static string BuildWhereClause(AddressTransactionFilterCriteria filter, out DynamicParameters param)
