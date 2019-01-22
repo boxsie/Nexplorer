@@ -12,14 +12,12 @@ namespace Nexplorer.Web.Hubs
     public class HomeMessenger
     {
         private readonly RedisCommand _redisCommand;
-        private readonly CacheService _cache;
         private readonly IHubContext<HomeHub> _homeContext;
 
-        public HomeMessenger(RedisCommand redisCommand, CacheService cache, IHubContext<HomeHub> homeContext)
+        public HomeMessenger(RedisCommand redisCommand, IHubContext<HomeHub> homeContext)
         {
             _redisCommand = redisCommand;
             _homeContext = homeContext;
-            _cache = cache;
 
             _redisCommand.Subscribe<BlockLiteDto>(Settings.Redis.NewBlockPubSub, SendLatestBlockDataAsync);
             _redisCommand.Subscribe<TransactionLiteDto>(Settings.Redis.NewTransactionPubSub, OnNewTransactionAsync);

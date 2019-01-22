@@ -117,8 +117,6 @@ namespace Nexplorer.Web
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<AddressFavouriteCommand>();
 
-            services.AddSingleton<CacheService>();
-            services.AddTransient<BlockCacheCommand>();
             services.AddTransient<BlockPublishCommand>();
             services.AddScoped<UserService>();
 

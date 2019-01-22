@@ -11,13 +11,11 @@ namespace Nexplorer.Web.Hubs
     {
         private readonly RedisCommand _redisCommand;
         private readonly IHubContext<AddressHub> _addressContext;
-        private readonly CacheService _cache;
 
-        public AddressMessenger(RedisCommand redisCommand, IHubContext<AddressHub> addressContext, CacheService cache)
+        public AddressMessenger(RedisCommand redisCommand, IHubContext<AddressHub> addressContext)
         {
             _redisCommand = redisCommand;
             _addressContext = addressContext;
-            _cache = cache;
 
             _redisCommand.Subscribe<AddressStatDto>(Settings.Redis.AddressStatPubSub, OnStatPublishAsync);
         }

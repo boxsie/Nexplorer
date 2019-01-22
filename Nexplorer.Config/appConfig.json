@@ -3,9 +3,7 @@
     "BulkSaveCount": 1500,
     "BlockRefreshHeight": 100,
     "MaxConfirmations": 50,
-    "BlockCacheCount": 500,
-    "BlockLiteCacheCount": 50,
-    "TransactionLiteCacheCount": 50,
+    "BlockScanDepth": 500,
     "UserSettingsCookieKey": "nexplorerusersettings"
   }
 }

@@ -19,13 +19,11 @@ namespace Nexplorer.Data.Query
     {
         private readonly NexusDb _nexusDb;
         private readonly RedisCommand _redisCommand;
-        private readonly CacheService _cache;
         
-        public AddressQuery(NexusDb nexusDb, RedisCommand redisCommand, CacheService cache)
+        public AddressQuery(NexusDb nexusDb, RedisCommand redisCommand)
         {
             _nexusDb = nexusDb;
             _redisCommand = redisCommand;
-            _cache = cache;
         }
 
         public async Task<AddressDto> GetAddressAsync(string addressHash)
@@ -101,11 +99,7 @@ namespace Nexplorer.Data.Query
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
-                var dbAddress = (await sqlCon.QueryAsync<AddressDto>(sqlQ, new {addressId})).FirstOrDefault();
-
-                return addressHash == null 
-                    ? dbAddress 
-                    : MapCacheAddressToAddress(await _cache.GetAddressAsync(addressHash), dbAddress);
+                return (await sqlCon.QueryAsync<AddressDto>(sqlQ, new {addressId})).FirstOrDefault();
             }
         }
 
@@ -123,11 +117,7 @@ namespace Nexplorer.Data.Query
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
-                var dbAddress = (await sqlCon.QueryAsync<AddressLiteDto>(sqlQ, new { addressId })).FirstOrDefault();
-
-                return addressHash == null 
-                    ? dbAddress 
-                    : MapCacheAddressToAddressLite(await _cache.GetAddressAsync(addressHash), dbAddress);
+                return (await sqlCon.QueryAsync<AddressLiteDto>(sqlQ, new { addressId })).FirstOrDefault();
             }
         }
 
@@ -300,15 +290,7 @@ namespace Nexplorer.Data.Query
                         Balance = (double)((int)x.TransactionInputOutputType == (int)TransactionInputOutputType.Input ? x.Amount : -x.Amount)
                     }).ToList();
                 
-                var cacheBalances = (await _cache.GetAddressTransactions(addressHash))
-                    .Select(x => new
-                    {
-                        x.Timestamp.Date,
-                        Balance = (int)x.TransactionInputOutputType == (int)TransactionInputOutputType.Input ? x.Amount : -x.Amount
-                    }).ToList();
-                
                 var allBalances = dbBalances
-                    .Concat(cacheBalances)
                     .GroupBy(x => x.Date)
                     .Select(x => new AddressBalanceDto
                     {
@@ -322,7 +304,7 @@ namespace Nexplorer.Data.Query
                     .Select(x => x.Balance)
                     .FirstOrDefaultAsync();
 
-                currentBalance = Math.Round(currentBalance + cacheBalances.Sum(x => -x.Balance), 8);
+                currentBalance = Math.Round(currentBalance, 8);
 
                 var finalBalances = new List<AddressBalanceDto>
                 {
@@ -461,54 +443,39 @@ namespace Nexplorer.Data.Query
             {
                 var results = new FilterResult<AddressTransactionDto>();
 
-                var cacheTxs = FilterCacheBlocks(await _cache.GetBlocksAsync(), filter)
-                    .Skip(start)
-                    .ToList();
-
                 param.Add(nameof(count), count);
                 param.Add(nameof(start), start);
                 param.Add(nameof(maxResults), maxResults ?? int.MaxValue);
 
-                if (cacheTxs.Count >= count)
+                using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
                 {
-                    results.Results = cacheTxs.Take(count).ToList();
-                    results.ResultCount = countResults
-                        ? cacheTxs.Count + (int)(await sqlCon.QueryAsync<int>(sqlC, param)).FirstOrDefault()
-                        : -1;
-                }
-                else
-                {
-                    using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
-                    {
-                        var r = (await multi.ReadAsync()).ToList();
+                    var r = (await multi.ReadAsync()).ToList();
 
-                        results.Results = cacheTxs
-                            .Concat(r
-                                .Where(x => filter.AddressHashes.Any(y => y == x.AddressHash))
-                                .Select(x => new AddressTransactionDto
+                    results.Results = r
+                        .Where(x => filter.AddressHashes.Any(y => y == x.AddressHash))
+                        .Select(x => new AddressTransactionDto
+                        {
+                            AddressHash = x.AddressHash,
+                            BlockHeight = x.BlockHeight,
+                            TransactionHash = x.TransactionHash,
+                            Amount = x.Amount,
+                            Timestamp = x.Timestamp,
+                            TransactionType = (TransactionType)x.TransactionType,
+                            TransactionId = x.TransactionId,
+                            TransactionInputOutputType = (TransactionInputOutputType)x.TransactionInputOutputType,
+                            OppositeItems = r
+                                .Where(y => y.TransactionId == x.TransactionId && y.TransactionInputOutputType != x.TransactionInputOutputType)
+                                .Select(y => new AddressTransactionItemDto
                                 {
-                                    AddressHash = x.AddressHash,
-                                    BlockHeight = x.BlockHeight,
-                                    TransactionHash = x.TransactionHash,
-                                    Amount = x.Amount,
-                                    Timestamp = x.Timestamp,
-                                    TransactionType = (TransactionType)x.TransactionType,
-                                    TransactionId = x.TransactionId,
-                                    TransactionInputOutputType = (TransactionInputOutputType)x.TransactionInputOutputType,
-                                    OppositeItems = r
-                                        .Where(y => y.TransactionId == x.TransactionId && y.TransactionInputOutputType != x.TransactionInputOutputType)
-                                        .Select(y => new AddressTransactionItemDto
-                                        {
-                                            AddressHash = y.AddressHash,
-                                            Amount = y.Amount
-                                        })
-                                        .ToList()
-                                }))
-                            .ToList();
-                        results.ResultCount = countResults
-                            ? cacheTxs.Count + (int)(await multi.ReadAsync<int>()).FirstOrDefault()
-                            : -1;
-                    }
+                                    AddressHash = y.AddressHash,
+                                    Amount = y.Amount
+                                })
+                                .ToList()
+                        })
+                        .ToList();
+                    results.ResultCount = countResults
+                        ? (int)(await multi.ReadAsync<int>()).FirstOrDefault()
+                        : -1;
                 }
 
                 if (filter.Grouped)

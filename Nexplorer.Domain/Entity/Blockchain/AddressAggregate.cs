@@ -60,5 +60,26 @@ namespace Nexplorer.Domain.Entity.Blockchain
 
             UpdatedOn = DateTime.Now;
         }
+
+        public void RevertAggregateProperties(TransactionInputOutputType previousTxIoType, double previousAmount, int previousBlockHeight)
+        {
+            switch (previousTxIoType)
+            {
+                case TransactionInputOutputType.Input:
+                    SentAmount = Math.Round(SentAmount - previousAmount, 8);
+                    SentCount--;
+                    break;
+                case TransactionInputOutputType.Output:
+                    ReceivedAmount = Math.Round(ReceivedAmount - previousAmount, 8);
+                    ReceivedCount--;
+                    break;
+            }
+
+            Balance = Math.Round(ReceivedAmount - SentAmount, 8);
+
+            LastBlockHeight = previousBlockHeight;
+
+            UpdatedOn = DateTime.Now;
+        }
     }
 }

@@ -38,7 +38,7 @@ namespace Nexplorer.Web.Controllers
             if (block == null)
                 return RedirectToAction("index");
 
-            var channelHeight = await _blockQuery.GetChannelHeight((BlockChannels)block.Channel, block.Height);
+            var channelHeight = await _blockQuery.GetChannelHeightAsync((BlockChannels)block.Channel, block.Height);
             var confirmations = await _blockQuery.GetLastHeightAsync() - (block.Height - 1);
 
             var viewModel = new BlockViewModel(block, channelHeight, confirmations);

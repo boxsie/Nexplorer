@@ -12,7 +12,7 @@ using Nexplorer.Domain.Enums;
 
 namespace Nexplorer.Data.Command
 {
-    public class AddressAggregator : IDisposable
+    public class AddressAggregatorCommand
     {
         private const string BlockTxSelectSql = @"
             SELECT
@@ -55,12 +55,52 @@ namespace Nexplorer.Data.Command
                 [UpdatedOn] = @UpdatedOn
             WHERE [AddressId] = @AddressId";
 
+        private const string AddressAggregateDeleteSql = @"
+            DELETE FROM [dbo].[AddressAggregate] 
+            WHERE [dbo].[AddressAggregate].[AddressId] = @AddressId";
+
+        private const string PreviousLastBlockSql = @"
+            SELECT
+                MAX(b.[Height])
+            FROM [dbo].[TransactionInputOutput] txInOut
+            INNER JOIN [dbo].[Address] a ON a.AddressId = txInOut.AddressId
+            INNER JOIN [dbo].[Transaction] t ON t.TransactionId = txInOut.TransactionId
+            INNER JOIN [dbo].[Block] b ON b.Height = t.BlockHeight
+            WHERE a.[AddressId] = @AddressId";
+
         private readonly Dictionary<int, AddressAggregate> _addressAggregates;
 
-        public AddressAggregator()
+        public AddressAggregatorCommand()
         {
             _addressAggregates = new Dictionary<int, AddressAggregate>();
+        }
 
+        public Task AggregateAddressesAsync(BlockDto block)
+        {
+            return AggregateAddressesAsync(new List<BlockDto> {block});
+        }
+
+        public async Task AggregateAddressesAsync(IEnumerable<BlockDto> blocks)
+        {
+            _addressAggregates.Clear();
+
+            using (var con = new SqlConnection(Settings.Connection.NexusDb))
+            {
+                await con.OpenAsync();
+
+                using (var trans = con.BeginTransaction())
+                {
+                    foreach (var block in blocks)
+                    {
+                        var txIos = block.Transactions.SelectMany(x => x.Inputs.Concat(x.Outputs));
+
+                        foreach (var txIo in txIos)
+                            await UpdateOrInsertAggregateAsync(con, trans, txIo, block.Height);
+                    }
+
+                    trans.Commit();
+                }
+            }
         }
 
         public async Task AggregateAddresses(int startHeight, int count, bool consoleOutput = false)
@@ -73,10 +113,10 @@ namespace Nexplorer.Data.Command
                 {
                     for (var i = startHeight; i < startHeight + count; i++)
                     {
-                        var txIos = await con.QueryAsync<TransactionInputOutput>(BlockTxSelectSql, new {BlockHeight = i}, trans);
+                        var txIos = await con.QueryAsync<TransactionInputOutput>(BlockTxSelectSql, new { BlockHeight = i }, trans);
 
                         foreach (var txIo in txIos)
-                            await UpdateOrInsertAggregate(con, trans, txIo, i);
+                            await UpdateOrInsertAggregateAsync(con, trans, new TransactionInputOutputDto(txIo), i);
 
                         if (consoleOutput)
                             LogProgress((i - startHeight) + 1, count);
@@ -87,7 +127,7 @@ namespace Nexplorer.Data.Command
             }
         }
 
-        public async Task AggregateAddresses(IEnumerable<Block> blocks)
+        public async Task RevertAggregate(BlockDto block)
         {
             using (var con = new SqlConnection(Settings.Connection.NexusDb))
             {
@@ -95,12 +135,23 @@ namespace Nexplorer.Data.Command
 
                 using (var trans = con.BeginTransaction())
                 {
-                    foreach (var block in blocks)
-                    {
-                        var txIos = block.Transactions.SelectMany(x => x.InputOutputs);
+                    var txIos = block.Transactions.SelectMany(x => x.Inputs.Concat(x.Outputs));
 
-                        foreach (var txIo in txIos)
-                            await UpdateOrInsertAggregate(con, trans, txIo, block.Height);
+                    foreach (var txIo in txIos)
+                    {
+                        var response = (await con.QueryAsync<AddressAggregate>(AddressAggregateSelectSql, new { txIo.AddressId }, trans)).FirstOrDefault();
+                        
+                        if (response == null)
+                            continue;
+
+                        var previousLastHeight = (await con.QueryAsync<int>(PreviousLastBlockSql, new { txIo.AddressId }, trans)).FirstOrDefault();
+
+                        response.RevertAggregateProperties(txIo.TransactionInputOutputType, txIo.Amount, previousLastHeight);
+
+                        if (response.SentCount - response.ReceivedCount == 0)
+                            await con.ExecuteAsync(AddressAggregateDeleteSql, new { txIo.AddressId });
+                        else
+                            await UpdateOrInsertAggregateAsync(con, trans, response, false);
                     }
 
                     trans.Commit();
@@ -108,7 +159,7 @@ namespace Nexplorer.Data.Command
             }
         }
 
-        private async Task UpdateOrInsertAggregate(IDbConnection sqlCon, IDbTransaction trans, TransactionInputOutput txIo, int blockHeight)
+        private async Task UpdateOrInsertAggregateAsync(IDbConnection sqlCon, IDbTransaction trans, TransactionInputOutputDto txIo, int blockHeight)
         {
             AddressAggregate addAgg;
 
@@ -118,7 +169,7 @@ namespace Nexplorer.Data.Command
 
                 addAgg.ModifyAggregateProperties(txIo.TransactionInputOutputType, txIo.Amount, blockHeight);
 
-                await UpdateOrInsertAggregate(sqlCon, trans, addAgg, false);
+                await UpdateOrInsertAggregateAsync(sqlCon, trans, addAgg, false);
             }
             else
             {
@@ -132,13 +183,13 @@ namespace Nexplorer.Data.Command
 
                 addAgg.ModifyAggregateProperties(txIo.TransactionInputOutputType, txIo.Amount, blockHeight);
 
-                await UpdateOrInsertAggregate(sqlCon, trans, addAgg, isNew);
+                await UpdateOrInsertAggregateAsync(sqlCon, trans, addAgg, isNew);
 
                 _addressAggregates.Add(addAgg.AddressId, addAgg);
             }
         }
 
-        private static async Task UpdateOrInsertAggregate(IDbConnection sqlCon, IDbTransaction trans, AddressAggregate addAgg, bool isInsert)
+        private static async Task UpdateOrInsertAggregateAsync(IDbConnection sqlCon, IDbTransaction trans, AddressAggregate addAgg, bool isInsert)
         {
             await sqlCon.ExecuteAsync(isInsert ? AddressAggregateInsertSql : AddressAggregateUpdateSql, new
             {
@@ -168,11 +219,6 @@ namespace Nexplorer.Data.Command
             }
 
             Console.Write($"\rSaving address aggregate updates to database... [{bar}] {pct:N2}%   ");
-        }
-
-        public void Dispose()
-        {
-            _addressAggregates.Clear();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
@@ -8,6 +9,7 @@ using Nexplorer.Core;
 using Nexplorer.Data.Command;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Dtos;
+using Nexplorer.Domain.Entity.Blockchain;
 using Nexplorer.Jobs.Service;
 
 namespace Nexplorer.Jobs
@@ -16,80 +18,79 @@ namespace Nexplorer.Jobs
     {
         private readonly NexusQuery _nexusQuery;
         private readonly BlockQuery _blockQuery;
+        private readonly BlockPublishCommand _blockPublish;
+        private readonly BlockInsertCommand _blockInsert;
+        private readonly AddressAggregatorCommand _addressAggregator;
 
-        public BlockSyncJob(ILogger<BlockSyncJob> logger, NexusQuery nexusQuery, BlockQuery blockQuery, RedisCommand redisCommand)
-            : base(60, logger)
+        public BlockSyncJob(ILogger<BlockSyncJob> logger, NexusQuery nexusQuery, BlockQuery blockQuery, BlockPublishCommand blockPublish,
+            BlockInsertCommand blockInsert, AddressAggregatorCommand addressAggregator)
+            : base(3, logger)
         {
             _nexusQuery = nexusQuery;
             _blockQuery = blockQuery;
+            _blockPublish = blockPublish;
+            _blockInsert = blockInsert;
+            _addressAggregator = addressAggregator;
         }
 
         protected override async Task ExecuteAsync()
         {
-            var lastSyncedHeight = await _blockQuery.GetLastSyncedHeightAsync();
-            var lastSyncedBlock = await _blockQuery.GetBlockAsync(lastSyncedHeight, false);
-            var lastCachedHeight = await _blockQuery.GetLastHeightAsync();
-            var syncDelta = (lastCachedHeight - lastSyncedHeight) - Settings.App.BlockCacheCount;
+            var lastHeight = await _blockQuery.GetLastHeightAsync();
+            var nextBlock = await GetBlockAsync(lastHeight + 1);
 
-            if (syncDelta <= 0)
+            if (nextBlock == null)
             {
                 Logger.LogInformation("Block sync found no blocks to sync.");
                 return;
             }
 
-            var saveCount = syncDelta > Settings.App.BulkSaveCount 
-                ? Settings.App.BulkSaveCount 
-                : syncDelta;
-
-            var newBlockDtos = new List<BlockDto>();
-            var orphanBlocks = new List<BlockDto>();
-            
-            var nextBlock = await _nexusQuery.GetBlockAsync(lastSyncedBlock.Hash, false);
-            var nextBlockHash = nextBlock.NextBlockHash;
-
-            for (var i = 0; i < saveCount; i++)
+            while (nextBlock != null)
             {
-                if (!await _nexusQuery.IsBlockHashOnChain(nextBlockHash))
-                {
-                    var msg = $"Orphan block found at height {nextBlock.Height + 1} with hash {nextBlockHash}";
+                Logger.LogInformation($"Found new block {nextBlock.Height}");
 
-                    Logger.LogCritical(msg);
+                await AddBlockAsync(nextBlock);
 
-                    throw new Exception(msg);
-                }
+                await AggregateAddressesAsync(nextBlock);
 
-                nextBlock = await _nexusQuery.GetBlockAsync(nextBlockHash, true);
+                await _blockPublish.PublishAsync(nextBlock);
 
-                newBlockDtos.Add(nextBlock);
-
-                nextBlockHash = nextBlock.NextBlockHash;
+                nextBlock = await GetBlockAsync(nextBlock.Height + 1);
             }
+        }
 
-            Logger.LogInformation("===== SYNCING BLOCKS =====");
-            Logger.LogInformation($"Syncing {saveCount} blocks from {lastSyncedHeight + 1} - {lastSyncedHeight + saveCount}...");
+        private Task<BlockDto> GetBlockAsync(int height)
+        {
+            return _nexusQuery.GetBlockAsync(height, true);
+        }
 
+        private async Task AddBlockAsync(BlockDto blockDto)
+        {
             var stopwatch = new Stopwatch();
+
             stopwatch.Start();
 
-            var newBlocks = await newBlockDtos.InsertBlocksAsync();
+            var block = (await _blockInsert.InsertBlockAsync(blockDto)).FirstOrDefault();
+
+            if (block == null)
+                throw new NullReferenceException("Something failed inserting the new block");
 
             stopwatch.Stop();
-            Logger.LogInformation($"{saveCount} blocks synced in {stopwatch.Elapsed:g}");
+            Logger.LogInformation($"Block {block.Height} synced in {stopwatch.Elapsed:g}");
+        }
 
-            Logger.LogInformation($"Syncing addresses from new blocks...");
-            stopwatch.Restart();
+        private async Task AggregateAddressesAsync(BlockDto blockDto)
+        {
+            var stopwatch = new Stopwatch();
 
-            using (var addAgg = new AddressAggregator())
-                await addAgg.AggregateAddresses(newBlocks);
+            Logger.LogInformation($"Syncing address from block {blockDto.Height}...");
+
+            stopwatch.Start();
+
+            await _addressAggregator.AggregateAddressesAsync(blockDto);
 
             stopwatch.Stop();
-            Logger.LogInformation($"Addresses synced in {stopwatch.Elapsed:g}");
 
-            //await _nexusDb.OrphanBlocks.AddRangeAsync(syncBlocks
-            //    .Where(x => newBlocks.All(y => y.Hash != x.Hash))
-            //    .Select(x => _mapper.Map<OrphanBlock>(x)));
-
-            //await _nexusDb.SaveChangesAsync();
+            Logger.LogInformation($"Address synced in {stopwatch.Elapsed:g}");
         }
     }
 }

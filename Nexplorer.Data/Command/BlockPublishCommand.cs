@@ -19,19 +19,10 @@ namespace Nexplorer.Data.Command
             _redisCommand = redisCommand;
         }
 
-        public async Task PublishAsync(int blockHeight)
+        public async Task PublishAsync(BlockDto block)
         {
-            if (blockHeight == 0)
-                return;
-
-            var block = await _redisCommand.GetAsync<BlockDto>(Settings.Redis.BuildCachedBlockKey(blockHeight));
-
             if (block == null)
-            {
-                _logger.LogWarning($"Block {blockHeight} is missing from the cache");
-
-                throw new NullReferenceException($"Block {blockHeight} is missing from the cache");
-            }
+                return;
 
             var blockLite = new BlockLiteDto(block);
 

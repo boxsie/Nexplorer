@@ -20,30 +20,18 @@ namespace Nexplorer.Data.Query
 {
     public class BlockQuery
     {
-        private readonly CacheService _cache;
         private readonly RedisCommand _redisCommand;
         private readonly NexusDb _nexusDb;
         private readonly IMapper _mapper;
 
-        public BlockQuery(CacheService cache, RedisCommand redisCommand, NexusDb nexusDb, IMapper mapper)
+        public BlockQuery(RedisCommand redisCommand, NexusDb nexusDb, IMapper mapper)
         {
-            _cache = cache;
             _redisCommand = redisCommand;
             _nexusDb = nexusDb;
             _mapper = mapper;
         }
 
         public async Task<int> GetLastHeightAsync()
-        {
-            var cacheHeight = await _cache.GetCacheHeightAsync();
-
-            if (cacheHeight > 0)
-                return cacheHeight;
-
-            return await GetLastSyncedHeightAsync();
-        }
-
-        public async Task<int> GetLastSyncedHeightAsync()
         {
             const string sqlQ = @"SELECT MAX(b.[Height]) FROM [dbo].[Block] b";
 
@@ -57,34 +45,20 @@ namespace Nexplorer.Data.Query
             }
         }
 
-        public async Task<int> GetChannelHeight(BlockChannels channel, int height = 0)
+        public async Task<int> GetChannelHeightAsync(BlockChannels channel, int height = 0)
         {
-            var count = await  _cache.GetChannelHeightAsync(channel, height);
-            
-            count += height == 0 
-                ? await _nexusDb.Blocks.CountAsync(x => x.Channel == (int)channel) 
+            return height == 0
+                ? await _nexusDb.Blocks.CountAsync(x => x.Channel == (int)channel)
                 : await _nexusDb.Blocks.CountAsync(x => x.Channel == (int)channel && x.Height <= height);
-
-            return count;
         }
 
         public async Task<BlockDto> GetBlockAsync(int height, bool includeTransactions)
         {
-            var cacheBlock = await _cache.GetBlockAsync(height);
-
-            if (cacheBlock != null)
-                return cacheBlock;
-
             return await GetBlockAsync(height, null, includeTransactions);
         }
 
         public async Task<BlockDto> GetBlockAsync(string hash, bool includeTransactions)
         {
-            var cacheBlock = await _cache.GetBlockAsync(hash);
-
-            if (cacheBlock != null)
-                return cacheBlock;
-
             return await GetBlockAsync(0, hash, includeTransactions);
         }
 
@@ -217,34 +191,19 @@ namespace Nexplorer.Data.Query
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
                 var results = new FilterResult<BlockLiteDto>();
-
-                var cacheBlocks = FilterCacheBlocks(await _cache.GetBlocksAsync(), filter)
-                    .Skip(start)
-                    .ToList();
                 
                 param.Add(nameof(count), count);
                 param.Add(nameof(start), start);
                 param.Add(nameof(maxResults), maxResults ?? int.MaxValue);
 
-                if (cacheBlocks.Count >= count)
+                using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
                 {
-                    results.Results = cacheBlocks.Take(count).ToList();
+                    var dbBlocks = await multi.ReadAsync<BlockLiteDto>();
 
+                    results.Results = dbBlocks.ToList();
                     results.ResultCount = countResults
-                        ? cacheBlocks.Count + (int)(await sqlCon.QueryAsync<int>(sqlC, param)).FirstOrDefault()
+                        ? (int)(await multi.ReadAsync<int>()).FirstOrDefault()
                         : -1;
-                }
-                else
-                {
-                    using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
-                    {
-                        var dbBlocks = await multi.ReadAsync<BlockLiteDto>();
-
-                        results.Results = cacheBlocks.Concat(dbBlocks).ToList();
-                        results.ResultCount = countResults
-                            ? cacheBlocks.Count + (int)(await multi.ReadAsync<int>()).FirstOrDefault()
-                            : -1;
-                    }
                 }
 
                 switch (filter.OrderBy)
@@ -273,11 +232,6 @@ namespace Nexplorer.Data.Query
 
         public async Task<string> GetBlockHashAsync(int height)
         {
-            var cacheBlockHash = await _cache.GetBlockHashAsync(height);
-
-            if (cacheBlockHash != null)
-                return cacheBlockHash;
-            
             return await _nexusDb.Blocks.Where(x => x.Height == height)
                 .Select(x => x.Hash)
                 .FirstOrDefaultAsync();
@@ -293,6 +247,13 @@ namespace Nexplorer.Data.Query
         public async Task<BlockDto> GetLastBlockAsync()
         {
             return await GetBlockAsync(await GetLastHeightAsync(), true);
+        }
+
+        public async Task<BlockDto> GetLastBlock(BlockChannels channel)
+        {
+            return await GetBlockAsync(await _nexusDb.Blocks
+                .Where(x => x.Channel == (int)channel)
+                .MaxAsync(x => x.Height), false);
         }
 
         public async Task<Transaction> GetLastTransaction()

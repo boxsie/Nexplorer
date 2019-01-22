@@ -13,12 +13,10 @@ namespace Nexplorer.Web.Hubs
         public readonly List<string> RecentSyncOutputs;
 
         private readonly IHubContext<AdminHub> _adminContext;
-        private readonly CacheService _cache;
 
-        public AdminMessenger(RedisCommand redisCommand, IHubContext<AdminHub> adminContext, CacheService cache)
+        public AdminMessenger(RedisCommand redisCommand, IHubContext<AdminHub> adminContext)
         {
             _adminContext = adminContext;
-            _cache = cache;
 
             redisCommand.Subscribe<string>(Settings.Redis.SyncOutputPubSub, OnSyncOutputAsync);
 

@@ -17,15 +17,13 @@ namespace Nexplorer.Sync
         private readonly NexusQuery _nexusQuery;
         private readonly BlockSyncCatchup _blockCatchup;
         private readonly AddressAggregateCatchup _addressCatchup;
-        private readonly CacheService _cache;
         private readonly RedisCommand _redisCommand;
 
-        public App(NexusQuery nexusQuery, BlockSyncCatchup blockCatchup, AddressAggregateCatchup addressCatchup, CacheService cache, RedisCommand redisCommand)
+        public App(NexusQuery nexusQuery, BlockSyncCatchup blockCatchup, AddressAggregateCatchup addressCatchup, RedisCommand redisCommand)
         {
             _nexusQuery = nexusQuery;
             _blockCatchup = blockCatchup;
             _addressCatchup = addressCatchup;
-            _cache = cache;
             _redisCommand = redisCommand;
         }
 
@@ -35,9 +33,7 @@ namespace Nexplorer.Sync
             await _addressCatchup.CatchupAsync();
 
             await _redisCommand.SetAsync(Settings.Redis.NodeVersion, (await _nexusQuery.GetInfoAsync()).Version);
-
-            await _cache.CreateAsync();
-
+            
             await Task.WhenAll(
                 JobService.StartJob(typeof(BlockScanJob)),
                 JobService.StartJob(typeof(TimestampSyncJob)),
@@ -46,7 +42,6 @@ namespace Nexplorer.Sync
                 JobService.StartJob(typeof(BlockSyncJob), 20),
                 JobService.StartJob(typeof(NexusAddressCacheJob), 20),
                 JobService.StartJob(typeof(TrustAddressCacheJob), 40),
-                JobService.StartJob(typeof(CacheCleanupJob), 40),
                 JobService.StartJob(typeof(MiningStatsJob), 40),
                 JobService.StartJob(typeof(AddressStatsJob), 60));
         }

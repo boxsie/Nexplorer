@@ -23,23 +23,16 @@ namespace Nexplorer.Data.Query
         private readonly NexusDb _nexusDb;
         private readonly IMapper _mapper;
         private readonly RedisCommand _redisCommand;
-        private readonly CacheService _cache;
         
-        public TransactionQuery(NexusDb nexusDb, IMapper mapper, RedisCommand redisCommand, CacheService cache)
+        public TransactionQuery(NexusDb nexusDb, IMapper mapper, RedisCommand redisCommand)
         {
             _nexusDb = nexusDb;
             _mapper = mapper;
             _redisCommand = redisCommand;
-            _cache = cache;
         }
 
         public async Task<TransactionDto> GetTransaction(string txHash)
         {
-            var cacheTx = await _cache.GetTransactionAsync(txHash);
-
-            if (cacheTx != null)
-                return cacheTx;
-            
             var tx = await _nexusDb.Transactions
                 .Where(x => x.Hash == txHash)
                 .Include(x => x.InputOutputs)
@@ -109,31 +102,17 @@ namespace Nexplorer.Data.Query
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
                 var results = new FilterResult<TransactionLiteDto>();
-
-                var cacheTxs = FilterCacheBlocks(await _cache.GetBlocksAsync(), filter)
-                    .Skip(start)
-                    .ToList();
                 
                 param.Add(nameof(count), count);
                 param.Add(nameof(start), start);
                 param.Add(nameof(maxResults), maxResults ?? int.MaxValue);
 
-                if (cacheTxs.Count >= count)
+                using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
                 {
-                    results.Results = cacheTxs.Take(count).ToList();
+                    results.Results = (await multi.ReadAsync<TransactionLiteDto>()).ToList();
                     results.ResultCount = countResults
-                        ? cacheTxs.Count + (int) (await sqlCon.QueryAsync<int>(sqlC, param)).FirstOrDefault()
+                        ? (int)(await multi.ReadAsync<int>()).FirstOrDefault()
                         : -1;
-                }
-                else
-                {
-                    using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
-                    {
-                        results.Results = cacheTxs.Concat(await multi.ReadAsync<TransactionLiteDto>()).ToList();
-                        results.ResultCount = countResults
-                            ? cacheTxs.Count + (int) (await multi.ReadAsync<int>()).FirstOrDefault()
-                            : -1;
-                    }
                 }
 
                 switch (filter.OrderBy)

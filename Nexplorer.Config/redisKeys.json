@@ -1,11 +1,5 @@
 ﻿{
   "RedisKeys": {
-    "CachedHeight": "chain:blocks:cachedheight",
-    "SyncedHeight": "chain:blocks:syncedheight",
-    "BlockCache": "blocks:cache",
-    "BlockLiteCache": "blocks:litecache",
-    "TransactionLiteCache": "transactions:litecache",
-    "AddressCache": "addresses:cache",
     "TrustKeyCache": "addresses:trustkeycache",
     "NexusAddressCache": "addresses:nexusaddresscache",
     "TrustKeyAddressCache": "addresses:trustkeyaddresscache",

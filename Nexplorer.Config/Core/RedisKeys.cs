@@ -2,14 +2,7 @@ namespace Nexplorer.Config.Core
 {
     public class RedisKeys
     {
-        public string CachedHeight { get; set; }
-        public string SyncedHeight { get; set; }
-
         // Cache
-        public string BlockCache { get; set; }
-        public string BlockLiteCache { get; set; }
-        public string TransactionLiteCache { get; set; }
-        public string AddressCache { get; set; }
         public string TrustKeyCache { get; set; }
         public string TrustKeyAddressCache { get; set; }
         public string NexusAddressCache { get; set; }
@@ -39,15 +32,5 @@ namespace Nexplorer.Config.Core
 
         public string NodeVersion { get; set; }
         public string SyncOutputPubSub { get; set; }
-
-        public string BuildCachedBlockKey(int height)
-        {
-            return $"{BlockCache}:{height}";
-        }
-
-        public string BuildCachedAddressKey(string hash)
-        {
-            return $"{AddressCache}:{hash}";
-        }
     }
 }

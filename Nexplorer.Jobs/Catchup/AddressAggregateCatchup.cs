@@ -15,58 +15,57 @@ namespace Nexplorer.Jobs.Catchup
     {
         private readonly ILogger<AddressAggregateCatchup> _logger;
         private readonly BlockQuery _blockQuery;
+        private readonly AddressAggregatorCommand _addressAggregator;
 
         private Stopwatch _stopwatch;
         private double _totalSeconds;
         private int _iterationCount;
 
-        public AddressAggregateCatchup(ILogger<AddressAggregateCatchup> logger, BlockQuery blockQuery)
+        public AddressAggregateCatchup(ILogger<AddressAggregateCatchup> logger, BlockQuery blockQuery, AddressAggregatorCommand addressAggregator)
         {
             _logger = logger;
             _blockQuery = blockQuery;
+            _addressAggregator = addressAggregator;
         }
 
         public async Task CatchupAsync()
         {
             var lastBlockHeight = await GetLastBlockHeight();
 
-            var dbHeight = await _blockQuery.GetLastSyncedHeightAsync();
+            var dbHeight = await _blockQuery.GetLastHeightAsync();
 
             _stopwatch = new Stopwatch();
             _totalSeconds = 0;
             _iterationCount = 0;
 
-            using (var addAgg = new AddressAggregator())
-            { 
-                while (lastBlockHeight < dbHeight)
-                {
-                    var nextBlockHeight = lastBlockHeight + 1;
+            while (lastBlockHeight < dbHeight)
+            {
+                var nextBlockHeight = lastBlockHeight + 1;
 
-                    var bulkSaveCount = Settings.App.BulkSaveCount < (dbHeight - lastBlockHeight)
-                        ? Settings.App.BulkSaveCount
-                        : (dbHeight - lastBlockHeight);
+                var bulkSaveCount = Settings.App.BulkSaveCount < (dbHeight - lastBlockHeight)
+                    ? Settings.App.BulkSaveCount
+                    : (dbHeight - lastBlockHeight);
 
-                    var lastHeight = dbHeight - nextBlockHeight > bulkSaveCount
-                        ? nextBlockHeight + bulkSaveCount
-                        : dbHeight;
+                var lastHeight = dbHeight - nextBlockHeight > bulkSaveCount
+                    ? nextBlockHeight + bulkSaveCount
+                    : dbHeight;
 
-                    Console.WriteLine();
+                Console.WriteLine();
 
-                    _logger.LogInformation($"Adding address aggregate data from block {nextBlockHeight} -> {lastHeight - 1}");
+                _logger.LogInformation($"Adding address aggregate data from block {nextBlockHeight} -> {lastHeight - 1}");
 
-                    _stopwatch.Restart();
+                _stopwatch.Restart();
 
-                    Console.WriteLine($"Aggregating block addresses... {LogProgress(lastBlockHeight, dbHeight, out var blockPct)} {blockPct:N4}% ({lastBlockHeight:N0}/{dbHeight:N0})");
+                Console.WriteLine($"Aggregating block addresses... {LogProgress(lastBlockHeight, dbHeight, out var blockPct)} {blockPct:N4}% ({lastBlockHeight:N0}/{dbHeight:N0})");
 
-                    await addAgg.AggregateAddresses(nextBlockHeight, bulkSaveCount, true);
+                await _addressAggregator.AggregateAddresses(nextBlockHeight, bulkSaveCount, true);
 
-                    lastBlockHeight = await GetLastBlockHeight();
+                lastBlockHeight = await GetLastBlockHeight();
 
-                    LogTimeTaken(dbHeight - nextBlockHeight, _stopwatch.Elapsed);
+                LogTimeTaken(dbHeight - nextBlockHeight, _stopwatch.Elapsed);
 #if DEBUG
-                    await Task.Delay(100);
+                await Task.Delay(100);
 #endif
-                }
             }
         }
 

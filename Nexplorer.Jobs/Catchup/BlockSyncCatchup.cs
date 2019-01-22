@@ -19,6 +19,7 @@ namespace Nexplorer.Jobs.Catchup
         private readonly BlockQuery _blockQuery;
         private readonly ILogger<BlockSyncCatchup> _logger;
         private readonly RedisCommand _redisCommand;
+        private readonly BlockInsertCommand _blockInsert;
         private readonly CancellationTokenSource _cancelBlockStream;
 
         private Stopwatch _stopwatch;
@@ -28,19 +29,21 @@ namespace Nexplorer.Jobs.Catchup
         private int _streamCount;
         private int _nexusHeight;
 
-        public BlockSyncCatchup(NexusQuery nexusQuery, IServiceProvider serviceProvider, BlockQuery blockQuery, ILogger<BlockSyncCatchup> logger, RedisCommand redisCommand)
+        public BlockSyncCatchup(NexusQuery nexusQuery, IServiceProvider serviceProvider, BlockQuery blockQuery, 
+            ILogger<BlockSyncCatchup> logger, RedisCommand redisCommand, BlockInsertCommand blockInsert)
         {
             _nexusQuery = nexusQuery;
             _serviceProvider = serviceProvider;
             _blockQuery = blockQuery;
             _logger = logger;
             _redisCommand = redisCommand;
+            _blockInsert = blockInsert;
             _cancelBlockStream = new CancellationTokenSource();
         }
 
         public async Task CatchupAsync()
         {
-            var syncedHeight = await _blockQuery.GetLastSyncedHeightAsync();
+            var syncedHeight = await _blockQuery.GetLastHeightAsync();
             _nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
 
             while (_nexusHeight == 0)
@@ -67,16 +70,13 @@ namespace Nexplorer.Jobs.Catchup
             _totalSeconds = 0;
             _iterationCount = 0;
 
-            while (syncedHeight + Settings.App.BlockCacheCount < _nexusHeight)
+            while (syncedHeight < _nexusHeight)
             {
                 var syncDelta = _nexusHeight - syncedHeight;
 
                 Console.WriteLine($"\nSync is {syncDelta:N0} blocks behind Nexus");
                 
-                var saveCount = Settings.App.BulkSaveCount;
-
-                if (syncDelta - Settings.App.BulkSaveCount < Settings.App.BlockCacheCount)
-                    saveCount = Settings.App.BulkSaveCount - (Settings.App.BlockCacheCount - (syncDelta - Settings.App.BulkSaveCount));
+                var saveCount = syncDelta < Settings.App.BulkSaveCount ? syncDelta : Settings.App.BulkSaveCount;
                 
                 _stopwatch.Start();
 
@@ -85,7 +85,7 @@ namespace Nexplorer.Jobs.Catchup
                 _stopwatch.Stop();
 
                 _nexusHeight = await _nexusQuery.GetBlockchainHeightAsync();
-                syncedHeight = await _blockQuery.GetLastSyncedHeightAsync();
+                syncedHeight = await _blockQuery.GetLastHeightAsync();
 
                 LogTimeTaken(syncDelta, _stopwatch.Elapsed);
 
@@ -123,7 +123,7 @@ namespace Nexplorer.Jobs.Catchup
 
             Console.WriteLine("Sync complete. Performing sync save...");
 
-            await nexusBlocks.InsertBlocksAsync();
+            await _blockInsert.InsertBlocksAsync(nexusBlocks);
 
             foreach (var nexusBlock in nexusBlocks)
                 await _redisCommand.DeleteAsync(CreateStreamKey(nexusBlock.Height));

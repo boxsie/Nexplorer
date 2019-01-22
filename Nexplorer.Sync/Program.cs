@@ -94,17 +94,17 @@ namespace Nexplorer.Sync
 
             services.AddTransient<RedisTarget>();
             
-            services.AddSingleton<CacheService>();
             services.AddSingleton<GeolocationService>();
 
-            services.AddScoped<BlockCacheCommand>();
+            services.AddScoped<BlockInsertCommand>();
+            services.AddScoped<BlockDeleteCommand>();
             services.AddScoped<BlockPublishCommand>();
+            services.AddScoped<AddressAggregatorCommand>();
 
             services.AddScoped<NexusQuery>();
             services.AddScoped<BlockQuery>();
             services.AddScoped<AddressQuery>();
             services.AddScoped<StatQuery>();
-            services.AddScoped<AddressAggregator>();
 
             services.AddScoped<INxsClient, NxsClient>();
             services.AddScoped<INxsClient, NxsClient>(x => new NxsClient(configuration.GetConnectionString("Nexus")));

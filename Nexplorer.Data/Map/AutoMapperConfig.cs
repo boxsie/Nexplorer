@@ -50,7 +50,8 @@ namespace Nexplorer.Data.Map
                     .ForMember(d => d.TransactionType, o => o.Ignore());
 
                 x.CreateMap<TransactionInputOutputResponse, TransactionInputOutputDto>()
-                    .ForMember(d => d.TransactionInputOutputType, o => o.Ignore());
+                    .ForMember(d => d.TransactionInputOutputType, o => o.Ignore())
+                    .ForMember(d => d.AddressId, o => o.Ignore());
 
                 x.CreateMap<InfoResponse, NexusInfoDto>()
                     .ForMember(d => d.TimeStampUtc, o => o.MapFrom(s => Helpers.ToDateTime(s.TimeStamp)));
