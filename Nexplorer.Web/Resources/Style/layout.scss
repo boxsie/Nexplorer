@@ -1,7 +1,9 @@
 ﻿@import "_variables";
-@import "~bootstrap/scss/bootstrap";
+@import '~bootstrap/scss/bootstrap';
 @import '~font-awesome/css/font-awesome.css';
-@import "Components/_form-input";
+@import 'Components/_form-input';
+@import '~swiper/dist/css/swiper.css';
+@import '~datatables.net-bs4/css/dataTables.bootstrap4.css';
 
 html {
     font-size: 14px;
@@ -353,7 +355,7 @@ label {
     em {
         font-size: 14px;
     }
-    
+
     .slider {
         max-width: 1050px;
         margin: 0 -15px;
@@ -367,7 +369,7 @@ label {
                 background-color: rgba(112, 112, 112, 0.32);
                 max-width: 250px;
                 margin: 0 auto;
-                padding: 0 10px;
+                padding: 10px;
                 height: 65px;
 
                 .icon {
@@ -382,6 +384,14 @@ label {
                 .text {
                     float: right;
                     text-align: right;
+                }
+
+                h4 {
+                    font-size: 1.2rem;
+                }
+
+                h5 {
+                    font-size: 1rem;
                 }
             }
         }
@@ -401,7 +411,7 @@ label {
 
     .main-body {
         background-color: $main-bg;
-        padding: 30px 0 0 0;
+        padding: 30px 0;
         max-width: $container-max-width - 30px;
         margin: 1px auto;
     }
@@ -626,15 +636,33 @@ label {
     }
 }
 
-/*Transaction Table*/
-#transactionTable {
-    td {
-        vertical-align: middle;
+#dataTable {
+    border: none;
+
+    tbody {
+        tr {
+            cursor: pointer;
+
+            &:hover {
+                background-color: lighten($primary, 37%);
+            }
+        }
+
+        td {
+            vertical-align: middle;
+        }
+
+        .page-item {
+            padding: 1px;
+
+            &:hover {
+                border: 1px solid #ddd;
+            }
+        }
     }
 }
+
 /**/
-
-
 /* Collapsable read more */
 .read-more {
     ul.collapse:not(.show) {
@@ -663,241 +691,241 @@ label {
 }
 /**/
 
-@media(min-width: 768px) {
-    .text-right-xs {
-        text-align: left;
-    }
-
-    .text-right-sm {
-        text-align: right;
-    }
-
-    .text-center-sm {
-        text-align: center;
-    }
-
-    .text-toggle {
-        .toggle-seperator {
-            margin: 0 6px 0 9px;
+    @media(min-width: 768px) {
+        .text-right-xs {
+            text-align: left;
         }
-    }
 
-    #navbar {
-        .navbar-search {
-            height: $search-height-full;
+        .text-right-sm {
+            text-align: right;
+        }
 
-            &.closed {
-                top: -($search-height-full + 10px);
-            }
+        .text-center-sm {
+            text-align: center;
+        }
 
-            .nav-search-col {
-                .search-icon {
-                    font-size: 34px;
-                }
-
-                &.nav-search-col-input {
-                    width: 80%;
-                }
+        .text-toggle {
+            .toggle-seperator {
+                margin: 0 6px 0 9px;
             }
         }
 
-        .navbar-collapse {
-            height: 100%;
+        #navbar {
+            .navbar-search {
+                height: $search-height-full;
 
-            .navbar-nav {
+                &.closed {
+                    top: -($search-height-full + 10px);
+                }
+
+                .nav-search-col {
+                    .search-icon {
+                        font-size: 34px;
+                    }
+
+                    &.nav-search-col-input {
+                        width: 80%;
+                    }
+                }
+            }
+
+            .navbar-collapse {
                 height: 100%;
 
-                li {
-                    a {
-                        display: flex;
-                        align-items: center;
-                        height: 100%;
+                .navbar-nav {
+                    height: 100%;
+
+                    li {
+                        a {
+                            display: flex;
+                            align-items: center;
+                            height: 100%;
+                        }
                     }
+                }
+            }
+
+            #userMenu {
+                right: 15px;
+                left: unset;
+                width: $user-menu-width-sm;
+
+                &.signed-in {
+                    width: 200px;
+                }
+
+                &.open {
+                    top: $nav-height-xs;
                 }
             }
         }
 
-        #userMenu {
-            right: 15px;
-            left: unset;
-            width: $user-menu-width-sm;
-
-            &.signed-in {
-                width: 200px;
-            }
-
-            &.open {
-                top: $nav-height-xs;
-            }
-        }
-    }
-
-    #hero {
-        height: $hero-height-full + $nav-height-full;
-        background-image: url(../Images/hero-img.jpg);
-    }
-
-    #heroText {
-        #heroHeader {
-            padding-left: 30px;
-            padding-right: 30px;
+        #hero {
+            height: $hero-height-full + $nav-height-full;
+            background-image: url(../Images/hero-img.jpg);
         }
 
-        &.jumbotron {
-            padding-top: 30px;
-            padding-bottom: 30px;
-
-            .container-fluid {
+        #heroText {
+            #heroHeader {
                 padding-left: 30px;
                 padding-right: 30px;
+            }
 
-                h1 {
-                    font-size: 5.25rem;
+            &.jumbotron {
+                padding-top: 30px;
+                padding-bottom: 30px;
+
+                .container-fluid {
+                    padding-left: 30px;
+                    padding-right: 30px;
+
+                    h1 {
+                        font-size: 5.25rem;
+                    }
                 }
             }
-        }
 
-        .slider {
-            margin: 20px 0 0 0;
-        }
-
-        p {
-            font-size: 21px;
-        }
-
-        em {
-            font-size: 16px;
-        }
-    }
-
-    #main {
-        padding-top: $nav-height-full;
-
-        .main-body {
-            padding: 30px 30px 0 30px;
-        }
-
-        .card {
-            padding: 30px;
-            margin-left: 0;
-            margin-right: 0;
-        }
-
-        .panel {
-            margin-left: 0;
-            margin-right: 0;
-
-            .full-hr-grad {
-                background: rgba(100,98,187,1);
-                background: -moz-linear-gradient(left, rgba(100,98,187,1) 0%, rgba(255,255,255,1) 58%, rgba(255,255,255,1) 100%);
-                background: -webkit-gradient(left top, right top, color-stop(0%, rgba(100,98,187,1)), color-stop(58%, rgba(255,255,255,1)), color-stop(100%, rgba(255,255,255,1)));
-                background: -webkit-linear-gradient(left, rgba(100,98,187,1) 0%, rgba(255,255,255,1) 58%, rgba(255,255,255,1) 100%);
-                background: -o-linear-gradient(left, rgba(100,98,187,1) 0%, rgba(255,255,255,1) 58%, rgba(255,255,255,1) 100%);
-                background: -ms-linear-gradient(left, rgba(100,98,187,1) 0%, rgba(255,255,255,1) 58%, rgba(255,255,255,1) 100%);
-                background: linear-gradient(to right, rgba(100,98,187,1) 0%, rgba(255,255,255,1) 58%, rgba(255,255,255,1) 100%);
-                filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#6462bb', endColorstr='#ffffff', GradientType=1 );
+            .slider {
+                margin: 20px 0 0 0;
             }
 
-            &.no-pad {
-                padding-left: 0;
-                padding-right: 0;
+            p {
+                font-size: 21px;
+            }
 
-                .add-pad {
-                    padding-left: 20px;
-                    padding-right: 20px;
+            em {
+                font-size: 16px;
+            }
+        }
+
+        #main {
+            padding-top: $nav-height-full;
+
+            .main-body {
+                padding: 30px;
+            }
+
+            .card {
+                padding: 30px;
+                margin-left: 0;
+                margin-right: 0;
+            }
+
+            .panel {
+                margin-left: 0;
+                margin-right: 0;
+
+                .full-hr-grad {
+                    background: rgba(100,98,187,1);
+                    background: -moz-linear-gradient(left, rgba(100,98,187,1) 0%, rgba(255,255,255,1) 58%, rgba(255,255,255,1) 100%);
+                    background: -webkit-gradient(left top, right top, color-stop(0%, rgba(100,98,187,1)), color-stop(58%, rgba(255,255,255,1)), color-stop(100%, rgba(255,255,255,1)));
+                    background: -webkit-linear-gradient(left, rgba(100,98,187,1) 0%, rgba(255,255,255,1) 58%, rgba(255,255,255,1) 100%);
+                    background: -o-linear-gradient(left, rgba(100,98,187,1) 0%, rgba(255,255,255,1) 58%, rgba(255,255,255,1) 100%);
+                    background: -ms-linear-gradient(left, rgba(100,98,187,1) 0%, rgba(255,255,255,1) 58%, rgba(255,255,255,1) 100%);
+                    background: linear-gradient(to right, rgba(100,98,187,1) 0%, rgba(255,255,255,1) 58%, rgba(255,255,255,1) 100%);
+                    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#6462bb', endColorstr='#ffffff', GradientType=1 );
                 }
-            }
-        }
-    }
 
-    #transactionTable {
-        .hash-cell {
-            max-width: 390px;
-            padding-right: 30px;
-            word-wrap: break-word;
-        }
-    }
+                &.no-pad {
+                    padding-left: 0;
+                    padding-right: 0;
 
-    #layout {
-        font-size: 14px;
-
-        #tickerTable {
-            td {
-                width: 20%;
-
-                .val {
-                    margin: 0 10%;
-                    padding: 2px 0;
-
-                    .fa {
-                        left: 6px;
-                        font-size: 16px;
+                    .add-pad {
+                        padding-left: 20px;
+                        padding-right: 20px;
                     }
                 }
             }
         }
 
-        #cookieWarning {
-            width: 350px;
-            height: 150px;
-            bottom: 0;
-        }
-    }
-
-    #footer {
-        .container-fluid {
-            .row {
-                padding-left: 45px;
-                padding-right: 45px;
+        #transactionTable {
+            .hash-cell {
+                max-width: 390px;
+                padding-right: 30px;
+                word-wrap: break-word;
             }
         }
 
-        ul {
-            margin: 0;
-            padding: 0;
-            border-bottom: none;
+        #layout {
+            font-size: 14px;
+
+            #tickerTable {
+                td {
+                    width: 20%;
+
+                    .val {
+                        margin: 0 10%;
+                        padding: 2px 0;
+
+                        .fa {
+                            left: 6px;
+                            font-size: 16px;
+                        }
+                    }
+                }
+            }
+
+            #cookieWarning {
+                width: 350px;
+                height: 150px;
+                bottom: 0;
+            }
         }
 
-        .copy-text {
-            margin: 30px 0 30px 0;
+        #footer {
+            .container-fluid {
+                .row {
+                    padding-left: 45px;
+                    padding-right: 45px;
+                }
+            }
+
+            ul {
+                margin: 0;
+                padding: 0;
+                border-bottom: none;
+            }
+
+            .copy-text {
+                margin: 30px 0 30px 0;
+            }
         }
     }
-}
 
-@media(min-width: $container-max-width) {
-    #heroText {
-        .slider {
-            margin: 20px auto 0 auto;
+    @media(min-width: $container-max-width) {
+        #heroText {
+            .slider {
+                margin: 20px auto 0 auto;
+            }
+        }
+
+        #ticker {
+            #tickerTable {
+                width: 80%;
+            }
+        }
+    }
+    /*Animations*/
+    .animated-single {
+        animation-fill-mode: both;
+        animation-iteration-count: 1;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.3);
+        }
+
+        100% {
+            transform: scale(1);
         }
     }
 
-    #ticker {
-        #tickerTable {
-            width: 80%;
-        }
+    .pulse {
+        animation-name: pulse;
+        animation-duration: 0.8s;
     }
-}
-/*Animations*/
-.animated-single {
-    animation-fill-mode: both;
-    animation-iteration-count: 1;
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.3);
-    }
-
-    100% {
-        transform: scale(1);
-    }
-}
-
-.pulse {
-    animation-name: pulse;
-    animation-duration: 0.8s;
-}

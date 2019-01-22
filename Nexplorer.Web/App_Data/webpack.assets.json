@@ -1,11 +1,10 @@
 {
-  "addresses.address": {
-    "js": "../js/addresses.address.js",
-    "css": "../css/addresses.address.css"
-  },
   "addresses.index": {
     "js": "../js/addresses.index.js",
     "css": "../css/addresses.index.css"
+  },
+  "manage.enableauthenticator": {
+    "js": "../js/manage.enableauthenticator.js"
   },
   "admin.index": {
     "js": "../js/admin.index.js",
@@ -29,8 +28,9 @@
     "js": "../js/layout.js",
     "css": "../css/layout.css"
   },
-  "manage.enableauthenticator": {
-    "js": "../js/manage.enableauthenticator.js"
+  "addresses.address": {
+    "js": "../js/addresses.address.js",
+    "css": "../css/addresses.address.css"
   },
   "mining.index": {
     "js": "../js/mining.index.js",
@@ -44,14 +44,14 @@
     "js": "../js/runtime.js"
   },
   "transactions.index": {
-    "js": "../js/transactions.index.js"
+    "js": "../js/transactions.index.js",
+    "css": "../css/transactions.index.css"
   },
   "validate": {
     "js": "../js/validate.js"
   },
   "vendor": {
-    "js": "../js/vendor.js",
-    "css": "../css/vendor.css"
+    "js": "../js/vendor.js"
   },
   "": {
     "eot": "../font/fontawesome-webfont.eot",

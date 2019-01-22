@@ -30,8 +30,11 @@ namespace Nexplorer.Web.Controllers
             ViewBag.RuntimeJs = WebExtensions.JsUrls["runtime"];
             ViewBag.VendorJs = WebExtensions.JsUrls["vendor"];
             ViewBag.ValidateJs = WebExtensions.JsUrls["validate"];
-
             ViewBag.LayoutJs = WebExtensions.JsUrls["layout"];
+
+            if (WebExtensions.CssUrls.ContainsKey("vendor"))
+                ViewBag.VendorCss = WebExtensions.CssUrls["vendor"];
+
             ViewBag.LayoutCss = WebExtensions.CssUrls["layout"];
 
             if (WebExtensions.JsUrls.ContainsKey(pageKey))

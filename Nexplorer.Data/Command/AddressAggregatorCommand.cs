@@ -92,7 +92,7 @@ namespace Nexplorer.Data.Command
                 {
                     foreach (var block in blocks)
                     {
-                        var txIos = block.Transactions.SelectMany(x => x.Inputs.Concat(x.Outputs));
+                        var txIos = await con.QueryAsync<TransactionInputOutput>(BlockTxSelectSql, new { BlockHeight = block.Height }, trans);
 
                         foreach (var txIo in txIos)
                             await UpdateOrInsertAggregateAsync(con, trans, txIo, block.Height);
@@ -116,7 +116,7 @@ namespace Nexplorer.Data.Command
                         var txIos = await con.QueryAsync<TransactionInputOutput>(BlockTxSelectSql, new { BlockHeight = i }, trans);
 
                         foreach (var txIo in txIos)
-                            await UpdateOrInsertAggregateAsync(con, trans, new TransactionInputOutputDto(txIo), i);
+                            await UpdateOrInsertAggregateAsync(con, trans, txIo, i);
 
                         if (consoleOutput)
                             LogProgress((i - startHeight) + 1, count);
@@ -159,7 +159,7 @@ namespace Nexplorer.Data.Command
             }
         }
 
-        private async Task UpdateOrInsertAggregateAsync(IDbConnection sqlCon, IDbTransaction trans, TransactionInputOutputDto txIo, int blockHeight)
+        private async Task UpdateOrInsertAggregateAsync(IDbConnection sqlCon, IDbTransaction trans, TransactionInputOutput txIo, int blockHeight)
         {
             AddressAggregate addAgg;
 

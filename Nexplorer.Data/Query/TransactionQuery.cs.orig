@@ -113,11 +113,16 @@ namespace Nexplorer.Data.Query
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
+<<<<<<< HEAD
                 var results = new FilterResult<TransactionLiteDto>();
+=======
+                var cacheTxs = FilterCacheBlocks(await _cache.GetBlocksAsync(), filter).ToList();
+>>>>>>> master
                 
                 param.Add(nameof(count), count);
                 param.Add(nameof(start), start);
                 param.Add(nameof(maxResults), maxResults ?? int.MaxValue);
+<<<<<<< HEAD
 
                 using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
                 {
@@ -125,8 +130,40 @@ namespace Nexplorer.Data.Query
                     results.ResultCount = countResults
                         ? (int)(await multi.ReadAsync<int>()).FirstOrDefault()
                         : -1;
+                }
+=======
+                
+                using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
+                {
+                    var results = cacheTxs.Concat(await multi.ReadAsync<TransactionLiteDto>());
+                    var resultCount = countResults
+                        ? cacheTxs.Count + (int)(await multi.ReadAsync<int>()).FirstOrDefault()
+                        : -1;
 
-                    return results;
+                    switch (filter.OrderBy)
+                    {
+                        case OrderTransactionsBy.MostRecent:
+                            results = results.OrderByDescending(x => x.Timestamp);
+                            break;
+                        case OrderTransactionsBy.LeastRecent:
+                            results = results.OrderBy(x => x.Timestamp);
+                            break;
+                        case OrderTransactionsBy.HighestAmount:
+                            results = results.OrderByDescending(x => x.Amount);
+                            break;
+                        case OrderTransactionsBy.LowestAmount:
+                            results = results.OrderBy(x => x.Amount);
+                            break;
+                    }
+>>>>>>> master
+
+                    var filterResult = new FilterResult<TransactionLiteDto>()
+                    {
+                        ResultCount = resultCount > 1000 ? 1000 : resultCount,
+                        Results = results.Take(count).ToList()
+                    };
+
+                    return filterResult;
                 }
             }
         }

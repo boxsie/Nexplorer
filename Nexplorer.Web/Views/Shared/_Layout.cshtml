@@ -31,6 +31,12 @@
     <meta name="theme-color" content="#ffffff">
 
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet">
+    
+    @if (ViewBag.VendorCss != null)
+    {
+        <link rel="stylesheet" href="@ViewBag.VendorCss" />
+    }
+    
     <link rel="stylesheet" href="@ViewBag.LayoutCss" />
 
     <title>@ViewData["Title"] | Nexplorer - A Nexus Block Explorer</title>

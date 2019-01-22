@@ -216,26 +216,6 @@ namespace Nexplorer.Data.Query
                         : -1;
                 }
 
-                switch (filter.OrderBy)
-                {
-                    case OrderBlocksBy.Highest:
-                        results.Results = results.Results.OrderByDescending(x => x.Height).ToList();
-                        break;
-                    case OrderBlocksBy.Lowest:
-                        results.Results = results.Results.OrderBy(x => x.Height).ToList();
-                        break;
-                    case OrderBlocksBy.Largest:
-                        results.Results = results.Results.OrderByDescending(x => x.Size).ToList();
-                        break;
-                    case OrderBlocksBy.Smallest:
-                        results.Results = results.Results.OrderBy(x => x.Size).ToList();
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-
-                results.Results = results.Results.Take(count).ToList();
-
                 return results;
             }
         }
@@ -332,14 +312,14 @@ namespace Nexplorer.Data.Query
             {
                 var fromHeight = filter.HeightFrom.Value;
                 param.Add(nameof(fromHeight), fromHeight);
-                whereClause.Append($"AND b.[Height] <= @fromHeight ");
+                whereClause.Append($"AND b.[Height] >= @fromHeight ");
             }
 
             if (filter.HeightTo.HasValue)
             {
                 var toHeight = filter.HeightTo.Value;
                 param.Add(nameof(toHeight), toHeight);
-                whereClause.Append($"AND b.[Height] >= @toHeight ");
+                whereClause.Append($"AND b.[Height] <= @toHeight ");
             }
 
             if (filter.MinSize.HasValue)
@@ -360,14 +340,14 @@ namespace Nexplorer.Data.Query
             {
                 var fromDate = filter.UtcFrom.Value;
                 param.Add(nameof(fromDate), fromDate);
-                whereClause.Append($"AND b.[Timestamp] <= @fromDate ");
+                whereClause.Append($"AND b.[Timestamp] >= @fromDate ");
             }
 
             if (filter.UtcTo.HasValue)
             {
                 var toDate = filter.UtcTo.Value;
                 param.Add(nameof(toDate), toDate);
-                whereClause.Append($"AND b.[Timestamp] >= @toDate ");
+                whereClause.Append($"AND b.[Timestamp] <= @toDate ");
             }
 
             return whereClause.ToString();

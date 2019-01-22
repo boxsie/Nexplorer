@@ -154,13 +154,25 @@
 }
 
 #addressTxs {
+    border: none;
+
     #dataTable {
+        border: none;
+
         tbody {
             tr {
                 cursor: pointer;
 
                 &:hover {
                     background-color: lighten($primary, 37%);
+                }
+            }
+
+            .page-item {
+                padding: 1px;
+
+                &:hover {
+                    border: 1px solid #ddd;
                 }
             }
         }

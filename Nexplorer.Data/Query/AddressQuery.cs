@@ -640,28 +640,28 @@ namespace Nexplorer.Data.Query
             {
                 var fromHeight = filter.HeightFrom.Value;
                 param.Add(nameof(fromHeight), fromHeight);
-                whereClause.Append($"AND t.[BlockHeight] <= @fromHeight ");
+                whereClause.Append($"AND t.[BlockHeight] >= @fromHeight ");
             }
 
             if (filter.HeightTo.HasValue)
             {
                 var toHeight = filter.HeightTo.Value;
                 param.Add(nameof(toHeight), toHeight);
-                whereClause.Append($"AND t.[BlockHeight] >= @toHeight ");
+                whereClause.Append($"AND t.[BlockHeight] <= @toHeight ");
             }
 
             if (filter.UtcFrom.HasValue)
             {
                 var fromDate = filter.UtcFrom.Value;
                 param.Add(nameof(fromDate), fromDate);
-                whereClause.Append($"AND t.[Timestamp] <= @fromDate ");
+                whereClause.Append($"AND t.[Timestamp] >= @fromDate ");
             }
 
             if (filter.UtcTo.HasValue)
             {
                 var toDate = filter.UtcTo.Value;
                 param.Add(nameof(toDate), toDate);
-                whereClause.Append($"AND t.[Timestamp] >= @toDate ");
+                whereClause.Append($"AND t.[Timestamp] <= @toDate ");
             }
 
             return whereClause.ToString();
