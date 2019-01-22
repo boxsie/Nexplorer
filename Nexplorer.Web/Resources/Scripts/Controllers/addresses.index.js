@@ -47,7 +47,7 @@ export class AddressIndexViewModel {
                         data: 'hash',
                         render: (data, type, row) => {
                             return `<a class="d-none d-md-block" href="/addresses/${data}">${data}</a>
-                                            <a class="d-none d-sm-block" href="/addresses/${data}">${this.vm.truncateHash(data, 32)}</a>
+                                            <a class="d-none d-sm-block d-md-none" href="/addresses/${data}">${this.vm.truncateHash(data, 32)}</a>
                                             <a class="d-sm-none" href="/addresses/${data}">${this.vm.truncateHash(data, 4)}</a>`;
                         }
                     },
@@ -133,7 +133,7 @@ export class AddressIndexViewModel {
                 SwiperSlide: swiperVueSlide,
                 NxsDistributionChart: doughnutChart,
                 AddressDistributionChart: doughnutChart,
-                AddressTable: dataTableVue('all', this.currentFilter, 'full')
+                AddressTable: dataTableVue(this.filterCriteria, 'first_last_numbers')
             },
             methods: {
                 updateStats(statDtoJson) {
@@ -159,7 +159,7 @@ export class AddressIndexViewModel {
                     }
                 },
                 reloadData() {
-                    this.$refs.addressTable.dataReload(this.currentFilter, this.filterCriteria);
+                    this.$refs.addressTable.dataReload(this.filterCriteria, this.currentFilter);
                 },
                 truncateHash(hash, len) {
                     const start = hash.substring(0, len);

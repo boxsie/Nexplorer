@@ -58,8 +58,7 @@ namespace Nexplorer.Data.Query
         public async Task<FilterResult<TransactionLiteDto>> GetTransactionsFilteredAsync(TransactionFilterCriteria filter, int start, int count, bool countResults, int? maxResults = null)
         {
             const string from = @"
-                FROM [dbo].[Transaction] t
-                INNER JOIN [dbo].[TransactionInputOutput] tInOut ON tInOut.[TransactionId] = t.[TransactionId] 
+                FROM [dbo].[Transaction] t 
                 WHERE 1 = 1 ";
             
             var where = BuildWhereClause(filter, out var param);
@@ -92,11 +91,24 @@ namespace Nexplorer.Data.Query
                           t.[Timestamp],
                           t.[Amount],
                           t.[TransactionType],
-                          SUM(CASE WHEN tInOut.[TransactionInputOutputType] = 0 THEN 1 ELSE 0 END) AS TransactionInputCount,
-                          SUM(CASE WHEN tInOut.[TransactionInputOutputType] = 1 THEN 1 ELSE 0 END) AS TransactionOutputCount
-                          {from}
-                          {where}                                          
-                          {sqlOrderBy}                           
+                          (
+	                          SELECT 
+	                          COUNT(*)
+	                          FROM [dbo].[TransactionInputOutput] tInOut 
+	                          WHERE tInOut.[TransactionId] = t.[TransactionId]
+	                          AND tInOut.[TransactionInputOutputType] = 0
+                          ) AS TransactionInputCount,
+                          (
+	                          SELECT 
+	                          COUNT(*)
+	                          FROM [dbo].[TransactionInputOutput] tInOut 
+	                          WHERE tInOut.[TransactionId] = t.[TransactionId]
+	                          AND tInOut.[TransactionInputOutputType] = 1
+                          ) AS TransactionOutputCount
+                          {from} 
+                          {where} 
+                          AND t.[Amount] > 0 
+                          {sqlOrderBy}                         
                           OFFSET @start ROWS FETCH NEXT @count ROWS ONLY;";
 
             var sqlC = $@"SELECT 
@@ -108,51 +120,43 @@ namespace Nexplorer.Data.Query
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
-                var results = new FilterResult<TransactionLiteDto>();
-
-                var cacheTxs = FilterCacheBlocks(await _cache.GetBlocksAsync(), filter)
-                    .Skip(start)
-                    .ToList();
+                var cacheTxs = FilterCacheBlocks(await _cache.GetBlocksAsync(), filter).ToList();
                 
                 param.Add(nameof(count), count);
                 param.Add(nameof(start), start);
                 param.Add(nameof(maxResults), maxResults ?? int.MaxValue);
-
-                if (cacheTxs.Count >= count)
-                {
-                    results.Results = cacheTxs.Take(count).ToList();
-                    results.ResultCount = countResults
-                        ? cacheTxs.Count + (int) (await sqlCon.QueryAsync<int>(sqlC, param)).FirstOrDefault()
-                        : -1;
-                }
-                else
-                {
-                    using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
-                    {
-                        results.Results = cacheTxs.Concat(await multi.ReadAsync<TransactionLiteDto>()).ToList();
-                        results.ResultCount = countResults
-                            ? cacheTxs.Count + (int) (await multi.ReadAsync<int>()).FirstOrDefault()
-                            : -1;
-                    }
-                }
-
-                switch (filter.OrderBy)
-                {
-                    case OrderTransactionsBy.MostRecent:
-                        results.Results = results.Results.OrderByDescending(x => x.Timestamp).ToList();
-                        break;
-                    case OrderTransactionsBy.LeastRecent:
-                        results.Results = results.Results.OrderBy(x => x.Timestamp).ToList();
-                        break;
-                    case OrderTransactionsBy.HighestAmount:
-                        results.Results = results.Results.OrderByDescending(x => x.Amount).ToList();
-                        break;
-                    case OrderTransactionsBy.LowestAmount:
-                        results.Results = results.Results.OrderBy(x => x.Amount).ToList();
-                        break;
-                }
                 
-                return results;
+                using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
+                {
+                    var results = cacheTxs.Concat(await multi.ReadAsync<TransactionLiteDto>());
+                    var resultCount = countResults
+                        ? cacheTxs.Count + (int)(await multi.ReadAsync<int>()).FirstOrDefault()
+                        : -1;
+
+                    switch (filter.OrderBy)
+                    {
+                        case OrderTransactionsBy.MostRecent:
+                            results = results.OrderByDescending(x => x.Timestamp);
+                            break;
+                        case OrderTransactionsBy.LeastRecent:
+                            results = results.OrderBy(x => x.Timestamp);
+                            break;
+                        case OrderTransactionsBy.HighestAmount:
+                            results = results.OrderByDescending(x => x.Amount);
+                            break;
+                        case OrderTransactionsBy.LowestAmount:
+                            results = results.OrderBy(x => x.Amount);
+                            break;
+                    }
+
+                    var filterResult = new FilterResult<TransactionLiteDto>()
+                    {
+                        ResultCount = resultCount > 1000 ? 1000 : resultCount,
+                        Results = results.Take(count).ToList()
+                    };
+
+                    return filterResult;
+                }
             }
         }
 
@@ -208,28 +212,28 @@ namespace Nexplorer.Data.Query
             {
                 var fromHeight = filter.HeightFrom.Value;
                 param.Add(nameof(fromHeight), fromHeight);
-                whereClause.Append($"AND t.[BlockHeight] <= @fromHeight ");
+                whereClause.Append($"AND t.[BlockHeight] >= @fromHeight ");
             }
 
             if (filter.HeightTo.HasValue)
             {
                 var toHeight = filter.HeightTo.Value;
                 param.Add(nameof(toHeight), toHeight);
-                whereClause.Append($"AND t.[BlockHeight] >= @toHeight ");
+                whereClause.Append($"AND t.[BlockHeight] <= @toHeight ");
             }
 
             if (filter.UtcFrom.HasValue)
             {
                 var fromDate = filter.UtcFrom.Value;
                 param.Add(nameof(fromDate), fromDate);
-                whereClause.Append($"AND t.[Timestamp] <= @fromDate ");
+                whereClause.Append($"AND t.[Timestamp] >= @fromDate ");
             }
 
             if (filter.UtcTo.HasValue)
             {
                 var toDate = filter.UtcTo.Value;
                 param.Add(nameof(toDate), toDate);
-                whereClause.Append($"AND t.[Timestamp] >= @toDate ");
+                whereClause.Append($"AND t.[Timestamp] <= @toDate ");
             }
 
             return whereClause.ToString();

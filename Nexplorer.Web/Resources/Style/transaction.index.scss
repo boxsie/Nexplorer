@@ -1,8 +1,8 @@
 ﻿@import "_variables.scss";
 
 #hero {
-    -webkit-filter: brightness(.8) saturate(1.2) hue-rotate(204deg);
-    filter: brightness(.8) saturate(1.2) hue-rotate(204deg);
+    -webkit-filter: brightness(.8) saturate(1.2) hue-rotate(266deg);
+    filter: brightness(.8) saturate(1.2) hue-rotate(266deg);
 }
 
 .text-toggle {
@@ -25,12 +25,12 @@
     }
 }
 
-.address-table {
+#txTable {
     margin-top: 20px;
     overflow-y: hidden;
     overflow-x: auto;
 
-    #addressTable {
+    #txTable {
         th:not(:nth-child(2)) {
             text-align: center;
         }
@@ -38,6 +38,37 @@
         td:not(:nth-child(2)) {
             text-align: center;
         }
+    }
+
+    .fa {
+        &.tx-type-icon {
+            font-size: 14px;
+        }
+
+        &.green {
+            color: $good-green;
+        }
+
+        &.red {
+            color: $bad-red;
+        }
+
+        &.stake {
+            color: $stake-yellow;
+        }
+
+        &.mining {
+            color: $mining-orange;
+        }
+    }
+
+    .in-out-col {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .amount-col {
+        text-align: right;
     }
 
     .pagination {

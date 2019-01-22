@@ -2,8 +2,6 @@
 import dt from 'datatables.net-bs4';
 import preloaderVue from '../Library/preloaderVue';
 
-import 'datatables.net-bs4/css/dataTables.bootstrap4.css';
-
 export default (defaultCriteria, pagingType) => {
     return {
         template: require('../../Markup/data-table-vue.html'),
@@ -12,6 +10,7 @@ export default (defaultCriteria, pagingType) => {
             return {
                 $dataTable: null,
                 dataTable: null,
+                filter: null,
                 filterCriteria: defaultCriteria,
                 showTable: false
             };
@@ -20,8 +19,9 @@ export default (defaultCriteria, pagingType) => {
             Preloader: preloaderVue
         },
         methods: {
-            dataReload(filterCriteria) {
+            dataReload(filterCriteria, filter) {
                 this.filterCriteria = filterCriteria;
+                this.filter = filter;
                 this.dataTable.ajax.reload();
             }
         },
@@ -44,6 +44,7 @@ export default (defaultCriteria, pagingType) => {
                         url: self.ajaxUrl,
                         type: 'POST',
                         data: (data) => {
+                            data.filter = self.filter;
                             data.filterCriteria = self.filterCriteria;
                             self.showTable = false;
                             return data;

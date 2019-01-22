@@ -361,14 +361,14 @@ namespace Nexplorer.Data.Query
             {
                 var fromHeight = filter.HeightFrom.Value;
                 param.Add(nameof(fromHeight), fromHeight);
-                whereClause.Append($"AND b.[Height] <= @fromHeight ");
+                whereClause.Append($"AND b.[Height] >= @fromHeight ");
             }
 
             if (filter.HeightTo.HasValue)
             {
                 var toHeight = filter.HeightTo.Value;
                 param.Add(nameof(toHeight), toHeight);
-                whereClause.Append($"AND b.[Height] >= @toHeight ");
+                whereClause.Append($"AND b.[Height] <= @toHeight ");
             }
 
             if (filter.MinSize.HasValue)
@@ -389,14 +389,14 @@ namespace Nexplorer.Data.Query
             {
                 var fromDate = filter.UtcFrom.Value;
                 param.Add(nameof(fromDate), fromDate);
-                whereClause.Append($"AND b.[Timestamp] <= @fromDate ");
+                whereClause.Append($"AND b.[Timestamp] >= @fromDate ");
             }
 
             if (filter.UtcTo.HasValue)
             {
                 var toDate = filter.UtcTo.Value;
                 param.Add(nameof(toDate), toDate);
-                whereClause.Append($"AND b.[Timestamp] >= @toDate ");
+                whereClause.Append($"AND b.[Timestamp] <= @toDate ");
             }
 
             return whereClause.ToString();

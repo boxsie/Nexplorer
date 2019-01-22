@@ -1,6 +1,4 @@
-﻿import Swiper from 'swiper/dist/js/swiper.js';
-
-import 'swiper/dist/css/swiper.css';
+﻿import Swiper from 'swiper/dist/js/swiper';
 
 export default {
     template: require('../../Markup/swiper-vue.html'),

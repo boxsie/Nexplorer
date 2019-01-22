@@ -44,10 +44,10 @@
     <div class="col-sm-6">
         <div class="panel">
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-9">
                     <h2>COIN DISTRIBUTION</h2>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-3 text-right">
                     <span class="fa fa-signal"></span>
                 </div>
             </div>
@@ -62,10 +62,10 @@
     <div class="col-sm-6">
         <div class="panel">
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-9">
                     <h2>ADDRESS DISTRIBUTION</h2>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-3 text-right">
                     <span class="fa fa-signal"></span>
                 </div>
             </div>
@@ -82,10 +82,10 @@
 
 <div class="panel full-length">
     <div class="row">
-        <div class="col-xs-8">
+        <div class="col-8">
             <h2>OVERALL DISTRIBUTION</h2>
         </div>
-        <div class="col-xs-4 text-right">
+        <div class="col-4 text-right">
             <span class="fa fa-list-ol"></span>
         </div>
     </div>
@@ -94,19 +94,20 @@
             <tr>
                 <th scope="col">Balance</th>
                 <th scope="col">#Addresses</th>
-                <th class="hidden-xs" scope="col">% Addresses (Total)</th>
+                <th class="d-none d-sm-table-cell" scope="col">% Addresses (Total)</th>
                 <th scope="col">#Coins</th>
-                <th class="hidden-xs" scope="col">% Coins (Total)</th>
+                <th class="d-none d-sm-table-cell" scope="col">% Coins (Total)</th>
             </tr>
         </thead>
+        
         @foreach (var dto in Model.AddressDistrubtion)
         {
             <tr>
                 <td><strong>@(((AddressBalanceDistributionBands)dto.DistributionBand).GetAttribute<DisplayAttribute>().Name)</strong></td>
                 <td>@dto.AddressCount.ToString("N0")</td>
-                <td class="hidden-xs">@dto.AddressPercent.ToString("N") %</td>
+                <td class="d-none d-sm-table-cell">@dto.AddressPercent.ToString("N") %</td>
                 <td>@dto.CoinBalance.ToString("N")</td>
-                <td class="hidden-xs">@dto.CoinPercent.ToString("N") %</td>
+                <td class="d-none d-sm-table-cell">@dto.CoinPercent.ToString("N") %</td>
             </tr>
         }
     </table>
@@ -114,10 +115,10 @@
 
 <div class="panel full-length">
     <div class="row">
-        <div class="col-xs-8">
+        <div class="col-8">
             <h2>FILTER ADDRESSES</h2>
         </div>
-        <div class="col-xs-4 text-right">
+        <div class="col-4 text-right">
             <span class="fa fa-filter"></span>
         </div>
     </div>
@@ -134,70 +135,63 @@
         <a href="#" v-on:click.prevent.stop="changeFilter('custom')" v-bind:class="currentFilter == 'custom' ? 'active-link' : ''">Custom</a>
     </div>
 
-    <div class="row">
-        <div class="col-md-offset-1 col-md-10">
-            <div id="customFilter" v-if="currentFilter == 'custom'">
-                <form id="customFilterForm">
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <h3>BALANCE</h3>
-                            <br />
-                            <div class="form-group">
-                                <label for="balanceMin">Min Balance</label>
-                                <input type="number" class="form-control" id="balanceMin" v-model="filterCriteria.minBalance">
-                            </div>
-                            <div class="form-group">
-                                <label for="balanceMax">Max Balance</label>
-                                <input type="number" class="form-control" id="balanceMax" v-model="filterCriteria.maxBalance">
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <h3>LAST BLOCK</h3>
-                            <br />
-                            <div class="form-group">
-                                <label for="lastSeenFrom">Min Height</label>
-                                <input type="number" class="form-control" id="lastSeenFrom" v-model="filterCriteria.heightFrom">
-                            </div>
-                            <div class="form-group">
-                                <label for="lastSeenTo">Max Height</label>
-                                <input type="number" class="form-control" id="lastSeenTo" v-model="filterCriteria.heightTo">
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <h3>ORDER BY</h3>
-                            <br />
-                            <div class="form-group">
-                                <select asp-items="Html.GetEnumSelectList<OrderAddressesBy>()" class="form-control" v-model="filterCriteria.orderBy"></select>
-                            </div>
-                            <br />
-                            <h3>OPTIONS</h3>
-                            <br />
-                            <div class="form-group">
-                                <label for="isStaking" style="margin-top: 7px;">
-                                    <input class="big-checkbox" type="checkbox" value="" id="isStaking" v-model="filterCriteria.isStaking">
-                                    Only Staking
-                                </label>
-                            </div>
-                            <div class="form-group">
-                                <label for="isNexus" style="margin-top: 7px;">
-                                    <input class="big-checkbox" type="checkbox" value="" id="isNexus" v-model="filterCriteria.isNexus">
-                                    Only Nexus
-                                </label>
-                            </div>
-                        </div>
+    <div id="customFilter" v-if="currentFilter == 'custom'">
+        <form id="customFilterForm">
+            <div class="row">
+                <div class="col-sm-4">
+                    <h3>BALANCE</h3>
+                    <br />
+                    <div class="form-group">
+                        <label for="balanceMin">Min Balance</label>
+                        <input type="number" class="form-control" id="balanceMin" v-model="filterCriteria.minBalance">
                     </div>
-                    <div class="row">
-                        <div class="col-xs-12">
-                            <small class="text-muted" style="display: block;">
-                                All fields are optional, 1000 results maximum.
-                            </small>
-                            <br />
-                            <button type="submit" class="btn btn-primary" v-on:click.prevent.stop="reloadData">GO</button>
-                        </div>
+                    <div class="form-group">
+                        <label for="balanceMax">Max Balance</label>
+                        <input type="number" class="form-control" id="balanceMax" v-model="filterCriteria.maxBalance">
                     </div>
-                </form>
+                </div>
+                <div class="col-sm-4">
+                    <h3>LAST BLOCK</h3>
+                    <br />
+                    <div class="form-group">
+                        <label for="lastSeenFrom">Min Height</label>
+                        <input type="number" class="form-control" id="lastSeenFrom" v-model="filterCriteria.heightFrom">
+                    </div>
+                    <div class="form-group">
+                        <label for="lastSeenTo">Max Height</label>
+                        <input type="number" class="form-control" id="lastSeenTo" v-model="filterCriteria.heightTo">
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <h3>ORDER BY</h3>
+                    <br />
+                    <div class="form-group">
+                        <select asp-items="Html.GetEnumSelectList<OrderAddressesBy>()" class="form-control" v-model="filterCriteria.orderBy"></select>
+                    </div>
+                    <br />
+                    <h3>OPTIONS</h3>
+                    <br />
+                    <div class="form-group">
+                        <label for="isStaking" style="margin-top: 7px;">
+                            <input class="big-checkbox" type="checkbox" value="" id="isStaking" v-model="filterCriteria.isStaking">
+                            Only Staking
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="isNexus" style="margin-top: 7px;">
+                            <input class="big-checkbox" type="checkbox" value="" id="isNexus" v-model="filterCriteria.isNexus">
+                            Only Nexus
+                        </label>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <small class="text-muted" style="display: block;">
+                All fields are optional, 1000 results maximum.
+            </small>
+            <br />
+            <button type="submit" class="btn btn-primary" v-on:click.prevent.stop="reloadData">GO</button>
+        </form>
     </div>
 
     <address-table ref="addressTable" class="address-table"
