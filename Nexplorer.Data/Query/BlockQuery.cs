@@ -134,7 +134,7 @@ namespace Nexplorer.Data.Query
         public async Task<FilterResult<BlockLiteDto>> GetBlocksFilteredAsync(BlockFilterCriteria filter, int start, int count, bool countResults, int? maxResults = null)
         {
             const string from = @"
-                FROM [nexusdb].[dbo].[Block] b
+                FROM [dbo].[Block] b
                 INNER JOIN [dbo].[Transaction] t ON t.[BlockHeight] = b.[Height]
                 WHERE 1 = 1 ";
 
@@ -175,9 +175,9 @@ namespace Nexplorer.Data.Query
                           b.[Mint],
 	                      COUNT(t.[TransactionId]) AS TransactionCount
                           {from}
-                          {where}                                          
+                          {where} 
+                          {groupBy}                                          
                           {sqlOrderBy}
-                          {groupBy} 
                           OFFSET @start ROWS FETCH NEXT @count ROWS ONLY;";
 
             var sqlC = $@"SELECT 
@@ -198,7 +198,17 @@ namespace Nexplorer.Data.Query
 
                 using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
                 {
-                    var dbBlocks = await multi.ReadAsync<BlockLiteDto>();
+                    var dbBlocks = (await multi.ReadAsync()).Select(x => new BlockLiteDto
+                    {
+                        Height = x.Height,
+                        Hash = x.Hash,
+                        Size = x.Size,
+                        Channel = ((BlockChannels)x.Channel).ToString(),
+                        Timestamp = x.Timestamp,
+                        Difficulty = x.Difficulty,
+                        Mint = x.Mint,
+                        TransactionCount = x.TransactionCount
+                    });
 
                     results.Results = dbBlocks.ToList();
                     results.ResultCount = countResults
