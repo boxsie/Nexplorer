@@ -21,6 +21,7 @@ namespace Nexplorer.Data.Context
 
         public NexusDb(DbContextOptions<NexusDb> options) : base(options)
         {
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

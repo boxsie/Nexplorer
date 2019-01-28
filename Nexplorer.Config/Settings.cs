@@ -34,13 +34,16 @@ namespace Nexplorer.Config
             return config;
         }
 
-        public static void AttachConfig(IServiceProvider provider)
+        public static void AttachConfig(IServiceProvider provider, bool useTest = false)
         {
             App = provider.GetRequiredService<IOptions<AppConfig>>().Value;
             Connection = provider.GetRequiredService<IOptions<ConnectionStrings>>().Value;
             Redis = provider.GetRequiredService<IOptions<RedisKeys>>().Value;
             EmailConfig = provider.GetRequiredService<IOptions<EmailConfig>>().Value;
             UserConfig = provider.GetRequiredService<IOptions<UserConfig>>().Value;
+
+            if (useTest)
+                Connection.UseTest = true;
         }
     }
 }

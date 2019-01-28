@@ -9,12 +9,12 @@ namespace Nexplorer.Core
     {
         public static Task<DbConnection> GetNexusDbConnectionAsync()
         {
-            return GetOpenDbConnectionAsync(Settings.Connection.NexusDb);
+            return GetOpenDbConnectionAsync(Settings.Connection.GetNexusDbConnectionString());
         }
 
         public static Task<DbConnection> GetNexplorerDbConnectionAsync()
         {
-            return GetOpenDbConnectionAsync(Settings.Connection.NexusDb);
+            return GetOpenDbConnectionAsync(Settings.Connection.GetNexusDbConnectionString());
         }
 
         private static async Task<DbConnection> GetOpenDbConnectionAsync(string connectionString)

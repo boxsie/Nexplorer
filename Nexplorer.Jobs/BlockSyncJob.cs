@@ -69,7 +69,7 @@ namespace Nexplorer.Jobs
 
             stopwatch.Start();
 
-            var block = (await _blockInsert.InsertBlockAsync(blockDto)).FirstOrDefault();
+            var block = await _blockInsert.InsertBlockAsync(blockDto);
 
             if (block == null)
                 throw new NullReferenceException("Something failed inserting the new block");

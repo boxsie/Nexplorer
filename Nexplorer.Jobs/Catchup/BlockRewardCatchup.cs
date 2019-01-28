@@ -64,7 +64,7 @@ namespace Nexplorer.Jobs.Catchup
             {
                 _stopwatch.Restart();
 
-                using (var con = new SqlConnection(Settings.Connection.NexusDb))
+                using (var con = new SqlConnection(Settings.Connection.GetNexusDbConnectionString()))
                 {
                     await con.OpenAsync();
 

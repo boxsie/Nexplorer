@@ -20,13 +20,11 @@ namespace Nexplorer.Data.Query
 {
     public class BlockQuery
     {
-        private readonly RedisCommand _redisCommand;
         private readonly NexusDb _nexusDb;
         private readonly IMapper _mapper;
 
-        public BlockQuery(RedisCommand redisCommand, NexusDb nexusDb, IMapper mapper)
+        public BlockQuery(NexusDb nexusDb, IMapper mapper)
         {
-            _redisCommand = redisCommand;
             _nexusDb = nexusDb;
             _mapper = mapper;
         }
@@ -35,13 +33,13 @@ namespace Nexplorer.Data.Query
         {
             const string sqlQ = @"SELECT MAX(b.[Height]) FROM [dbo].[Block] b";
 
-            using (var connection = new SqlConnection(Settings.Connection.NexusDb))
+            using (var connection = new SqlConnection(Settings.Connection.GetNexusDbConnectionString()))
             {
                 connection.Open();
 
-                var height = (await connection.QueryAsync<int>(sqlQ)).FirstOrDefault();
+                var height = await connection.QueryAsync<int?>(sqlQ);
 
-                return height;
+                return height?.FirstOrDefault() ?? 0;
             }
         }
 
@@ -78,7 +76,7 @@ namespace Nexplorer.Data.Query
                 ? "b.[Hash] = @hash "
                 : "b.[Height] = @height ")}";
 
-            using (var connection = new SqlConnection(Settings.Connection.NexusDb))
+            using (var connection = new SqlConnection(Settings.Connection.GetNexusDbConnectionString()))
             {
                 connection.Open();
 
@@ -259,35 +257,6 @@ namespace Nexplorer.Data.Query
         public async Task<int> GetTransactionCount(DateTime from, int days)
         {
             return await _nexusDb.Transactions.CountAsync(x => x.Timestamp >= from.AddDays(-days));
-        }
-
-        public async Task LatestBlockSubscribeAsync(Func<BlockLiteDto, Task> onPublish)
-        {
-            var redisKey = Settings.Redis.NewBlockPubSub;
-
-            await _redisCommand.SubscribeAsync<BlockLiteDto>(redisKey, async value =>
-            {
-                var block = value;
-
-                await onPublish.Invoke(block);
-            });
-        }
-
-        public async Task BlockCountLastDayKeySubscribeAsync(Func<int, Task> onPublish)
-        {
-            var redisKey = Settings.Redis.BlockCount24Hours;
-
-            await _redisCommand.SubscribeAsync<int>(redisKey, async value =>
-            {
-                var lastDayCount = value;
-
-                await onPublish.Invoke(lastDayCount);
-            });
-        }
-
-        public async Task<int> GetBlockCountLastDayAsync()
-        {
-            return await _redisCommand.GetAsync<int>(Settings.Redis.BlockCount24Hours);
         }
 
         private static IEnumerable<BlockLiteDto> FilterCacheBlocks(IEnumerable<BlockDto> blocks, BlockFilterCriteria filter)

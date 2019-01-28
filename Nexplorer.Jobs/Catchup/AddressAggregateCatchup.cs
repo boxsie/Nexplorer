@@ -73,7 +73,7 @@ namespace Nexplorer.Jobs.Catchup
         {
             const string sqlQ = "SELECT MAX(aa.[LastBlockHeight]) FROM [dbo].[AddressAggregate] aa";
 
-            using (var connection = new SqlConnection(Settings.Connection.NexusDb))
+            using (var connection = new SqlConnection(Settings.Connection.GetNexusDbConnectionString()))
             {
                 await connection.OpenAsync();
 

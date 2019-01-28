@@ -66,7 +66,8 @@ namespace Nexplorer.Data.Command
             INNER JOIN [dbo].[Address] a ON a.AddressId = txInOut.AddressId
             INNER JOIN [dbo].[Transaction] t ON t.TransactionId = txInOut.TransactionId
             INNER JOIN [dbo].[Block] b ON b.Height = t.BlockHeight
-            WHERE a.[AddressId] = @AddressId";
+            WHERE a.[AddressId] = @AddressId
+            AND b.[Height] <> @Height";
 
         private readonly Dictionary<int, AddressAggregate> _addressAggregates;
 
@@ -84,7 +85,7 @@ namespace Nexplorer.Data.Command
         {
             _addressAggregates.Clear();
 
-            using (var con = new SqlConnection(Settings.Connection.NexusDb))
+            using (var con = new SqlConnection(Settings.Connection.GetNexusDbConnectionString()))
             {
                 await con.OpenAsync();
 
@@ -105,7 +106,7 @@ namespace Nexplorer.Data.Command
 
         public async Task AggregateAddresses(int startHeight, int count, bool consoleOutput = false)
         {
-            using (var con = new SqlConnection(Settings.Connection.NexusDb))
+            using (var con = new SqlConnection(Settings.Connection.GetNexusDbConnectionString()))
             {
                 await con.OpenAsync();
 
@@ -129,7 +130,7 @@ namespace Nexplorer.Data.Command
 
         public async Task RevertAggregate(BlockDto block)
         {
-            using (var con = new SqlConnection(Settings.Connection.NexusDb))
+            using (var con = new SqlConnection(Settings.Connection.GetNexusDbConnectionString()))
             {
                 await con.OpenAsync();
 
@@ -144,14 +145,15 @@ namespace Nexplorer.Data.Command
                         if (response == null)
                             continue;
 
-                        var previousLastHeight = (await con.QueryAsync<int>(PreviousLastBlockSql, new { txIo.AddressId }, trans)).FirstOrDefault();
+                        var previousLastHeight = (await con.QueryAsync<int?>(PreviousLastBlockSql, new { txIo.AddressId, block.Height }, trans)).FirstOrDefault();
 
-                        response.RevertAggregateProperties(txIo.TransactionInputOutputType, txIo.Amount, previousLastHeight);
-
-                        if (response.SentCount - response.ReceivedCount == 0)
-                            await con.ExecuteAsync(AddressAggregateDeleteSql, new { txIo.AddressId });
-                        else
+                        if (previousLastHeight.HasValue)
+                        {
+                            response.RevertAggregateProperties(txIo.TransactionInputOutputType, txIo.Amount, previousLastHeight.Value);
                             await UpdateOrInsertAggregateAsync(con, trans, response, false);
+                        }
+                        else
+                            await con.ExecuteAsync(AddressAggregateDeleteSql, new { txIo.AddressId }, trans);
                     }
 
                     trans.Commit();
