@@ -77,12 +77,12 @@ namespace Nexplorer.Jobs
                 }
             }
             
-            Logger.LogWarning(block == null
-                ? $"Block {_nextHeight} is returning null from the database"
-                : $"Block {_nextHeight} has a mismatched hash");
-
             if (block == null || block.Hash != blockDto.Hash)
             {
+                Logger.LogWarning(block == null
+                    ? $"Block {_nextHeight} is returning null from the database"
+                    : $"Block {_nextHeight} has a mismatched hash");
+
                 Logger.LogWarning($"Reverting address aggregation from block {_nextHeight} addresses");
                 await _addressAggregator.RevertAggregate(block);
 
