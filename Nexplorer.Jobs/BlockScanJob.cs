@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Nexplorer.Config;
 using Nexplorer.Data.Command;
 using Nexplorer.Data.Query;
+using Nexplorer.Domain.Dtos;
 using Nexplorer.Jobs.Service;
 
 namespace Nexplorer.Jobs
@@ -51,18 +52,18 @@ namespace Nexplorer.Jobs
 
         private async Task ScanAndRepair(int blockHeight)
         {
-            var block = await _blockQuery.GetBlockAsync(_nextHeight, true);
-            var blockDto = await _nexusQuery.GetBlockAsync(_nextHeight, true);
+            var dbBlock = await _blockQuery.GetBlockAsync(blockHeight, true);
+            var nxsBlock = await _nexusQuery.GetBlockAsync(blockHeight, true);
 
-            if (blockDto == null)
+            if (nxsBlock == null)
             {
                 var retryCounter = 0;
 
                 while (retryCounter < 3)
                 {
-                    blockDto = await _nexusQuery.GetBlockAsync(_nextHeight, true);
+                    nxsBlock = await _nexusQuery.GetBlockAsync(blockHeight, true);
 
-                    if (blockDto != null)
+                    if (nxsBlock != null)
                         break;
 
                     await Task.Delay(1000);
@@ -70,28 +71,41 @@ namespace Nexplorer.Jobs
                     retryCounter++;
                 }
 
-                if (blockDto == null)
+                if (nxsBlock == null)
                 {
-                    Logger.LogWarning($"Nexus block {_nextHeight} is returning null");
+                    Logger.LogWarning($"Nexus block {blockHeight} is returning null");
                     return;
                 }
             }
-            
-            if (block == null || block.Hash != blockDto.Hash)
+
+            var nullDbBlock = dbBlock == null;
+
+            if (nullDbBlock || dbBlock.Hash != nxsBlock.Hash)
             {
-                Logger.LogWarning(block == null
-                    ? $"Block {_nextHeight} is returning null from the database"
-                    : $"Block {_nextHeight} has a mismatched hash");
+                BlockDto deleteBlock;
 
-                Logger.LogWarning($"Reverting address aggregation from block {_nextHeight} addresses");
-                await _addressAggregator.RevertAggregate(block);
+                if (nullDbBlock)
+                {
+                    deleteBlock = new BlockDto { Height = blockHeight };
 
-                Logger.LogWarning($"Deleting block, transaction and io data for block {_nextHeight}");
-                await _blockDelete.DeleteBlockAsync(block);
+                    Logger.LogWarning($"Block {blockHeight} is returning null from the database");
+                }
+                else
+                {
+                    deleteBlock = dbBlock;
 
-                Logger.LogWarning($"Inserting new data for block {_nextHeight}");
-                await _blockInsert.InsertBlockAsync(blockDto);
-                await _addressAggregator.AggregateAddressesAsync(blockDto);
+                    Logger.LogWarning($"Block {blockHeight} has a mismatched hash");
+                    Logger.LogWarning($"Reverting address aggregation from block {blockHeight} addresses");
+
+                    await _addressAggregator.RevertAggregate(deleteBlock);
+                }
+
+                Logger.LogWarning($"Deleting block, transaction and io data for block {blockHeight}");
+                await _blockDelete.DeleteBlockAsync(deleteBlock);
+
+                Logger.LogWarning($"Inserting new data for block {blockHeight}");
+                await _blockInsert.InsertBlockAsync(nxsBlock);
+                await _addressAggregator.AggregateAddressesAsync(nxsBlock);
             }
         }
     }

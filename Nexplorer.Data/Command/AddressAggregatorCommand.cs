@@ -130,6 +130,9 @@ namespace Nexplorer.Data.Command
 
         public async Task RevertAggregate(BlockDto block)
         {
+            if (block?.Transactions == null || !block.Transactions.Any())
+                return;
+
             using (var con = new SqlConnection(Settings.Connection.GetNexusDbConnectionString()))
             {
                 await con.OpenAsync();

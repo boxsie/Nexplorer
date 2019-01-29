@@ -64,6 +64,9 @@ namespace Nexplorer.Data.Command
 
         private static async Task DeleteOrUpdateAddressesAsync(IDbConnection con, IDbTransaction trans, BlockDto blockDto)
         {
+            if (blockDto?.Transactions == null || !blockDto.Transactions.Any())
+                return;
+
             var addressIds = blockDto.Transactions
                 .SelectMany(x => x.Inputs.Concat(x.Outputs)
                     .Select(y => y.AddressId));
