@@ -54,33 +54,42 @@ namespace Nexplorer.Jobs
             var block = await _blockQuery.GetBlockAsync(_nextHeight, true);
             var blockDto = await _nexusQuery.GetBlockAsync(_nextHeight, true);
 
-            var blockNeedsRefresh = false;
+            if (blockDto == null)
+            {
+                var retryCounter = 0;
 
-            if (block.Hash != blockDto.Hash)
-            {
-                blockNeedsRefresh = true;
-                Logger.LogWarning($"Block {block.Height} has a mismatched hash");
-            }
-            else if (block.Transactions.Count != blockDto.Transactions.Count || !block.Transactions.All(x => blockDto.Transactions.Any(y => x.Hash == y.Hash)))
-            {
-                blockNeedsRefresh = true;
-                Logger.LogWarning($"Block {block.Height} has a mismatched transaction hashes");
-            }
-            else if (!await _nexusQuery.IsBlockHashOnChain(block.Hash))
-            {
-                blockNeedsRefresh = true;
-                Logger.LogWarning($"Block {block.Height} is being reported as an orphan by the node");
-            }
+                while (retryCounter < 3)
+                {
+                    blockDto = await _nexusQuery.GetBlockAsync(_nextHeight, true);
 
-            if (blockNeedsRefresh)
+                    if (blockDto != null)
+                        break;
+
+                    await Task.Delay(1000);
+
+                    retryCounter++;
+                }
+
+                if (blockDto == null)
+                {
+                    Logger.LogWarning($"Nexus block {_nextHeight} is returning null");
+                    return;
+                }
+            }
+            
+            Logger.LogWarning(block == null
+                ? $"Block {_nextHeight} is returning null from the database"
+                : $"Block {_nextHeight} has a mismatched hash");
+
+            if (block == null || block.Hash != blockDto.Hash)
             {
-                Logger.LogWarning($"Reverting address aggregation from block {block.Height} addresses");
+                Logger.LogWarning($"Reverting address aggregation from block {_nextHeight} addresses");
                 await _addressAggregator.RevertAggregate(block);
 
-                Logger.LogWarning($"Deleting block, transaction and io data for block {block.Height}");
+                Logger.LogWarning($"Deleting block, transaction and io data for block {_nextHeight}");
                 await _blockDelete.DeleteBlockAsync(block);
 
-                Logger.LogWarning($"Inserting new data for block {block.Height}");
+                Logger.LogWarning($"Inserting new data for block {_nextHeight}");
                 await _blockInsert.InsertBlockAsync(blockDto);
                 await _addressAggregator.AggregateAddressesAsync(blockDto);
             }
