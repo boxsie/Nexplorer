@@ -20,6 +20,9 @@ namespace Nexplorer.Data.Command
         private const string AddressDeleteSql = @"
             DELETE FROM [dbo].[Address] WHERE [dbo].[Address].[AddressId] = @AddressId";
 
+        private const string TxDeleteSql = @"
+            DELETE FROM [dbo].[Transaction] WHERE [dbo].[Transaction].[BlockHeight] = @Height";
+
         private const string BlockDeleteSql = @"
             DELETE FROM [dbo].[Block] WHERE [dbo].[Block].[Height] = @Height";
 
@@ -54,6 +57,8 @@ namespace Nexplorer.Data.Command
                     await con.ExecuteAsync(TxInOutDeleteSql, new { blockDto.Height }, trans);
 
                     await DeleteOrUpdateAddressesAsync(con, trans, blockDto);
+
+                    await con.ExecuteAsync(TxDeleteSql, new { blockDto.Height }, trans);
 
                     await con.ExecuteAsync(BlockDeleteSql, new { blockDto.Height }, trans);
 

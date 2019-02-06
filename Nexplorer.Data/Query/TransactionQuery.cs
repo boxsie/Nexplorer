@@ -77,7 +77,7 @@ namespace Nexplorer.Data.Query
                     break;
             }
 
-            var sqlQ = $@"SELECT
+            var sqlQ = $@"SELECT DISTINCT
                           t.[TransactionId],
                           t.[Hash] AS TransactionHash,
                           t.[BlockHeight],

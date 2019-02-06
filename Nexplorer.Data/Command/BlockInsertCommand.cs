@@ -47,6 +47,9 @@ namespace Nexplorer.Data.Command
 
         public async Task<List<Block>> InsertBlocksAsync(List<BlockDto> blockDtos, bool consoleOutput = false)
         {
+            if (blockDtos.Any(x => x.Transactions.Any(y => y.Inputs == null || y.Outputs == null || (y.Inputs.Count == 0 && y.Outputs.Count == 0))))
+                throw new NullReferenceException("There is a block with no inputs or outputs");
+
             var blocks = new List<Block>();
 
             using (var con = new SqlConnection(Settings.Connection.GetNexusDbConnectionString()))

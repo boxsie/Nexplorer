@@ -10,8 +10,8 @@
             </tr>
         </thead>
         <tbody>
-            <tr v-for="tx in currentPageItems" v-on:click="selectRow('/transactions/' + tx.hash)" style="cursor: pointer;">
-                <td><a v-bind:href="'/transactions/' + tx.hash">{{ $layoutHub.parseTxType(tx.transactionType) }}</a></td>
+            <tr v-for="tx in currentPageItems" v-on:click="selectRow('/transactions/' + tx.transactionHash)" style="cursor: pointer;">
+                <td><a v-bind:href="'/transactions/' + tx.transactionHash">{{ $layoutHub.parseTxType(tx.transactionType) }}</a></td>
                 <td class="text-right">{{ tx.amount.toLocaleString() }} <span style="font-size: 10px;">NXS</span></td>
                 <td class="hidden-xs text-center">{{ tx.transactionInputCount.toLocaleString() }}</td>
                 <td class="hidden-xs text-center">{{ tx.transactionOutputCount.toLocaleString() }}</td>
