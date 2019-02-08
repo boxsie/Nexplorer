@@ -220,8 +220,11 @@
     </div>
 
     <transaction-table id="addressTxs" ref="txTable"
+                       :filter-criteria="filterCriteria"
                        :ajax-url="transactionTableAjaxUrl"
                        :columns="transactionTableColumns"
+                       :ignore-keys="ignoreKeys"
+                       v-on:filter-criteria-update="filterCriteriaUpdate"
                        v-on:row-click="selectTransaction"></transaction-table>
 </div>
 

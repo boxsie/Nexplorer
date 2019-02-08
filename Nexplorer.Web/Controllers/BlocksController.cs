@@ -6,6 +6,7 @@ using Nexplorer.Domain.Criteria;
 using Nexplorer.Domain.Dtos;
 using Nexplorer.Domain.Enums;
 using Nexplorer.Domain.Models;
+using Nexplorer.Web.Dtos;
 using Nexplorer.Web.Models;
 
 namespace Nexplorer.Web.Controllers
@@ -13,6 +14,8 @@ namespace Nexplorer.Web.Controllers
     public class BlocksController : WebControllerBase
     {
         private readonly BlockQuery _blockQuery;
+
+        private const int MaxBlocksPerFilterPage = 100;
 
         public BlocksController(BlockQuery blockQuery)
         {
@@ -55,6 +58,39 @@ namespace Nexplorer.Web.Controllers
         public async Task<IActionResult> GetRecentBlocks(int start, int count)
         {
             return Ok(await _blockQuery.GetBlocksFilteredAsync(new BlockFilterCriteria { OrderBy = OrderBlocksBy.Highest }, start, count, false));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetBlocks(DataTablePostModel<BlockFilterCriteria> model)
+        {
+            var criteria = GetCriteria(model.Filter) ?? model.FilterCriteria;
+
+            var count = model.Length > MaxBlocksPerFilterPage
+                ? MaxBlocksPerFilterPage
+                : model.Length;
+
+            var data = await _blockQuery.GetBlocksFilteredAsync(criteria, model.Start, count, true, 1000);
+
+            var response = new
+            {
+                Draw = model.Draw,
+                RecordsTotal = 0,
+                RecordsFiltered = data.ResultCount,
+                Data = data.Results
+            };
+
+            return Ok(response);
+        }
+
+        private BlockFilterCriteria GetCriteria(string filter)
+        {
+            switch (filter)
+            {
+                case "latest":
+                    return new BlockFilterCriteria { OrderBy = OrderBlocksBy.Highest };
+                default:
+                    return null;
+            }
         }
     }
 }

@@ -1,10 +1,10 @@
 {
+  "addresses.index": {
+    "js": "../js/addresses.index.js",
+    "css": "../css/addresses.index.css"
+  },
   "manage.enableauthenticator": {
     "js": "../js/manage.enableauthenticator.js"
-  },
-  "addresses.address": {
-    "js": "../js/addresses.address.js",
-    "css": "../css/addresses.address.css"
   },
   "admin.index": {
     "js": "../js/admin.index.js",
@@ -15,7 +15,8 @@
     "css": "../css/blocks.block.css"
   },
   "blocks.index": {
-    "js": "../js/blocks.index.js"
+    "js": "../js/blocks.index.js",
+    "css": "../css/blocks.index.css"
   },
   "favourites.index": {
     "js": "../js/favourites.index.js"
@@ -28,9 +29,9 @@
     "js": "../js/layout.js",
     "css": "../css/layout.css"
   },
-  "addresses.index": {
-    "js": "../js/addresses.index.js",
-    "css": "../css/addresses.index.css"
+  "addresses.address": {
+    "js": "../js/addresses.address.js",
+    "css": "../css/addresses.address.css"
   },
   "mining.index": {
     "js": "../js/mining.index.js",

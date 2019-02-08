@@ -113,19 +113,14 @@ export class TransactionViewModel {
                             return `<strong>${parseFloat(data.toFixed(2)).toLocaleString()}</strong> <small>NXS</small>`;
                         }
                     }
-                ],
+                ]
             },
             components: {
-                AddressTable: dataTableVue(defaultCriteria, 'first_last_numbers')
+                txTable: dataTableVue('first_last_numbers')
             },
             methods: {
                 reloadData() {
-                    const reloadCriteria = JSON.parse(JSON.stringify(this.filterCriteria));
-
-                    if (reloadCriteria.txType === "All")
-                        reloadCriteria.txType = null;
-
-                    this.$refs.txTable.dataReload(reloadCriteria, this.currentFilter);
+                    this.$refs.txTable.dataReload();
                 },
                 truncateHash(hash, len) {
                     const start = hash.substring(0, len);
@@ -133,11 +128,25 @@ export class TransactionViewModel {
                 },
                 changeFilter(newFilter) {
                     this.currentFilter = newFilter;
+                    this.filterCriteria = JSON.parse(JSON.stringify(defaultCriteria));
 
                     if (this.currentFilter !== 'custom') {
                         this.reloadData();
                     }
                 },
+                selectTransaction(tx) {
+                    window.location.href = `/transactions/${tx.transactionHash}`;
+                },
+                filterUpdate(filter) {
+                    if (filter) {
+                        this.currentFilter = filter;
+                    } else {
+                        this.currentFilter = 'latest';
+                    }
+                },
+                filterCriteriaUpdate(filterCriteria) {
+                    this.filterCriteria = filterCriteria;
+                }
             },
             created() {
                 this.connection = new HubConnectionBuilder()
@@ -145,7 +154,9 @@ export class TransactionViewModel {
                     .withUrl('/transactionhub').build();
 
                 this.connection.on('newTxPubSub', (tx) => {
-                    this.$refs.txTable.refreshPage();
+                    if (this.currentFilter !== 'custom') {
+                        this.reloadData();
+                    }
                 });
 
                 this.connection.start();

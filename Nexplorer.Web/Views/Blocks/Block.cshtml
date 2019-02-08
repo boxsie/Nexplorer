@@ -152,7 +152,14 @@
                     <span class="fa fa-exchange"></span>
                 </div>
             </div>
-            <h3>Transactions</h3>
+
+            <tx-table ref="txTable" id="txTable"
+                      :filter-criteria="filterCriteria"
+                      :ajax-url="txTableAjaxUrl"
+                      :columns="txTableColumns"
+                      :ignore-keys="ignoreKeys"
+                      v-on:row-click="selectTransaction"
+                      v-on:filter-criteria-update="filterCriteriaUpdate"></tx-table>
         </div>
     </div>
 </div>
@@ -162,7 +169,8 @@
     <script language="javascript">
         var vm = new nexplorer.BlockViewModel({
 			confirmations: @Model.Confirmations,
-			showNext: @Json.Serialize(Model.HasNextBlock)
+			showNext: @Json.Serialize(Model.HasNextBlock),
+            height: @Model.Height
         });
     </script>
 }

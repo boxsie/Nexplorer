@@ -195,8 +195,12 @@
     </div>
 
     <address-table ref="addressTable" class="address-table"
+                   :filter="currentFilter"
+                   :filter-criteria="filterCriteria"
                    :ajax-url="addressTableAjaxUrl"
-                   :columns="addressTableColumns"></address-table>
+                   :columns="addressTableColumns"
+                   v-on:filter-update="filterUpdate"
+                   v-on:filter-criteria-update="filterCriteriaUpdate"></address-table>
 </div>
 
 @section Scripts {

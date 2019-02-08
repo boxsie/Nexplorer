@@ -1,20 +1,124 @@
-﻿@model BlockViewModel
+﻿@using Nexplorer.Domain.Enums
+@model object
 
 @{
-    ViewBag.Title = "Blocks";
+    ViewBag.Title = "Transactions";
     Layout = "_Layout";
 }
 
-<div id="blockPages">
-    @{ await Html.RenderPartialAsync("_AdvertBanner"); }
+@section Head {
+    <link rel="stylesheet" href="@ViewBag.ControllerCss" />
+}
 
-    <div class="panel clearfix">
-        <h1>Blocks</h1>
-        <h3>Last 50 Blocks</h3>
-        <p><i>This page live updates the blocks as they arrive.</i></p>
-        <blockchain-table ref="blockTable" v-bind:items-per-page="10"></blockchain-table>
+@section Header {
+    <div id="hero" class="jumbotron jumbotron-fluid"></div>
+    <div id="heroText" class="jumbotron jumbotron-fluid">
+        <div class="container-fluid max-width">
+            <div id="heroHeader">
+                <h1>BLOCKS</h1>
+                @*<em>
+                        Bitcoin private keys are 256 bits in length,<br />
+                        Nexus private keys are more than twice as long at 571 bits.
+                    </em>*@
+            </div>
+
+            @*<div>
+                    <swiper>
+                        <swiper-slide :slide-title="'Total Addresses'" :slide-val="totalAddresses" :slide-icon="'fa-angle-double-up'"></swiper-slide>
+                        <swiper-slide :slide-title="'Average Balance'" :slide-val="averageBalance" :slide-icon="'fa-balance-scale'"></swiper-slide>
+                        <swiper-slide :slide-title="'Creation Rate'" :slide-val="newAddressRate" :slide-icon="'fa-plus-circle'"></swiper-slide>
+                        <swiper-slide :slide-title="'Staking Count'" :slide-val="amountStaking" :slide-icon="'fa-bolt'"></swiper-slide>
+                        <swiper-slide :slide-title="'Staked Coins'" :slide-val="totalStakedCoins" :slide-icon="'fa-bolt'"></swiper-slide>
+                        <swiper-slide :slide-title="'With 1000+ NXS'" :slide-val="stakeablePercentage" :slide-icon="'fa-money'"></swiper-slide>
+                        <swiper-slide :slide-title="'Dormant 1+ Years'" :slide-val="percentageDormant" :slide-icon="'fa-bed'"></swiper-slide>
+                        <swiper-slide :slide-title="'Zero Balance'" :slide-val="zeroBalance" :slide-icon="'fa-ban'"></swiper-slide>
+                    </swiper>
+                </div>*@
+        </div>
     </div>
+}
+
+@{ await Html.RenderPartialAsync("_AdvertBanner"); }
+
+<div class="panel full-length">
+    <div class="row">
+        <div class="col-8">
+            <h2>FILTER BLOCKS</h2>
+        </div>
+        <div class="col-4 text-right">
+            <span class="fa fa-filter"></span>
+        </div>
+    </div>
+
+    <div class="text-toggle">
+        <a href="#" v-on:click.prevent.stop="changeFilter('latest')" v-bind:class="currentFilter == 'latest' ? 'active-link' : ''">Latest</a>
+        <span class="toggle-seperator fa fa-ellipsis-v"></span>
+        <a href="#" v-on:click.prevent.stop="changeFilter('custom')" v-bind:class="currentFilter == 'custom' ? 'active-link' : ''">Custom</a>
+    </div>
+
+    <div id="customFilter" v-if="currentFilter == 'custom'" v-cloak>
+        <form id="customFilterForm">
+            <div class="row">
+                <div class="col-sm-4">
+                    <h3>AMOUNT</h3>
+                    <br />
+                    <div class="form-group">
+                        <label for="amountMin">Min Amount</label>
+                        <input type="number" class="form-control" id="amountMin" v-model="filterCriteria.minAmount">
+                    </div>
+                    <div class="form-group">
+                        <label for="amountMax">Max Amount</label>
+                        <input type="number" class="form-control" id="amountMax" v-model="filterCriteria.maxAmount">
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <h3>HEIGHT</h3>
+                    <br />
+                    <div class="form-group">
+                        <label for="lastSeenFrom">Min Height</label>
+                        <input type="number" class="form-control" id="lastSeenFrom" v-model="filterCriteria.heightFrom">
+                    </div>
+                    <div class="form-group">
+                        <label for="lastSeenTo">Max Height</label>
+                        <input type="number" class="form-control" id="lastSeenTo" v-model="filterCriteria.heightTo">
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <h3>OPTIONS</h3>
+                    <br />
+                    <div class="form-group">
+                        <label for="orderBy">Order By</label>
+                        <select asp-items="Html.GetEnumSelectList<OrderTransactionsBy>()" id="orderBy" class="form-control" v-model="filterCriteria.orderBy"></select>
+                    </div>
+                    <div class="form-group">
+                        @{
+                            var selectList = new List<SelectListItem> { new SelectListItem("All", null) };
+                            selectList.AddRange(Html.GetEnumSelectList<TransactionType>());
+                        }
+
+                        <label for="txType">Transaction Type</label>
+                        <select asp-items="selectList" id="txType" class="form-control" v-model="filterCriteria.txType"></select>
+                    </div>
+                </div>
+            </div>
+            <small class="text-muted" style="display: block;">
+                All fields are optional, 1000 results maximum.
+            </small>
+            <br />
+            <button type="submit" class="btn btn-primary" v-on:click.prevent.stop="reloadData">GO</button>
+        </form>
+    </div>
+
+    <block-table ref="blockTable" id="blockTable"
+              :filter="currentFilter"
+              :filter-criteria="filterCriteria"
+              :ajax-url="blockTableAjaxUrl"
+              :columns="blockTableColumns"
+              v-on:row-click="selectBlock"
+              v-on:filter-update="filterUpdate"
+              v-on:filter-criteria-update="filterCriteriaUpdate"></block-table>
 </div>
+
 
 @section Scripts {
     <script language="javascript" src="@ViewBag.ControllerJs"></script>

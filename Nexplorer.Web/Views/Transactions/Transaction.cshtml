@@ -38,7 +38,7 @@
                     <span class="fa fa-cube"></span>
                 </div>
             </div>
-            <h3>TX Type</h3>
+            <h3>Transaction Type</h3>
             <p class="val">@Model.Transaction.TransactionType</p>
             <h3>Inputs</h3>
             <p class="val">@Model.Transaction.Inputs.Count.ToString("N0", CultureInfo.InvariantCulture)</p>
@@ -93,16 +93,25 @@
         <div class="panel">
             <div class="row">
                 <div class="col-9">
-                    <h2>INPUTS</h2>
+                    <h2>INPUTS (@Model.Transaction.Inputs.Count.ToString("N0"))</h2>
                 </div>
                 <div class="col-3 text-right">
                     <span class="fa fa-exchange"></span>
                 </div>
             </div>
             
-            <tx-table-inputs ref="txTableInputs"
-                             :columns="columns"
-                             :txs="inputs"></tx-table-inputs>
+            @if (Model.Transaction.Inputs.Any())
+            {
+                <tx-table-inputs ref="txTableInputs"
+                                 :columns="columns"
+                                 :txs="inputs"></tx-table-inputs>
+            }
+            else
+            {
+                <div class="text-center">
+                    There are no inputs in this transaction
+                </div>
+            }
         </div>
     </div>
 </div>
@@ -112,7 +121,7 @@
         <div class="panel">
             <div class="row">
                 <div class="col-9">
-                    <h2>OUTPUTS</h2>
+                    <h2>OUTPUTS (@Model.Transaction.Outputs.Count.ToString("N0"))</h2>
                 </div>
                 <div class="col-3 text-right">
                     <span class="fa fa-exchange"></span>

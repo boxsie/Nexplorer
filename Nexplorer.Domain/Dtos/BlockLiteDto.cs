@@ -17,7 +17,7 @@ namespace Nexplorer.Domain.Dtos
         public int Size { get; set; }
 
         [ProtoMember(4)]
-        public string Channel { get; set; }
+        public int Channel { get; set; }
 
         [ProtoMember(5)]
         public DateTime Timestamp { get; set; }
@@ -38,7 +38,7 @@ namespace Nexplorer.Domain.Dtos
             Height = block.Height;
             Hash = block.Hash;
             Size = block.Size;
-            Channel = ((BlockChannels)block.Channel).ToString();
+            Channel = block.Channel;
             Timestamp = block.Timestamp;
             Difficulty = block.Difficulty;
             TransactionCount = block.Transactions.Count;

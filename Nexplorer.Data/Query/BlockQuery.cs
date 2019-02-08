@@ -201,7 +201,7 @@ namespace Nexplorer.Data.Query
                         Height = x.Height,
                         Hash = x.Hash,
                         Size = x.Size,
-                        Channel = ((BlockChannels)x.Channel).ToString(),
+                        Channel = x.Channel,
                         Timestamp = x.Timestamp,
                         Difficulty = x.Difficulty,
                         Mint = x.Mint,
@@ -257,18 +257,6 @@ namespace Nexplorer.Data.Query
         public async Task<int> GetTransactionCount(DateTime from, int days)
         {
             return await _nexusDb.Transactions.CountAsync(x => x.Timestamp >= from.AddDays(-days));
-        }
-
-        private static IEnumerable<BlockLiteDto> FilterCacheBlocks(IEnumerable<BlockDto> blocks, BlockFilterCriteria filter)
-        {
-            return blocks.Where(y => 
-                            (!filter.HeightFrom.HasValue || y.Height >= filter.HeightFrom) &&
-                            (!filter.HeightTo.HasValue || y.Height <= filter.HeightTo) &&
-                            (!filter.MinSize.HasValue || y.Size >= filter.MinSize) &&
-                            (!filter.MaxSize.HasValue || y.Size <= filter.MaxSize) &&
-                            (!filter.UtcFrom.HasValue || y.Timestamp >= filter.UtcFrom) &&
-                            (!filter.UtcTo.HasValue || y.Timestamp <= filter.UtcTo))
-                .Select(y => new BlockLiteDto(y));
         }
 
         private static string BuildWhereClause(BlockFilterCriteria filter, out DynamicParameters param)

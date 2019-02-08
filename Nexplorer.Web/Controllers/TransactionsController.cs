@@ -56,9 +56,7 @@ namespace Nexplorer.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> GetTransactions(DataTablePostModel<TransactionFilterCriteria> model)
         {
-            var criteria = model.Filter != "custom"
-                ? GetCriteria(model.Filter)
-                : model.FilterCriteria;
+            var criteria = GetCriteria(model.Filter) ?? model.FilterCriteria;
 
             var count = model.Length > MaxTxsPerFilterPage
                 ? MaxTxsPerFilterPage
@@ -92,7 +90,7 @@ namespace Nexplorer.Web.Controllers
                 case "user":
                     return new TransactionFilterCriteria { OrderBy = OrderTransactionsBy.MostRecent, TxType = TransactionType.User };
                 default:
-                    return new TransactionFilterCriteria { OrderBy = OrderTransactionsBy.MostRecent };
+                    return null;
             }
         }
     }

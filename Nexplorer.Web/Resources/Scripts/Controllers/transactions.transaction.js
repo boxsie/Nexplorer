@@ -33,9 +33,13 @@ export class TransactionViewModel {
                         data: 'amount',
                         width: '30%',
                         render: (data, type, row) => {
-                            var balanceTotal = parseFloat(data.toFixed(4)).toLocaleString();
-                            var amounts = `<strong>${balanceTotal}</strong> <small>NXS</small>`;
-                            return amounts;
+                            if (type == 'display') {
+                                const balanceTotal = parseFloat(data.toFixed(4)).toLocaleString();
+                                const amounts = `<strong>${balanceTotal}</strong> <small>NXS</small>`;
+                                return amounts;
+                            } else {
+                                return data;
+                            }
                         }
                     }
                 ]

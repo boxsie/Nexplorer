@@ -12,6 +12,16 @@ import '../../Style/addresses.index.scss';
 
 export class AddressIndexViewModel {
     constructor(options) {
+        const defaultCriteria = {
+            minBalance: null,
+            maxBalance: null,
+            heightFrom: null,
+            heightTo: null,
+            isStaking: false,
+            isNexus: false,
+            orderBy: 0
+        };
+
         this.vm = new Vue({
             el: '#main',
             data: {
@@ -24,15 +34,7 @@ export class AddressIndexViewModel {
                 percentageDormant: ' - ',
                 zeroBalance: ' - ',
                 currentFilter: 'all',
-                filterCriteria: {
-                    minBalance: null,
-                    maxBalance: null,
-                    heightFrom: null,
-                    heightTo: null,
-                    isStaking: false,
-                    isNexus: false,
-                    orderBy: 0
-                },
+                filterCriteria: defaultCriteria,
                 addressTableAjaxUrl: '/addresses/getaddresses',
                 addressTableColumns: [
                     {
@@ -153,6 +155,7 @@ export class AddressIndexViewModel {
                 },
                 changeFilter(newFilter) {
                     this.currentFilter = newFilter;
+                    this.filterCriteria = JSON.parse(JSON.stringify(defaultCriteria));
 
                     if (this.currentFilter !== 'custom') {
                         this.reloadData();
@@ -164,6 +167,16 @@ export class AddressIndexViewModel {
                 truncateHash(hash, len) {
                     const start = hash.substring(0, len);
                     return start + '...';
+                },
+                filterUpdate(filter) {
+                    if (filter) {
+                        this.currentFilter = filter;
+                    } else {
+                        this.currentFilter = 'all';
+                    }
+                },
+                filterCriteriaUpdate(filterCriteria) {
+                    this.filterCriteria = filterCriteria;
                 }
             },
             created() {

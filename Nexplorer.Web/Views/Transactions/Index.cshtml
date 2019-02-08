@@ -58,7 +58,7 @@
         <a href="#" v-on:click.prevent.stop="changeFilter('custom')" v-bind:class="currentFilter == 'custom' ? 'active-link' : ''">Custom</a>
     </div>
 
-    <div id="customFilter" v-if="currentFilter == 'custom'">
+    <div id="customFilter" v-if="currentFilter == 'custom'" v-cloak>
         <form id="customFilterForm">
             <div class="row">
                 <div class="col-sm-4">
@@ -111,9 +111,14 @@
         </form>
     </div>
 
-    <address-table ref="txTable" id="txTable"
-                   :ajax-url="txTableAjaxUrl"
-                   :columns="txTableColumns"></address-table>
+    <tx-table ref="txTable" id="txTable"
+              :filter="currentFilter"
+              :filter-criteria="filterCriteria"
+              :ajax-url="txTableAjaxUrl"
+              :columns="txTableColumns"
+              v-on:row-click="selectTransaction"
+              v-on:filter-update="filterUpdate"
+              v-on:filter-criteria-update="filterCriteriaUpdate"></tx-table>
 </div>
 
 

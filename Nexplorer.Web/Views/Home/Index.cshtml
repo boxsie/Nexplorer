@@ -97,8 +97,29 @@
                     <span class="fa fa-cubes"></span>
                 </div>
             </div>
-
-            <block-table ref="blockTable" v-bind:items-per-page="10" v-bind:paging-disabled="true" style="margin-top: 15px;"></block-table>
+            
+            <div id="blockTable" style="margin-top: 15px;" v-cloak>
+                <table class="table table-hover" style="border: 0;">
+                    <thead>
+                    <tr>
+                        <th>Height</th>
+                        <th>Channel</th>
+                        <th class="d-none d-sm-table-cell">Size</th>
+                        <th><span class="d-none d-sm-block">Txs</span><span class="d-sm-none">TXs</span></th>
+                        <th style="width: 100px">Age</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="block in blocks" v-on:click="selectRow('/blocks/' + block.height)" style="cursor: pointer;">
+                        <td><a v-bind:href="'/blocks/' + block.height">{{ block.height.toLocaleString() }}</a></td>
+                        <td>{{ block.channel }}</td>
+                        <td class="d-none d-sm-table-cell">{{ block.size.toLocaleString() }} <small style="font-size: 10px">B</small></td>
+                        <td>{{ block.transactionCount }}</td>
+                        <td style="width: 100px"><date-age :from-date="block.timestamp" :precise="true"></date-age></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <div class="text-right">
                 <a asp-action="index" asp-controller="blocks">
@@ -118,8 +139,29 @@
                     <span class="fa fa-exchange"></span>
                 </div>
             </div>
-
-            <tx-table ref="txTable" v-bind:items-per-page="10" v-bind:paging-disabled="true" style="margin-top: 15px;"></tx-table>
+            
+            <div id="transactionTable" style="margin-top: 15px;" v-cloak>
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th class="text-right">Amount</th>
+                        <th class="d-none d-sm-table-cell text-center">In</th>
+                        <th class="d-none d-sm-table-cell text-center">Out</th>
+                        <th>Age</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="tx in txs" v-on:click="selectRow('/transactions/' + tx.transactionHash)" style="cursor: pointer;">
+                        <td><a v-bind:href="'/transactions/' + tx.transactionHash">{{ $layoutHub.parseTxType(tx.transactionType) }}</a></td>
+                        <td class="text-right">{{ tx.amount.toLocaleString() }} <span style="font-size: 10px;">NXS</span></td>
+                        <td class="d-none d-sm-table-cell text-center">{{ tx.transactionInputCount.toLocaleString() }}</td>
+                        <td class="d-none d-sm-table-cell text-center">{{ tx.transactionOutputCount.toLocaleString() }}</td>
+                        <td><date-age :from-date="tx.timestamp" :precise="true"></date-age></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
             
             <div class="text-right">
                 <a asp-action="index" asp-controller="transactions">

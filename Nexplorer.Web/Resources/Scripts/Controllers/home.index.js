@@ -2,8 +2,7 @@
 import Vue from 'vue';
 import { HubConnectionBuilder, LogLevel } from '@aspnet/signalr';
 import moment from 'moment';
-
-import blockchainTable from '../Library/blockchainTable';
+import dateAge from '../Library/dateAge';
 
 import '../../Images/nxs-icon.png';
 
@@ -14,6 +13,8 @@ export class HomeViewModel {
         this.vm = new Vue({
             el: '#main',
             data: {
+                blocks: [],
+                txs: []
             },
             computed: {
                 timestampUtc() {
@@ -29,11 +30,45 @@ export class HomeViewModel {
                     return (this.$layoutHub.latestPrice.baseVolume ? this.$layoutHub.latestPrice.baseVolume : 0).toFixed(4);
                 }
             },
+            methods: {
+                formatTimeStamp(timestamp) {
+                    return timestamp.format("DD/MM HH:mm:ss");
+                },
+                updateBlocks() {
+                    $.ajax({
+                        url: 'blocks/getrecentblocks',
+                        data: {
+                            start: 1,
+                            count: 10
+                        },
+                        success: (result) => {
+                            this.blocks = result.results;
+                        }
+                    });
+                },
+                updateTransactions() {
+                    $.ajax({
+                        url: 'transactions/getrecenttransactions',
+                        data: {
+                            start: 1,
+                            count: 10
+                        },
+                        success: (result) => {
+                            this.txs = result.results;
+                        }
+                    });
+                },
+                selectRow(href) {
+                    window.location.href = href;
+                }
+            },
             components: {
-                BlockTable: blockchainTable('blocks'),
-                TxTable: blockchainTable('transactions')
+                DateAge: dateAge
             },
             mounted() {
+                this.updateBlocks();
+                this.updateTransactions();
+
                 this.connection = new HubConnectionBuilder()
                     .configureLogging(LogLevel.Information)
                     .withUrl('/homehub').build();
@@ -41,23 +76,22 @@ export class HomeViewModel {
                 this.connection.on('newBlockPubSub',
                     (blockData) => {
                         var b = JSON.parse(blockData);
-                        this.$refs.blockTable.addItem(b);
+                        
+                        this.blocks.splice(0, 0, b);
+                        this.blocks.pop();
+
                         document.title = `#${b.height} | Nexplorer - A Nexus Block Explorer`;
                     });
 
                 this.connection.on('newTxPubSub',
                     (tx) => {
-                        this.$refs.txTable.addItem(JSON.parse(tx));
+                        this.txs.splice(0, 0, JSON.parse(tx));
+                        this.txs.pop();
                     });
                 
                 this.connection.start()
                     .then(() => {
                     });
-            },
-            methods: {
-                formatTimeStamp(timestamp) {
-                    return timestamp.format("DD/MM HH:mm:ss");
-                }
             }
         });
     }

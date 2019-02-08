@@ -41,6 +41,7 @@ export class AddressViewModel {
                 identiconSvg: '',
                 waitingForFavouriteResponse: false,
                 filterCriteria: defaultCriteria,
+                ignoreKeys: ['addressHashes'],
                 includeRewards: 0,
                 transactionTableAjaxUrl: '/addresses/getaddresstxs',
                 transactionTableColumns: [
@@ -154,7 +155,7 @@ export class AddressViewModel {
                 ]
             },
             components: {
-                TransactionTable: dataTableVue(defaultCriteria, 'first_last_numbers'),
+                TransactionTable: dataTableVue('first_last_numbers'),
                 CurrencyHelper: currencyHelper,
                 ActivityChart: activityChart
             },
@@ -194,12 +195,9 @@ export class AddressViewModel {
                     }
                 },
                 reloadData() {
-                    const reloadCriteria = JSON.parse(JSON.stringify(this.filterCriteria));
-                    
-                    if (reloadCriteria.txType === "All")
-                        reloadCriteria.txType = null;
-                    
-                    this.$refs.txTable.dataReload(reloadCriteria);
+                    setTimeout(() => {
+                        this.$refs.txTable.dataReload();
+                    }, 1);
                 },
                 truncateHash(hash, len) {
                     const start = hash.substring(0, len);
@@ -207,6 +205,9 @@ export class AddressViewModel {
                 },
                 selectTransaction(tx) {
                     window.location.href = `/transactions/${tx.transactionHash}`;
+                },
+                filterCriteriaUpdate(filterCriteria) {
+                    this.filterCriteria = filterCriteria;
                 }
             },
             mounted() {
