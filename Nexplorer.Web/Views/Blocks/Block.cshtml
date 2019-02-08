@@ -153,11 +153,6 @@
                 </div>
             </div>
             <h3>Transactions</h3>
-            @foreach (var tx in Model.Transactions)
-            {
-                <partial name="_TransactionItem" model="new TransactionItemViewModel { Transaction = tx, ShowHash = true }" />
-                <hr />
-            }
         </div>
     </div>
 </div>

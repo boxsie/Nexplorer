@@ -4,7 +4,7 @@ import { HubConnectionBuilder, LogLevel } from '@aspnet/signalr';
 
 import dataTableVue from '../Library/dataTableVue';
 
-import '../../Style/transaction.index.scss';
+import '../../Style/transactions.index.scss';
 
 export class TransactionViewModel {
     constructor(options) {

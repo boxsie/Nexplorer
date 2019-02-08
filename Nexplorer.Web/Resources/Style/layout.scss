@@ -109,6 +109,10 @@ label {
     font-size: 16px;
 }
 
+.custom-select {
+    background: none;
+}
+
 #navbar {
     .navbar-bg {
         position: fixed;
@@ -837,15 +841,7 @@ label {
                 }
             }
         }
-
-        #transactionTable {
-            .hash-cell {
-                max-width: 390px;
-                padding-right: 30px;
-                word-wrap: break-word;
-            }
-        }
-
+        
         #layout {
             font-size: 14px;
 

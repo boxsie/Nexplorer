@@ -25,7 +25,7 @@ namespace Nexplorer.Web.Models
         public string Hash { get; set; }
         public string MerkleRoot { get; set; }
 
-        public List<TransactionModel> Transactions { get; set; }
+        public List<TransactionDto> Transactions { get; set; }
 
         public BlockViewModel(BlockDto block, int channelHeight, int confirmations)
         {
@@ -44,10 +44,8 @@ namespace Nexplorer.Web.Models
             Hash = block.Hash;
             MerkleRoot = block.MerkleRoot;
 
-            Transactions = block.Transactions?.Select(x => new TransactionModel(x)).ToList()
-                           ?? new List<TransactionModel>();
-
-            TransactionsTotal = Transactions.Sum(x => x.TransactionOutputs.Sum(y => y.Amount));
+            Transactions = block.Transactions;
+            TransactionsTotal = Transactions.Count;
         }
     }
 }

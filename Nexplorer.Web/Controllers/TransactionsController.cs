@@ -46,9 +46,8 @@ namespace Nexplorer.Web.Controllers
 
             var viewModel = new TransactionViewModel
             {
-                Transaction = new TransactionModel(tx),
-                BlockHash = blockHash,
-                MaxConfirmations = Settings.App.MaxConfirmations
+                Transaction = tx,
+                BlockHash = blockHash
             };
 
             return View(viewModel);

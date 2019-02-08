@@ -3,7 +3,8 @@
     "BulkSaveCount": 1500,
     "BlockRefreshHeight": 100,
     "MaxConfirmations": 50,
-    "BlockScanDepth": 500,
+    "BlockScanDepthLong": 500,
+    "BlockScanDepthShort": 20,
     "UserSettingsCookieKey": "nexplorerusersettings"
   }
 }

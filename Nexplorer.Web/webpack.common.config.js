@@ -17,6 +17,7 @@ module.exports = {
         'blocks.index': controllerScriptsPath + 'blocks.index.js',
         'blocks.block': controllerScriptsPath + 'blocks.block.js',
         'transactions.index': controllerScriptsPath + 'transactions.index.js',
+        'transactions.transaction': controllerScriptsPath + 'transactions.transaction.js',
         'addresses.index': controllerScriptsPath + 'addresses.index.js',
         'addresses.address': controllerScriptsPath + 'addresses.address.js',
         'network.index': controllerScriptsPath + 'network.index.js',

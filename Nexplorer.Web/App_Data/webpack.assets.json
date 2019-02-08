@@ -47,6 +47,10 @@
     "js": "../js/transactions.index.js",
     "css": "../css/transactions.index.css"
   },
+  "transactions.transaction": {
+    "js": "../js/transactions.transaction.js",
+    "css": "../css/transactions.transaction.css"
+  },
   "validate": {
     "js": "../js/validate.js"
   },

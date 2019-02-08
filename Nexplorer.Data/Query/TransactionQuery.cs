@@ -39,8 +39,12 @@ namespace Nexplorer.Data.Query
                 .ThenInclude(x => x.Address)
                 .Include(x => x.Block)
                 .FirstOrDefaultAsync();
+            
+            var dto = _mapper.Map<TransactionDto>(tx);
 
-            return _mapper.Map<TransactionDto>(tx);
+            dto.Confirmations = (await _nexusDb.Blocks.MaxAsync(y => y.Height) - tx.BlockHeight) + 1;
+
+            return dto;
         }
 
         public async Task<int> GetTransactionCountLastDay()

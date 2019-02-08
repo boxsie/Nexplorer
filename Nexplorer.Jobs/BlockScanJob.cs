@@ -18,8 +18,10 @@ namespace Nexplorer.Jobs
         private readonly AddressAggregatorCommand _addressAggregator;
         private readonly BlockDeleteCommand _blockDelete;
 
-        private int _nextHeight = 0;
-        private int _startHeight = 0;
+        private int _nextHeightLong = 0;
+        private int _startHeightLong = 0;
+        private int _nextHeightShort = 0;
+        private int _startHeightShort = 0;
 
         public BlockScanJob(ILogger<BlockScanJob> logger, NexusQuery nexusQuery, BlockQuery blockQuery, BlockInsertCommand blockInsert, 
             AddressAggregatorCommand addressAggregator, BlockDeleteCommand blockDelete) 
@@ -34,20 +36,29 @@ namespace Nexplorer.Jobs
 
         protected override async Task ExecuteAsync()
         {
-            if (_nextHeight == 0 || _nextHeight < _startHeight - Settings.App.BlockScanDepth)
+            if (_nextHeightShort == 0 || _nextHeightShort <= _startHeightShort - Settings.App.BlockScanDepthShort)
             {
-                _nextHeight = await _blockQuery.GetLastHeightAsync();
-                _startHeight = _nextHeight;
+                _nextHeightShort = await _blockQuery.GetLastHeightAsync();
+                _startHeightShort = _nextHeightShort;
             }
 
-            var nextHeightAdditional = _nextHeight - (int)(Settings.App.BlockScanDepth * 0.5f);
+            if (_nextHeightLong == 0 || _nextHeightLong <= _startHeightLong - Settings.App.BlockScanDepthLong)
+            {
+                _nextHeightLong = await _blockQuery.GetLastHeightAsync() - Settings.App.BlockScanDepthShort;
 
-            Logger.LogInformation($"Scanning block {_nextHeight} and {nextHeightAdditional} for mismatches {(_startHeight - _nextHeight) + 1}/{Settings.App.BlockScanDepth}");
+                if (_nextHeightLong < 0)
+                    _nextHeightLong = Settings.App.BlockScanDepthShort;
 
-            await ScanAndRepair(_nextHeight);
-            await ScanAndRepair(nextHeightAdditional);
+                _startHeightLong = _nextHeightLong;
+            }
+            
+            Logger.LogInformation($"Scanning block {_nextHeightShort} and {_nextHeightLong} for mismatches (Short depth: {(_startHeightShort - _nextHeightShort) + 1}, Long depth: {(_startHeightLong - _nextHeightLong) + 1})");
 
-            _nextHeight--;
+            await ScanAndRepair(_nextHeightLong);
+            await ScanAndRepair(_nextHeightShort);
+
+            _nextHeightLong--;
+            _nextHeightShort--;
         }
 
         private async Task ScanAndRepair(int blockHeight)
