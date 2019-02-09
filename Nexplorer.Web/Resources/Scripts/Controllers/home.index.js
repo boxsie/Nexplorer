@@ -40,17 +40,37 @@ export class HomeViewModel {
                         data: {
                         },
                         success: (result) => {
-                            this.blocks = result;
+                            this.blocks = [];
                             this.txs = [];
 
-                            for (let i = 0; i < this.blocks.length; i++) {
-                                for (let j = 0; j < this.blocks[i].transactions.length; j++) {
-                                    this.txs.push(this.blocks[i].transactions[j]);
+                            for (let i = 0; i < result.length; i++) {
+                                const b = result[i];
+
+                                this.blocks.push({
+                                    height: b.height,
+                                    size: b.size,
+                                    channel: b.channel,
+                                    timestamp: b.timestamp,
+                                    difficulty: b.difficulty,
+                                    transactionCount: b.transactions.length
+                                });
+
+                                for (let j = 0; j < b.transactions.length; j++) {
+                                    const t = b.transactions[j];
+
+                                    this.txs.push({
+                                        blockHeight: t.blockHeight,
+                                        transactionHash: t.hash,
+                                        timestamp: t.timestamp,
+                                        amount: t.amount,
+                                        transactionType: t.transactionType,
+                                        transactionInputCount: t.inputs.length,
+                                        transactionOutputCount: t.outputs.length
+                                    });
                                 }
                             }
 
                             this.txs = this.txs.slice(0, 10);
-                            console.log(this.txs);
                         }
                     });
                 },

@@ -114,7 +114,7 @@
                         <td><a v-bind:href="'/blocks/' + block.height">{{ block.height.toLocaleString() }}</a></td>
                         <td>{{ $layoutHub.parseBlockChannel(block.channel) }}</td>
                         <td class="d-none d-sm-table-cell">{{ $layoutHub.parseBytes(block.size) }}</td>
-                        <td>{{ block.transactions.length }}</td>
+                        <td>{{ block.transactionCount }}</td>
                         <td style="width: 100px"><date-age :from-date="block.timestamp" :precise="true"></date-age></td>
                     </tr>
                     </tbody>
@@ -155,8 +155,8 @@
                     <tr v-for="tx in txs" v-on:click="selectRow('/transactions/' + tx.transactionHash)" style="cursor: pointer;">
                         <td><a v-bind:href="'/transactions/' + tx.transactionHash">{{ $layoutHub.parseTxType(tx.transactionType) }}</a></td>
                         <td class="text-right">{{ tx.amount.toLocaleString() }} <span style="font-size: 10px;">NXS</span></td>
-                        <td class="d-none d-sm-table-cell text-center">{{ tx.inputs.length.toLocaleString() }}</td>
-                        <td class="d-none d-sm-table-cell text-center">{{ tx.outputs.length.toLocaleString() }}</td>
+                        <td class="d-none d-sm-table-cell text-center">{{ tx.transactionInputCount.toLocaleString() }}</td>
+                        <td class="d-none d-sm-table-cell text-center">{{ tx.transactionOutputCount.toLocaleString() }}</td>
                         <td><date-age :from-date="tx.timestamp" :precise="true"></date-age></td>
                     </tr>
                     </tbody>
