@@ -7,6 +7,7 @@ namespace Nexplorer.Config.Core
         public int MaxConfirmations { get; set; }
         public int BlockScanDepthLong { get; set; }
         public int BlockScanDepthShort { get; set; }
+        public int BlockCacheSize { get; set; }
         public string UserSettingsCookieKey { get; set; }
     }
 }

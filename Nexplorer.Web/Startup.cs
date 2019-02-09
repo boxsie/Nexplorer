@@ -118,6 +118,7 @@ namespace Nexplorer.Web
             services.AddTransient<AddressFavouriteCommand>();
 
             services.AddTransient<BlockPublishCommand>();
+            services.AddTransient<BlockCacheCommand>();
             services.AddScoped<UserService>();
 
             services.AddTransient<INxsClient, NxsClient>();

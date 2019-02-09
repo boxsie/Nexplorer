@@ -3,6 +3,7 @@ namespace Nexplorer.Config.Core
     public class RedisKeys
     {
         // Cache
+        public string BlockCache { get; set; }
         public string TrustKeyCache { get; set; }
         public string TrustKeyAddressCache { get; set; }
         public string NexusAddressCache { get; set; }
@@ -10,6 +11,7 @@ namespace Nexplorer.Config.Core
         public string BlockSyncStreamCacheHeight { get; set; }
 
         // Stats
+        public string ChainHeight { get; set; }
         public string BlockCount24Hours { get; set; }
         public string TransactionCount24Hours { get; set; }
         public string TimestampUtcLatest { get; set; }
@@ -32,5 +34,10 @@ namespace Nexplorer.Config.Core
 
         public string NodeVersion { get; set; }
         public string SyncOutputPubSub { get; set; }
+
+        public string BuildBlockCacheKey(int height)
+        {
+            return $"{BlockCache}:{height}";
+        }
     }
 }

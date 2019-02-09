@@ -1,5 +1,7 @@
 ﻿{
   "RedisKeys": {
+    "BlockCache": "blocks:blockcache",
+    "ChainHeight": "blocks:chainheight",
     "TrustKeyCache": "addresses:trustkeycache",
     "NexusAddressCache": "addresses:nexusaddresscache",
     "TrustKeyAddressCache": "addresses:trustkeyaddresscache",

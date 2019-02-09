@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    <div class="text-toggle">
+    @*<div class="text-toggle">
         <a href="#" v-on:click.prevent.stop="changeFilter('latest')" v-bind:class="currentFilter == 'latest' ? 'active-link' : ''">Latest</a>
         <span class="toggle-seperator fa fa-ellipsis-v"></span>
         <a href="#" v-on:click.prevent.stop="changeFilter('custom')" v-bind:class="currentFilter == 'custom' ? 'active-link' : ''">Custom</a>
@@ -107,7 +107,7 @@
             <br />
             <button type="submit" class="btn btn-primary" v-on:click.prevent.stop="reloadData">GO</button>
         </form>
-    </div>
+    </div>*@
 
     <block-table ref="blockTable" id="blockTable"
               :filter="currentFilter"

@@ -21,9 +21,10 @@ namespace Nexplorer.Jobs
         private readonly BlockPublishCommand _blockPublish;
         private readonly BlockInsertCommand _blockInsert;
         private readonly AddressAggregatorCommand _addressAggregator;
+        private readonly BlockCacheCommand _cacheCommand;
 
         public BlockSyncJob(ILogger<BlockSyncJob> logger, NexusQuery nexusQuery, BlockQuery blockQuery, BlockPublishCommand blockPublish,
-            BlockInsertCommand blockInsert, AddressAggregatorCommand addressAggregator)
+            BlockInsertCommand blockInsert, AddressAggregatorCommand addressAggregator, BlockCacheCommand cacheCommand)
             : base(3, logger)
         {
             _nexusQuery = nexusQuery;
@@ -31,6 +32,7 @@ namespace Nexplorer.Jobs
             _blockPublish = blockPublish;
             _blockInsert = blockInsert;
             _addressAggregator = addressAggregator;
+            _cacheCommand = cacheCommand;
         }
 
         protected override async Task ExecuteAsync()
@@ -53,6 +55,8 @@ namespace Nexplorer.Jobs
                 await AggregateAddressesAsync(nextBlock);
 
                 await _blockPublish.PublishAsync(nextBlock);
+
+                await _cacheCommand.AddAsync(nextBlock);
 
                 nextBlock = await GetBlockAsync(nextBlock.Height + 1);
             }

@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Nexplorer.Data.Command;
 using Nexplorer.Data.Query;
 using Nexplorer.Domain.Criteria;
 using Nexplorer.Domain.Dtos;
@@ -14,12 +15,14 @@ namespace Nexplorer.Web.Controllers
     public class BlocksController : WebControllerBase
     {
         private readonly BlockQuery _blockQuery;
+        private readonly BlockCacheCommand _cacheCommand;
 
         private const int MaxBlocksPerFilterPage = 100;
 
-        public BlocksController(BlockQuery blockQuery)
+        public BlocksController(BlockQuery blockQuery, BlockCacheCommand cacheCommand)
         {
             _blockQuery = blockQuery;
+            _cacheCommand = cacheCommand;
         }
 
         public IActionResult Index()
@@ -55,9 +58,9 @@ namespace Nexplorer.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetRecentBlocks(int start, int count)
+        public async Task<IActionResult> GetRecentBlocks()
         {
-            return Ok(await _blockQuery.GetBlocksFilteredAsync(new BlockFilterCriteria { OrderBy = OrderBlocksBy.Highest }, start, count, false));
+            return Ok(await _cacheCommand.GetAsync());
         }
 
         [HttpPost]

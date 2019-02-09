@@ -50,7 +50,7 @@ namespace Nexplorer.Data.Query
                         switch (channel)
                         {
                             case BlockChannels.PoS:
-                                var lastPosBlock = await _blockQuery.GetLastBlock(channel);
+                                var lastPosBlock = await _blockQuery.GetLastBlockAsync(channel);
 
                                 diff = lastPosBlock.Difficulty;
                                 reward = lastPosBlock.Mint;

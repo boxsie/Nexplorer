@@ -46,23 +46,23 @@ export class BlockViewModel {
                         title: '<span class="fa fa-hashtag"></span>',
                         data: 'hash',
                         render: (data, type, row) => {
-                            return `<a class="d-none d-md-block" href="/blocks/${data}">${this.vm.truncateHash(data, 15)}</a>
-                                            <a class="d-none d-sm-block d-md-none" href="/blocks/${data}">${this.vm.truncateHash(data, 10)}</a>
+                            return `<a class="d-none d-md-block" href="/blocks/${data}">${this.vm.truncateHash(data, 28)}</a>
+                                            <a class="d-none d-sm-block d-md-none" href="/blocks/${data}">${this.vm.truncateHash(data, 15)}</a>
                                             <a class="d-sm-none" href="/blocks/${data}">${this.vm.truncateHash(data, 4)}</a>`;
                         }
                     },
                     {
                         title: '<span class="fa fa-exchange"></span>',
                         data: 'channel',
-                        class: 'in-out-col',
+                        class: 'text-center',
                         render: (data, type, row) => {
                             switch (data) {
-                            case 0:
-                                return `<span class="fa fa-hashtag tx-type-icon"></span>`;
-                            case 1:
-                                return `<span class="fa fa-microchip tx-type-icon"></span>`;
-                            case 2:
-                                return `<span class="fa fa-bolt tx-type-icon"></span>`;
+                                case 0:
+                                    return `<span class="fa fa-bolt tx-type-icon"></span>`;
+                                case 1:
+                                    return `<span class="fa fa-microchip tx-type-icon"></span>`;
+                                case 2:
+                                    return `<span class="fa fa-hashtag tx-type-icon"></span>`;
                             }
                         }
                     },
@@ -137,7 +137,7 @@ export class BlockViewModel {
                     .withUrl('/blockhub').build();
 
                 this.connection.on('newBlockPubSub', (block) => {
-                    this.$refs.blockTable.refreshPage();
+                    this.$refs.blockTable.dataReload();
                 });
 
                 this.connection.start();

@@ -100,6 +100,7 @@ namespace Nexplorer.Sync
             services.AddScoped<BlockDeleteCommand>();
             services.AddScoped<BlockPublishCommand>();
             services.AddScoped<AddressAggregatorCommand>();
+            services.AddScoped<BlockCacheCommand>();
 
             services.AddScoped<NexusQuery>();
             services.AddScoped<BlockQuery>();

@@ -20,6 +20,7 @@ namespace Nexplorer.Jobs.Catchup
         private readonly ILogger<BlockSyncCatchup> _logger;
         private readonly RedisCommand _redisCommand;
         private readonly BlockInsertCommand _blockInsert;
+        private readonly BlockCacheCommand _cacheCommand;
         private readonly CancellationTokenSource _cancelBlockStream;
 
         private Stopwatch _stopwatch;
@@ -30,7 +31,7 @@ namespace Nexplorer.Jobs.Catchup
         private int _nexusHeight;
 
         public BlockSyncCatchup(NexusQuery nexusQuery, IServiceProvider serviceProvider, BlockQuery blockQuery, 
-            ILogger<BlockSyncCatchup> logger, RedisCommand redisCommand, BlockInsertCommand blockInsert)
+            ILogger<BlockSyncCatchup> logger, RedisCommand redisCommand, BlockInsertCommand blockInsert, BlockCacheCommand cacheCommand)
         {
             _nexusQuery = nexusQuery;
             _serviceProvider = serviceProvider;
@@ -38,6 +39,7 @@ namespace Nexplorer.Jobs.Catchup
             _logger = logger;
             _redisCommand = redisCommand;
             _blockInsert = blockInsert;
+            _cacheCommand = cacheCommand;
             _cancelBlockStream = new CancellationTokenSource();
         }
 

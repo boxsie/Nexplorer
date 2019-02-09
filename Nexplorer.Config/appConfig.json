@@ -5,6 +5,7 @@
     "MaxConfirmations": 50,
     "BlockScanDepthLong": 500,
     "BlockScanDepthShort": 20,
+    "BlockCacheSize": 10, 
     "UserSettingsCookieKey": "nexplorerusersettings"
   }
 }

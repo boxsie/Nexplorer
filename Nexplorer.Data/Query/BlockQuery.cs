@@ -232,16 +232,24 @@ namespace Nexplorer.Data.Query
                 : new DateTime();
         }
 
-        public async Task<BlockDto> GetLastBlockAsync()
+        public async Task<BlockDto> GetLastBlockAsync(BlockChannels? channel = null)
         {
-            return await GetBlockAsync(await GetLastHeightAsync(), true);
-        }
+            if (channel.HasValue)
+            {
+                const string sqlQ = @"SELECT MAX(b.[Height]) FROM [dbo].[Block] b WHERE b.[Channel] = @channel";
 
-        public async Task<BlockDto> GetLastBlock(BlockChannels channel)
-        {
-            return await GetBlockAsync(await _nexusDb.Blocks
-                .Where(x => x.Channel == (int)channel)
-                .MaxAsync(x => x.Height), false);
+                using (var connection = new SqlConnection(Settings.Connection.GetNexusDbConnectionString()))
+                {
+                    connection.Open();
+
+                    var height = await connection.QueryAsync<int?>(sqlQ, new { channel });
+
+                    return await GetBlockAsync(height?.FirstOrDefault() ?? 0, true);
+                }
+            }
+            else
+                return await GetBlockAsync(await GetLastHeightAsync(), true);
+            
         }
 
         public async Task<Transaction> GetLastTransaction()
