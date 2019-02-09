@@ -42,7 +42,7 @@
                 </div>
             </div>
             <h3>Transaction Type</h3>
-            <p class="val">@(Model.Transaction.TransactionType.GetAttribute<DisplayAttribute>())</p>
+            <p class="val">@(Model.Transaction.TransactionType.GetAttribute<DisplayAttribute>().Name)</p>
             <h3>Inputs</h3>
             <p class="val">@Model.Transaction.Inputs.Count.ToString("N0", CultureInfo.InvariantCulture)</p>
             <h3>Outputs</h3>

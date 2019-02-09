@@ -1,10 +1,11 @@
 {
-  "manage.enableauthenticator": {
-    "js": "../js/manage.enableauthenticator.js"
-  },
   "addresses.address": {
     "js": "../js/addresses.address.js",
     "css": "../css/addresses.address.css"
+  },
+  "addresses.index": {
+    "js": "../js/addresses.index.js",
+    "css": "../css/addresses.index.css"
   },
   "admin.index": {
     "js": "../js/admin.index.js",
@@ -29,9 +30,8 @@
     "js": "../js/layout.js",
     "css": "../css/layout.css"
   },
-  "addresses.index": {
-    "js": "../js/addresses.index.js",
-    "css": "../css/addresses.index.css"
+  "manage.enableauthenticator": {
+    "js": "../js/manage.enableauthenticator.js"
   },
   "mining.index": {
     "js": "../js/mining.index.js",
@@ -59,6 +59,15 @@
     "js": "../js/vendor.js"
   },
   "": {
-    "png": "../img/nxs-icon.png"
+    "png": "../img/nxs-icon.png",
+    "eot": "../font/fontawesome-webfont.eot",
+    "svg": "../font/fontawesome-webfont.svg",
+    "ttf": "../font/fontawesome-webfont.ttf",
+    "woff": "../font/fontawesome-webfont.woff",
+    "woff2": "../font/fontawesome-webfont.woff2",
+    "jpg": [
+      "../img/hero-img-xs.jpg",
+      "../img/hero-img.jpg"
+    ]
   }
 }
