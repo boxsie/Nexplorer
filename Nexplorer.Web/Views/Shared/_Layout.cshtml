@@ -293,6 +293,7 @@
     var layoutVm = new nexplorer.LayoutViewModel({
         isSignedIn: @Json.Serialize(User.Identity.IsAuthenticated),
         userSettings: @Json.Serialize(ViewBag.UserSettings),
+        blockChannels: @Json.Serialize(Enum.GetNames(typeof(BlockChannels))),
         txTypes: @Json.Serialize((Enum.GetValues(typeof(TransactionType))
                      .Cast<TransactionType>()
                      .Select(x => x.GetAttribute<DisplayAttribute>().Name))),

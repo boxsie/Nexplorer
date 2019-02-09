@@ -79,7 +79,7 @@ export class BlockViewModel {
                         data: 'size',
                         class: 'd-none d-sm-table-cell',
                         render: (data, type, row) => {
-                            return `<span>${this.vm.parseBytes(data)}</span>`;
+                            return `<span>${this.vm.$layoutHub.parseBytes(data)}</span>`;
                         }
                     },
                     {
@@ -123,12 +123,6 @@ export class BlockViewModel {
                     if (this.currentFilter !== 'custom') {
                         this.reloadData();
                     }
-                },
-                parseBytes(bytes) {
-                    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-                    if (bytes === 0) return '0 Byte';
-                    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-                    return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
                 }
             },
             created() {

@@ -75,12 +75,6 @@ namespace Nexplorer.Web.Controllers
             return Ok(response);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetRecentTransactions(int start, int count)
-        {
-            return Ok(await _transactionQuery.GetTransactionsFilteredAsync(new TransactionFilterCriteria { OrderBy = OrderTransactionsBy.MostRecent }, start, count, false));
-        }
-
         private TransactionFilterCriteria GetCriteria(string filter)
         {
             switch (filter)

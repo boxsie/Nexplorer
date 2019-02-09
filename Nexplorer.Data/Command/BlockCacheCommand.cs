@@ -56,7 +56,7 @@ namespace Nexplorer.Data.Command
             if (chainHeight == 0)
                 return blocks;
 
-            for (var i = chainHeight; i >= chainHeight - Settings.App.BlockCacheSize; i--)
+            for (var i = chainHeight; i > chainHeight - Settings.App.BlockCacheSize; i--)
                 blocks.Add(await _redisCommand.GetAsync<BlockDto>(Settings.Redis.BuildBlockCacheKey(i)));
 
             return blocks;

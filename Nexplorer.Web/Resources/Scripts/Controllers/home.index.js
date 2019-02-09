@@ -38,23 +38,19 @@ export class HomeViewModel {
                     $.ajax({
                         url: 'blocks/getrecentblocks',
                         data: {
-                            start: 1,
-                            count: 10
                         },
                         success: (result) => {
-                            this.blocks = result.results;
-                        }
-                    });
-                },
-                updateTransactions() {
-                    $.ajax({
-                        url: 'transactions/getrecenttransactions',
-                        data: {
-                            start: 1,
-                            count: 10
-                        },
-                        success: (result) => {
-                            this.txs = result.results;
+                            this.blocks = result;
+                            this.txs = [];
+
+                            for (let i = 0; i < this.blocks.length; i++) {
+                                for (let j = 0; j < this.blocks[i].transactions.length; j++) {
+                                    this.txs.push(this.blocks[i].transactions[j]);
+                                }
+                            }
+
+                            this.txs = this.txs.slice(0, 10);
+                            console.log(this.txs);
                         }
                     });
                 },
@@ -67,7 +63,6 @@ export class HomeViewModel {
             },
             mounted() {
                 this.updateBlocks();
-                this.updateTransactions();
 
                 this.connection = new HubConnectionBuilder()
                     .configureLogging(LogLevel.Information)
