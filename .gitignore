@@ -1,6 +1,7 @@
 # Project
 wwwroot/js/
 wwwroot/css/
+App_Data/
 
 *.swp
 *.*~
