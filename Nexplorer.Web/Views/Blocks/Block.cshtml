@@ -53,7 +53,7 @@
         </div>
         <div class="col-sm-3">
             <h3>Sent Amount</h3>
-            <p class="val">@Model.TransactionsTotal.ToString("N6", CultureInfo.InvariantCulture) <span style="font-size: 10px;">NXS</span></p>
+            <p class="val">@Model.Transactions.Sum(x => x.Amount).ToString("N3", CultureInfo.InvariantCulture) <span style="font-size: 10px;">NXS</span></p>
         </div>
         <div class="col-sm-1 text-right d-none d-sm-block">
             <span class="fa fa-cube"></span>

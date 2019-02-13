@@ -59,7 +59,6 @@
     "js": "../js/vendor.js"
   },
   "": {
-    "png": "../img/nxs-icon.png",
     "eot": "../font/fontawesome-webfont.eot",
     "svg": "../font/fontawesome-webfont.svg",
     "ttf": "../font/fontawesome-webfont.ttf",
@@ -68,6 +67,7 @@
     "jpg": [
       "../img/hero-img-xs.jpg",
       "../img/hero-img.jpg"
-    ]
+    ],
+    "png": "../img/nxs-icon.png"
   }
 }

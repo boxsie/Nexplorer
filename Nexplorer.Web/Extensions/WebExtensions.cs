@@ -97,7 +97,7 @@ namespace Nexplorer.Web.Extensions
                 return val.ToString();
 
             if (dVal > Math.Pow(10, 7))
-                return dVal.ToString("E6");
+                return dVal.ToString("N0");
 
             return dVal > 0
                 ? $"{val:##,###.####}"

@@ -441,8 +441,6 @@ namespace Nexplorer.Data.Query
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
-                var results = new FilterResult<AddressTransactionDto>();
-
                 param.Add(nameof(count), count);
                 param.Add(nameof(start), start);
                 param.Add(nameof(maxResults), maxResults ?? int.MaxValue);
@@ -451,7 +449,7 @@ namespace Nexplorer.Data.Query
                 {
                     var r = (await multi.ReadAsync()).ToList();
 
-                    results.Results = r
+                    var addTxs = r
                         .Where(x => filter.AddressHashes.Any(y => y == x.AddressHash))
                         .Select(x => new AddressTransactionDto
                         {
@@ -473,83 +471,29 @@ namespace Nexplorer.Data.Query
                                 .ToList()
                         })
                         .ToList();
-                    results.ResultCount = countResults
-                        ? (int)(await multi.ReadAsync<int>()).FirstOrDefault()
-                        : -1;
-                }
 
-                if (filter.Grouped)
-                {
-                    var grouped = results.Results.GroupBy(x => x.TransactionHash);
-
-                    results.Results = grouped.Select(x =>
+                    // Change coinstake top up txs to user txs
+                    foreach (var addTxDto in addTxs)
                     {
-                        var first = x.First();
-                        var outTx = x.FirstOrDefault(y => y.TransactionInputOutputType == TransactionInputOutputType.Output);
-
-                        switch (first.TransactionType)
+                        if (addTxDto.TransactionType == TransactionType.Coinstake
+                            && addTxDto.TransactionInputOutputType == TransactionInputOutputType.Input
+                            && addTxDto.OppositeItems.All(x => x.AddressHash != addTxDto.AddressHash))
                         {
-                            case TransactionType.Coinstake:
-                                first = outTx ?? throw new NullReferenceException("Coinstake transactions must have an in and out");
-
-                                first.Amount = outTx.Amount - outTx.OppositeItems.Sum(z => z.Amount);
-                                break;
-                            case TransactionType.User:
-                                var inTx = x.FirstOrDefault(y => y.TransactionInputOutputType == TransactionInputOutputType.Input);
-
-                                // This transaction is returning change to the sending address
-                                if (inTx != null && outTx != null)
-                                {
-                                    first = inTx; 
-                                    first.Amount = inTx.Amount - outTx.Amount;
-                                }
-                                else
-                                    first.Amount = x.Sum(y => y.Amount);
-
-                                first.OppositeItems = first.OppositeItems.GroupBy(y => y.AddressHash).Select(y => new AddressTransactionItemDto
-                                {
-                                    AddressHash = y.Key,
-                                    Amount = y.Sum(z => z.Amount)
-                                })
-                                .ToList();
-                                break;
+                            addTxDto.TransactionType = TransactionType.User;
                         }
+                    }
 
-                        return first;
-                    })
-                    .ToList();
+                    if (filter.Grouped)
+                        addTxs = GroupTransactions(addTxs);
+
+                    return new FilterResult<AddressTransactionDto>
+                    {
+                        Results = OrderBy(addTxs, filter.OrderBy, count),
+                        ResultCount = countResults
+                            ? (int) (await multi.ReadAsync<int>()).FirstOrDefault()
+                            : -1
+                    };
                 }
-
-                switch (filter.OrderBy)
-                {
-                    case OrderTransactionsBy.MostRecent:
-                        results.Results = results.Results
-                            .OrderByDescending(x => x.Timestamp)
-                            .ThenByDescending(x => x.TransactionInputOutputType) 
-                            .Take(count)
-                            .ToList();
-                        break;
-                    case OrderTransactionsBy.LeastRecent:
-                        results.Results = results.Results.OrderBy(x => x.Timestamp)
-                            .ThenByDescending(x => x.TransactionInputOutputType)
-                            .Take(count)
-                            .ToList();
-                        break;
-                    case OrderTransactionsBy.HighestAmount:
-                        results.Results = results.Results.OrderByDescending(x => x.Amount)
-                            .ThenByDescending(x => x.TransactionInputOutputType)
-                            .Take(count)
-                            .ToList();
-                        break;
-                    case OrderTransactionsBy.LowestAmount:
-                        results.Results = results.Results.OrderBy(x => x.Amount)
-                            .ThenByDescending(x => x.TransactionInputOutputType)
-                            .Take(count)
-                            .ToList();
-                        break;
-                }
-
-                return results;
             }
         }
 
@@ -742,6 +686,79 @@ namespace Nexplorer.Data.Query
             address.Balance = Math.Round(address.Balance + Math.Round(cacheAddress.Aggregate.ReceivedAmount - cacheAddress.Aggregate.SentAmount, 8), 8);
 
             return address;
+        }
+
+        private static List<AddressTransactionDto> OrderBy(IEnumerable<AddressTransactionDto> addTxs, OrderTransactionsBy orderBy, int count)
+        {
+            switch (orderBy)
+            {
+                case OrderTransactionsBy.MostRecent:
+                default:
+                    return addTxs
+                        .OrderByDescending(x => x.Timestamp)
+                        .ThenByDescending(x => x.TransactionInputOutputType)
+                        .Take(count)
+                        .ToList();
+                case OrderTransactionsBy.LeastRecent:
+                    return addTxs.OrderBy(x => x.Timestamp)
+                        .ThenByDescending(x => x.TransactionInputOutputType)
+                        .Take(count)
+                        .ToList();
+                case OrderTransactionsBy.HighestAmount:
+                    return addTxs.OrderByDescending(x => x.Amount)
+                        .ThenByDescending(x => x.TransactionInputOutputType)
+                        .Take(count)
+                        .ToList();
+                case OrderTransactionsBy.LowestAmount:
+                    return addTxs.OrderBy(x => x.Amount)
+                        .ThenByDescending(x => x.TransactionInputOutputType)
+                        .Take(count)
+                        .ToList();
+            }
+        }
+
+        private static List<AddressTransactionDto> GroupTransactions(IEnumerable<AddressTransactionDto> addTxs)
+        {
+            return addTxs.GroupBy(x => x.TransactionHash).Select(x =>
+            {
+                var first = x.First();
+                var outTx = x.FirstOrDefault(y =>
+                    y.TransactionInputOutputType == TransactionInputOutputType.Output);
+
+                switch (first.TransactionType)
+                {
+                    case TransactionType.Coinstake:
+                        first = outTx ?? throw new NullReferenceException(
+                                    "Coinstake transactions must have an in and out");
+
+                        first.Amount = outTx.Amount - outTx.OppositeItems.Sum(z => z.Amount);
+                        break;
+                    case TransactionType.User:
+                        var inTx = x.FirstOrDefault(y =>
+                            y.TransactionInputOutputType == TransactionInputOutputType.Input);
+
+                        // This transaction is returning change to the sending address
+                        if (inTx != null && outTx != null)
+                        {
+                            first = inTx;
+                            first.Amount = inTx.Amount - outTx.Amount;
+                        }
+                        else
+                            first.Amount = x.Sum(y => y.Amount);
+
+                        first.OppositeItems = first.OppositeItems.GroupBy(y => y.AddressHash).Select(y =>
+                                new AddressTransactionItemDto
+                                {
+                                    AddressHash = y.Key,
+                                    Amount = y.Sum(z => z.Amount)
+                                })
+                            .ToList();
+                        break;
+                }
+
+                return first;
+            })
+                .ToList();
         }
 
         public static readonly Dictionary<NexusAddressPools, List<string>> NexusAddresses =

@@ -35,6 +35,7 @@ export class AddressViewModel {
                 totalTxCount: options.totalTxCount.toLocaleString(),
                 isAddressWatched: options.isAddressWatched,
                 addressOnShow: options.addressAlias,
+                lastStakeBlockTimestamp: '',
                 lastBlockSeenTimestamp: Moment(options.lastBlockSeenTimestamp).format("MMM Do YY"),
                 userCurrencyIndex: 'USD',
                 addressOnShowLink: 'Show address',
@@ -69,6 +70,7 @@ export class AddressViewModel {
                         data: 'oppositeItems',
                         width: '55%',
                         render: (data, type, row) => {
+                            console.log(data);
                             if (options.txTypes[row.transactionType] === 'CoinbaseHash') {
                                 return `<span>Coinbase hash reward</span>`;
                             } if (options.txTypes[row.transactionType] === 'CoinbasePrime') {
