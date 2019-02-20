@@ -27,8 +27,6 @@
 
 #txTable {
     margin-top: 20px;
-    overflow-y: hidden;
-    overflow-x: auto;
 
     #txTable {
         th:not(:nth-child(2)) {
@@ -43,6 +41,7 @@
     .fa {
         &.tx-type-icon {
             font-size: 14px;
+            margin-right: 5px;
         }
 
         &.green {
@@ -62,13 +61,9 @@
         }
     }
 
-    .in-out-col {
+    .in-out {
         text-align: center;
         vertical-align: middle;
-    }
-
-    .amount-col {
-        text-align: right;
     }
 
     .pagination {

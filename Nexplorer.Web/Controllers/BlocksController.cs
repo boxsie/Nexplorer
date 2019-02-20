@@ -66,34 +66,19 @@ namespace Nexplorer.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> GetBlocks(DataTablePostModel<BlockFilterCriteria> model)
         {
-            var criteria = GetCriteria(model.Filter) ?? model.FilterCriteria;
-
             var count = model.Length > MaxBlocksPerFilterPage
                 ? MaxBlocksPerFilterPage
                 : model.Length;
 
-            var data = await _blockQuery.GetBlocksFilteredAsync(criteria, model.Start, count, true, 1000);
+            var data = await _blockQuery.GetBlocksFilteredAsync(model.FilterCriteria, model.Start, count, true, 1000);
 
             var response = new
             {
-                Draw = model.Draw,
-                RecordsTotal = 0,
                 RecordsFiltered = data.ResultCount,
                 Data = data.Results
             };
 
             return Ok(response);
-        }
-
-        private BlockFilterCriteria GetCriteria(string filter)
-        {
-            switch (filter)
-            {
-                case "latest":
-                    return new BlockFilterCriteria { OrderBy = OrderBlocksBy.Highest };
-                default:
-                    return null;
-            }
         }
     }
 }

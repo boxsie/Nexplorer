@@ -130,8 +130,6 @@ namespace Nexplorer.Web.Controllers
             
             var response = new
             {
-                Draw = model.Draw,
-                RecordsTotal = 0,
                 RecordsFiltered = txResult.ResultCount,
                 Data = txResult.Results
             };
@@ -142,24 +140,16 @@ namespace Nexplorer.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> GetAddresses(DataTablePostModel<AddressFilterCriteria> model)
         {
-            var criteria = model.Filter != "custom"
-                ? GetCriteria(model.Filter)
-                : model.FilterCriteria;
-
             var count = model.Length > MaxAddressesPerFilterPage
                 ? MaxAddressesPerFilterPage
                 : model.Length;
+            
+            var data = await _addressQuery.GetAddressLitesFilteredAsync(model.FilterCriteria, model.Start, count, true, MaxAddressesFilterResults);
 
-            var countable = model.Filter == "staking" || model.Filter == "nexus" || model.Filter == "custom";
-
-            var data = await _addressQuery.GetAddressLitesFilteredAsync(criteria, model.Start, count, countable, MaxAddressesFilterResults);
-
-            var resultCount = countable ? data.ResultCount : MaxAddressesFilterResults;
+            var resultCount = data.ResultCount;
 
             var response = new
             {
-                Draw = model.Draw,
-                RecordsTotal = 0,
                 RecordsFiltered = resultCount,
                 Data = data.Results
             };

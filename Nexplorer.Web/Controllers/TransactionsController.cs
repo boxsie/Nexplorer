@@ -56,36 +56,19 @@ namespace Nexplorer.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> GetTransactions(DataTablePostModel<TransactionFilterCriteria> model)
         {
-            var criteria = GetCriteria(model.Filter) ?? model.FilterCriteria;
-
             var count = model.Length > MaxTxsPerFilterPage
                 ? MaxTxsPerFilterPage
                 : model.Length;
             
-            var data = await _transactionQuery.GetTransactionsFilteredAsync(criteria, model.Start, count, true, 1000);
+            var data = await _transactionQuery.GetTransactionsFilteredAsync(model.FilterCriteria, model.Start, count, true, 1000);
             
             var response = new
             {
-                Draw = model.Draw,
-                RecordsTotal = 0,
                 RecordsFiltered = data.ResultCount,
                 Data = data.Results
             };
 
             return Ok(response);
-        }
-
-        private TransactionFilterCriteria GetCriteria(string filter)
-        {
-            switch (filter)
-            {
-                case "latest":
-                    return new TransactionFilterCriteria { OrderBy = OrderTransactionsBy.MostRecent };
-                case "user":
-                    return new TransactionFilterCriteria { OrderBy = OrderTransactionsBy.MostRecent, TxType = TransactionType.User };
-                default:
-                    return null;
-            }
         }
     }
 }

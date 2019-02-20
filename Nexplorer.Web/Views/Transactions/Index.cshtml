@@ -49,76 +49,61 @@
             <span class="fa fa-filter"></span>
         </div>
     </div>
-    
-    <div class="text-toggle">
-        <a href="#" v-on:click.prevent.stop="changeFilter('latest')" v-bind:class="currentFilter == 'latest' ? 'active-link' : ''">Latest</a>
-        <span class="toggle-seperator fa fa-ellipsis-v"></span>
-        <a href="#" v-on:click.prevent.stop="changeFilter('user')" v-bind:class="currentFilter == 'user' ? 'active-link' : ''">User</a>
-        <span class="toggle-seperator fa fa-ellipsis-v"></span>
-        <a href="#" v-on:click.prevent.stop="changeFilter('custom')" v-bind:class="currentFilter == 'custom' ? 'active-link' : ''">Custom</a>
-    </div>
 
-    <div id="customFilter" v-if="currentFilter == 'custom'" v-cloak>
-        <form id="customFilterForm">
-            <div class="row">
-                <div class="col-sm-4">
-                    <h3>AMOUNT</h3>
-                    <br />
-                    <div class="form-group">
-                        <label for="amountMin">Min Amount</label>
-                        <input type="number" class="form-control" id="amountMin" v-model="filterCriteria.minAmount">
+    <tx-table id="txTable" ref="txTable" :ajax-url="txTableAjaxUrl" :filters="filters" :default-criteria="filterCriteria" :columns="columns" v-on:row-click="selectTransaction">
+        <template v-slot:default="slotProps">
+            <form class="custom-filter-form">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <h3>AMOUNT</h3>
+                        <br/>
+                        <div class="form-group">
+                            <label for="amountMin">Min Amount</label>
+                            <input type="number" class="form-control" id="amountMin" v-model="slotProps.criteria.minAmount">
+                        </div>
+                        <div class="form-group">
+                            <label for="amountMax">Max Amount</label>
+                            <input type="number" class="form-control" id="amountMax" v-model="slotProps.criteria.maxAmount">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="amountMax">Max Amount</label>
-                        <input type="number" class="form-control" id="amountMax" v-model="filterCriteria.maxAmount">
+                    <div class="col-sm-4">
+                        <h3>HEIGHT</h3>
+                        <br/>
+                        <div class="form-group">
+                            <label for="lastSeenFrom">Min Height</label>
+                            <input type="number" class="form-control" id="lastSeenFrom" v-model="slotProps.criteria.heightFrom">
+                        </div>
+                        <div class="form-group">
+                            <label for="lastSeenTo">Max Height</label>
+                            <input type="number" class="form-control" id="lastSeenTo" v-model="slotProps.criteria.heightTo">
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <h3>OPTIONS</h3>
+                        <br/>
+                        <div class="form-group">
+                            <label for="orderBy">Order By</label>
+                            <select asp-items="Html.GetEnumSelectList<OrderTransactionsBy>()" id="orderBy" class="form-control" v-model="slotProps.criteria.orderBy"></select>
+                        </div>
+                        <div class="form-group">
+                            @{
+                                var selectList = new List<SelectListItem> {new SelectListItem("All", null)};
+                                selectList.AddRange(Html.GetEnumSelectList<TransactionType>());
+                            }
+
+                            <label for="txType">Transaction Type</label>
+                            <select asp-items="selectList" id="txType" class="form-control" v-model="slotProps.criteria.txType"></select>
+                        </div>
                     </div>
                 </div>
-                <div class="col-sm-4">
-                    <h3>HEIGHT</h3>
-                    <br />
-                    <div class="form-group">
-                        <label for="lastSeenFrom">Min Height</label>
-                        <input type="number" class="form-control" id="lastSeenFrom" v-model="filterCriteria.heightFrom">
-                    </div>
-                    <div class="form-group">
-                        <label for="lastSeenTo">Max Height</label>
-                        <input type="number" class="form-control" id="lastSeenTo" v-model="filterCriteria.heightTo">
-                    </div>
-                </div>
-                <div class="col-sm-4">
-                    <h3>OPTIONS</h3>
-                    <br />
-                    <div class="form-group">
-                        <label for="orderBy">Order By</label>
-                        <select asp-items="Html.GetEnumSelectList<OrderTransactionsBy>()" id="orderBy" class="form-control" v-model="filterCriteria.orderBy"></select>
-                    </div>
-                    <div class="form-group">
-                        @{
-                            var selectList = new List<SelectListItem> { new SelectListItem("All", null) };
-                            selectList.AddRange(Html.GetEnumSelectList<TransactionType>());
-                        }
-
-                        <label for="txType">Transaction Type</label>
-                        <select asp-items="selectList" id="txType" class="form-control" v-model="filterCriteria.txType"></select>
-                    </div>
-                </div>
-            </div>
-            <small class="text-muted" style="display: block;">
-                All fields are optional, 1000 results maximum.
-            </small>
-            <br />
-            <button type="submit" class="btn btn-primary" v-on:click.prevent.stop="reloadData">GO</button>
-        </form>
-    </div>
-
-    <tx-table ref="txTable" id="txTable"
-              :filter="currentFilter"
-              :filter-criteria="filterCriteria"
-              :ajax-url="txTableAjaxUrl"
-              :columns="txTableColumns"
-              v-on:row-click="selectTransaction"
-              v-on:filter-update="filterUpdate"
-              v-on:filter-criteria-update="filterCriteriaUpdate"></tx-table>
+                <small class="text-muted" style="display: block;">
+                    All fields are optional, 1000 results maximum.
+                </small>
+                <br/>
+                <button type="submit" class="btn btn-primary" v-on:click.prevent.stop="reloadData">GO</button>
+            </form>
+        </template>
+    </tx-table>
 </div>
 
 

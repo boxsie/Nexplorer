@@ -1,197 +1,209 @@
 ﻿import $ from 'jquery';
-import dt from 'datatables.net-bs4';
 import preloaderVue from '../Library/preloaderVue';
 
-export default (pagingType) => {
-    return {
-        template: require('../../Markup/data-table-vue.html'),
-        props: ['filter', 'filterCriteria', 'ajaxUrl', 'columns', 'ignoreKeys'],
-        data: () => {
-            return {
-                $dataTable: null,
-                dataTable: null,
-                showTable: false,
-                defaultCriteria: {},
-                defaultFilter: {},
-                justArrived: true
-            };
+import '../../Style/Components/_data-table-vue.scss';
+
+export default {
+    template: require('../../Markup/data-table-vue.html'),
+    props: ['ajaxUrl', 'defaultCriteria', 'columns', 'filters', 'ignoreKeys'],
+    data: () => {
+        return {
+            tableData: {},
+            tableDataCount: 0,
+            filterIndex: 0,
+            filter: {},
+            currentCriteria: {},
+            customCriteria: {},
+            page: 1,
+            pageLength: 10,
+            availableLengths: [10, 30, 50, 100],
+            showTable: false,
+            defaultFilter: {}
+        };
+    },
+    computed: {
+        currentFilter() {
+            return this.filters[this.filterIndex];
+        }
+    },
+    components: {
+        Preloader: preloaderVue
+    },
+    methods: {
+        parseClass(column, classStr) {
+            return column.class.includes('col') ? `${classStr} ${column.class}` : `col ${classStr} ${column.class}`;
         },
-        components: {
-            Preloader: preloaderVue
-        },
-        methods: {
-            dataReload() {
-                setTimeout(() => {
-                    this.dataTable.ajax.reload();
-                }, 1);
-            },
-            createFilterQuery(page, length) {
-                const params = {
-                    page: page,
-                    length: length
-                };
+        changeFilter(filterIndex) {
+            if (filterIndex >= this.filters.length)
+                return;
 
-                if (this.filter) {
-                    params.filter = this.filter;
-                }
+            this.filterIndex = filterIndex;
+            this.filter = this.filters[this.filterIndex];
 
-                for (let key in this.filterCriteria) {
-                    if (this.filterCriteria.hasOwnProperty(key) && this.filterCriteria[key] != null && !this.isKeyIgnored(key)) {
-                        params[key] = this.filterCriteria[key];
-                    }
-                }
-
-                return $.param(params);
-            },
-            isKeyIgnored(key) {
-                if (!this.ignoreKeys) {
-                    return false;
-                }
-
-                for (let i = 0; i < this.ignoreKeys.length; i++) {
-                    if (key === this.ignoreKeys[i]) {
-                        return true;
-                    }
-                }
-
-                return false;
-            },
-            createFilterQueryObject() {
-                const getUrl = window.location.href;
-                const query = getUrl.split('?');
-
-                if (query.length < 2) {
-                    return '';
-                }
-
-                const pairs = query[1].split('&');
-
-                var result = {};
-                
-                pairs.forEach((pair) => {
-                    pair = pair.split('=');
-                    result[pair[0]] = decodeURIComponent(pair[1] || '');
-                });
-
-                return JSON.parse(JSON.stringify(result));
-            },
-            getDefaultCriteria(filterQueryObject) {
-                const crit = JSON.parse(JSON.stringify(this.filterCriteria));
-
-                if (!filterQueryObject) {
-                    return crit;
-                }
-
-                for (let key in crit) {
-                    if (crit.hasOwnProperty(key)) {
-                        if (filterQueryObject[key]) {
-                            crit[key] = filterQueryObject[key];
-                        }
-                    }
-                }
-
-                return crit;
-            },
-            getDefaultFilter(filterQueryObject) {
-                return filterQueryObject && filterQueryObject.filter ? filterQueryObject.filter : null;
-            },
-            getDisplayStart(filterQueryObject) {
-                return filterQueryObject && filterQueryObject.page && filterQueryObject.length ? filterQueryObject.page * filterQueryObject.length : 0;
-            },
-            getLegthStart(filterQueryObject) {
-                return filterQueryObject && filterQueryObject.length ? filterQueryObject.length : 10;
-            },
-            setWindowUrl(page, length) {
-                if (this.justArrived) {
-                    window.history.pushState('', '', `${this.getBaseUrl()}?${this.createFilterQuery(page, length)}`);
-                    this.justArrived = false;
-                } else {
-                    window.history.replaceState('', '', `${this.getBaseUrl()}?${this.createFilterQuery(page, length)}`);
-                }
-            },
-            resetWindowUrl() {
-                window.history.replaceState('', '', this.getBaseUrl());
-            },
-            getBaseUrl() {
-                const getUrl = window.location;
-                const pathnames = getUrl.pathname.split('/');
-                return getUrl.protocol + '//' + getUrl.host + '/' + pathnames.slice(1).join('/');
+            if (!this.filter.isCustom) {
+                this.dataReload();
             }
         },
-        mounted() {
-            this.defaultCriteria = JSON.stringify(this.filterCriteria);
-            this.defaultFilter = JSON.stringify(this.filter);
+        changePage(page) {
+            const lastPage = Math.ceil(this.tableDataCount / this.pageLength);
 
-            const filterQueryObject = this.createFilterQueryObject();
+            if (page === null || page > lastPage) {
+                this.page = lastPage;
+            } else if (page < 1) {
+                this.page = 1;
+            } else {
+                this.page = page;
+            }
 
-            this.$emit('filter-update', this.getDefaultFilter(filterQueryObject));
-            this.$emit('filter-criteria-update', this.getDefaultCriteria(filterQueryObject));
-            
-            var self = this;
+            this.dataReload();
+        },
+        changeLength() {
+            this.page = 1;
+            this.dataReload();
+        },
+        dataReload() {
+            this.currentCriteria = Object.assign({}, this.defaultCriteria, this.filter.isCustom ? this.customCriteria : this.filter.criteria);
 
-            $(() => {
-                self.$dataTable = $('#dataTable');
+            const data = {
+                filterCriteria: this.currentCriteria,
+                start: this.page - 1,
+                length: this.pageLength
+            };
 
-                self.dataTable = self.$dataTable.DataTable({
-                    dom: '<"top"f>rt<"bottom"lp><"clear">',
-                    searching: false,
-                    ordering: false,
-                    responsive: true,
-                    serverSide: true,
-                    info: true,
-                    displayStart: self.getDisplayStart(filterQueryObject),
-                    pagingType: pagingType,
-                    lengthMenu: [10, 30, 50, 100],
-                    pageLength: self.getLegthStart(filterQueryObject),
-                    ajax: {
-                        url: self.ajaxUrl,
-                        type: 'POST',
-                        data: (data) => {
-                            data.filter = self.filter;
-                            data.filterCriteria = self.filterCriteria;
+            this.showTable = false;
+            this.setWindowUrl();
 
-                            console.log(self.filterCriteria);
-                            self.showTable = false;
+            const self = this;
 
-                            var page = self.$dataTable.DataTable().page();
-                            var len = self.$dataTable.DataTable().page.len();
-
-                            if (page > 0 || len > 10 || JSON.stringify(data.filter) !== self.defaultFilter || JSON.stringify(data.filterCriteria) !== self.defaultCriteria) {
-                                self.setWindowUrl(page, len);
-                            } else {
-                                self.resetWindowUrl();
-                            }
-
-                            return data;
-                        },
-                        dataFilter: (data) => {
-                            const obj = JSON.parse(data);
-                            const pageInfo = self.dataTable.page.info();
-
-                            if (!obj.data) {
-                                return data;
-                            }
-
-                            self.showTable = true;
-
-                            for (let i = 0; i < obj.data.length; i++) {
-                                obj.data[i].i = i + 1 + pageInfo.page * pageInfo.length;
-                            }
-
-                            return JSON.stringify(obj);
-                        },
-                        dataType: 'json'
-                    },
-                    order: [[2, 'dsc']],
-                    columns: self.columns
-                });
-
-                $('#dataTable tbody').on('click', 'tr', function(e) {
-                    if (!$(e.target).is('.no-row-link')) {
-                        self.$emit('row-click', self.dataTable.row(this).data());
-                    }
-                });
+            $.ajax({
+                url: this.ajaxUrl,
+                type: 'POST',
+                data: data,
+                success: (result) => {
+                    self.dataRefresh(result);
+                }
             });
+        },
+        dataRefresh(result) {
+            this.tableData = result.data;
+            this.tableDataCount = result.recordsFiltered;
+            this.showTable = true;
+        },
+        createFilterQuery(page, length, filter) {
+            const params = {
+                page: page,
+                length: length
+            };
+            
+            for (let key in filter) {
+                if (!filter.hasOwnProperty(key))
+                    continue;
+
+                const prop = filter[key];
+                const defProp = this.defaultCriteria[key];
+
+                if (prop !== null && !this.isKeyIgnored(key) && prop !== defProp) {
+                    params[key] = filter[key];
+                }
+            }
+
+            return $.param(params);
+        },
+        createFilterQueryObject(query) {
+            const pairs = query.split('&');
+
+            var result = {
+                criteria: {}
+            };
+
+            pairs.forEach((pair) => {
+                pair = pair.split('=');
+
+                var key = pair[0];
+                var val = decodeURIComponent(pair[1] || '');
+
+                if (key === 'page' || key === 'length') {
+                    result[key] = val;
+                } else {
+                    result.criteria[key] = val;
+                }
+            });
+
+            return result;
+        },
+        getFilterIndexFromQueryObj(filterQueryObj) {
+            let filterIndex = -1;
+            let customIndex = -1;
+
+            const filterQueryJson = JSON.stringify(filterQueryObj.criteria);
+
+            for (let i = 0; i < this.filters.length; i++) {
+                const filter = this.filters[i];
+
+                if (filter.isCustom) {
+                    customIndex = i;
+                } else if (JSON.stringify(filter.criteria) === filterQueryJson) {
+                    filterIndex = i;
+                }
+            }
+
+            if (filterIndex === -1) {
+                if (customIndex > -1) {
+                    filterIndex = customIndex;
+                } else {
+                    filterIndex = 0;
+                }
+            }
+
+            return filterIndex;
+        },
+        setWindowUrl() {
+            const newUrl = `${this.getBaseUrl()}?${this.createFilterQuery(this.page, this.pageLength, this.currentCriteria)}`;
+
+            if (newUrl !== window.location.href) {
+                window.history.pushState('', '', newUrl);
+            }
+        },
+        getBaseUrl() {
+            return `${window.location.protocol}//${window.location.host}/${window.location.pathname.split('/').slice(1).join('/')}`;
+        },
+        isKeyIgnored(key) {
+            if (!this.ignoreKeys) {
+                return false;
+            }
+
+            for (let i = 0; i < this.ignoreKeys.length; i++) {
+                if (key === this.ignoreKeys[i]) {
+                    return true;
+                }
+            }
+
+            return false;
+        },
+        parseUrlCriteria() {
+            const getUrl = document.location.href;
+            const querySplit = getUrl.split('?');
+            const query = querySplit.length > 1 ? querySplit[1] : '';
+
+            if (query) {
+                const filterQueryObj = this.createFilterQueryObject(query);
+                this.customCriteria = Object.assign({}, this.defaultCriteria, filterQueryObj.criteria);
+                this.filterIndex = this.getFilterIndexFromQueryObj(filterQueryObj);
+            } else {
+                this.filterIndex = 0;
+            }
+
+            this.filter = this.filters[this.filterIndex];
+            this.dataReload();
         }
-    };
+    },
+    created() {
+        this.currentCriteria = Object.assign({}, this.defaultCriteria);
+        this.customCriteria = Object.assign({}, this.defaultCriteria);
+
+        window.addEventListener('popstate', this.parseUrlCriteria);
+
+        this.parseUrlCriteria();
+    }
 };
+
