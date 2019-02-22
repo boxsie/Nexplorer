@@ -39,7 +39,7 @@ export class TransactionViewModel {
                 columns: [
                     {
                         key: 'timestamp',
-                        class: 'col-3 col-sm-2',
+                        class: 'col-5 col-sm-2',
                         header: '<span class="fa fa-calendar-o"></span>',
                         render: (data, row) => {
                             var timestamp = Moment(data).format('DD/MMM/YY HH:mm:ss');
@@ -47,27 +47,27 @@ export class TransactionViewModel {
                         }
                     },
                     {
+                        key: 'transactionHash',
+                        class: 'col-3 col-sm-2',
+                        header: '<span class="fa fa-hashtag"></span>',
+                        render: (data, row) => {
+                            return `<a class="d-none d-md-block" href="/transactions/${data}">${this.vm.truncateHash(data, 10)}</a>
+                                            <a class="d-none d-sm-block d-md-none" href="/transactions/${data}">${this.vm.truncateHash(data, 8)}</a>
+                                            <a class="d-sm-none" href="/transactions/${data}">${this.vm.truncateHash(data, 8)}</a>`;
+                        }
+                    },
+                    {
                         key: 'blockHeight',
-                        class: 'col-2',
+                        class: 'col-4 col-sm-2',
                         header: '<span class="fa fa-cube"></span>',
                         render: (data, row) => {
                             return `<a href="/blocks/${data}">#${data}</a>`;
                         }
                     },
                     {
-                        key: 'transactionHash',
-                        class: 'col-2',
-                        header: '<span class="fa fa-hashtag"></span>',
-                        render: (data, row) => {
-                            return `<a class="d-none d-md-block" href="/transactions/${data}">${this.vm.truncateHash(data, 15)}</a>
-                                            <a class="d-none d-sm-block d-md-none" href="/transactions/${data}">${this.vm.truncateHash(data, 10)}</a>
-                                            <a class="d-sm-none" href="/transactions/${data}">${this.vm.truncateHash(data, 4)}</a>`;
-                        }
-                    },
-                    {
                         key: 'transactionType',
-                        class: 'col-1 col-sm-2 in-out text-left',
-                        header: '<span class="fa fa-exchange"></span>',
+                        class: 'col-6 col-sm-2 in-out text-left text-sm-center text-md-left',
+                        header: '<span class="d-none d-sm-inline fa fa-exchange"></span>',
                         render: (data, row) => {
                             switch (data) {
                                 case 0:
@@ -103,8 +103,8 @@ export class TransactionViewModel {
                     },
                     {
                         key: 'amount',
-                        class: 'col-2 text-right',
-                        header: '<span class="fa fa-balance-scale"></span>',
+                        class: 'col-6 col-sm-2 text-right',
+                        header: '<span class="d-none d-sm-inline fa fa-balance-scale"></span>',
                         render: (data, row) => {
                             return `<strong>${parseFloat(data.toFixed(2)).toLocaleString()}</strong> <small>NXS</small>`;
                         }
@@ -126,7 +126,7 @@ export class TransactionViewModel {
                     window.location.href = `/transactions/${tx.transactionHash}`;
                 },
                 createInOutText(faType, txType) {
-                    return `<span class="fa ${faType} tx-type-icon"></span> <span class="d-none d-sm-inline">${txType}</span>`;
+                    return `<span class="fa ${faType} tx-type-icon"></span> <span class="d-sm-none d-md-inline">${txType}</span>`;
                 }
             },
             created() {

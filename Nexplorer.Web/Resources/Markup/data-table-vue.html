@@ -31,11 +31,11 @@
             </div>
         </div>
         <div class="col">
-            <a href="#" v-on:click.prevent.stop="changePage(1)">First</a>
-            <a href="#" v-on:click.prevent.stop="changePage(page - 1)">Prev</a>
+            <button class="btn btn-secondary" v-on:click.prevent.stop="changePage(1)">First</button>
+            <button class="btn btn-secondary" v-on:click.prevent.stop="changePage(page - 1)">Prev</button>
             {{ page }}
-            <a href="#" v-on:click.prevent.stop="changePage(page + 1)">Next</a>
-            <a href="#" v-on:click.prevent.stop="changePage(null)">Last</a>
+            <button class="btn btn-secondary" v-on:click.prevent.stop="changePage(page + 1)">Next</button>
+            <button class="btn btn-secondary" v-on:click.prevent.stop="changePage(null)">Last</button>
         </div>
     </div>
 </div>

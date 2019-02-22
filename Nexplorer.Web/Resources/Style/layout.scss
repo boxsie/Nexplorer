@@ -3,7 +3,6 @@
 @import '~font-awesome/css/font-awesome.css';
 @import 'Components/_form-input';
 @import '~swiper/dist/css/swiper.css';
-@import '~datatables.net-bs4/css/dataTables.bootstrap4.css';
 
 html {
     font-size: 14px;
@@ -70,6 +69,17 @@ p {
 
     &:hover {
         background-color: lighten($primary, 5%) !important;
+    }
+}
+
+.btn-secondary {
+    color: #6362bb;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+
+    &:hover {
+        background-color: lighten($primary, 5%) !important;
+        border: 1px solid #dee2e6;
     }
 }
 
