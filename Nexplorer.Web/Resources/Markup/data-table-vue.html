@@ -1,6 +1,5 @@
 ﻿<div style="position: relative;">
-    <preloader v-if="!showTable"></preloader>
-    
+
     <div class="text-toggle">
         <span v-for="(filter, i) in filters">
             <a href="#" v-on:click.prevent.stop="changeFilter(i)" v-bind:class="filterIndex == i ? 'active-link' : ''">{{ filter.name }}</a>
@@ -13,29 +12,37 @@
     </div>
     
     <div class="data-table">
-        <div class="row data-table-header">
-            <div v-for="c in columns" :class="parseClass(c, 'data-table-head')" v-html="c.header"></div>
+        <preloader v-if="!showTable"></preloader>
+
+        <div class="row">
+            <div v-for="c in columns" :class="parseClass(c, 'dt-head')" v-html="c.header"></div>
         </div>
 
-        <div class="row data-table-body" v-for="(data, i) in tableData">
-            <div v-for="c in columns" :class="parseClass(c, 'data-table-col')" v-html="c.render(data[c.key])"></div>
+        <div class="row dt-body" v-for="(data, i) in tableData">
+            <div v-for="c in columns" :class="parseClass(c, 'dt-col')" v-html="c.render(data[c.key])"></div>
         </div>
-    </div>
-    
-    <div class="row">
-        <div class="col-sm-2">
-            <div class="form-group">
-                <select class="form-control" v-model="pageLength" v-on:change="changeLength()">
-                    <option v-for="pl in availableLengths" v-bind:value="pl">{{pl}}</option>
-                </select>
+
+        <div class="row dt-controls">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="pageLength">Show me</label>
+                    <select id="pageLength" class="form-control" style="width: auto;" v-model="pageLength" v-on:change="changeLength()">
+                        <option v-for="pl in availableLengths" v-bind:value="pl">{{pl}}</option>
+                    </select>
+                    <span class="total-results">of  {{ tableDataCount }}</span>
+                </div>
             </div>
-        </div>
-        <div class="col">
-            <button class="btn btn-secondary" v-on:click.prevent.stop="changePage(1)">First</button>
-            <button class="btn btn-secondary" v-on:click.prevent.stop="changePage(page - 1)">Prev</button>
-            {{ page }}
-            <button class="btn btn-secondary" v-on:click.prevent.stop="changePage(page + 1)">Next</button>
-            <button class="btn btn-secondary" v-on:click.prevent.stop="changePage(null)">Last</button>
+            <div class="col" v-if="tableDataCount > pageLength">
+                <ul class="paging">
+                    <li class="d-none d-sm-inline"><a href="#" :class="page > 1 ? 'enabled' : 'disabled'" v-on:click.prevent.stop="changePage(page - 1)">Prev</a></li>
+                    
+                    <li v-for="pn in pageNumbers">
+                        <a href="#" :class="pageNumberClass(pn)" v-on:click.prevent.stop="changePage(pn)">{{pn}}</a>
+                    </li>
+
+                    <li class="d-none d-sm-inline"><a href="#" :class="page < pageCount ? 'enabled' : 'disabled'" v-on:click.prevent.stop="changePage(page + 1)">Next</a></li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>

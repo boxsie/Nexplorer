@@ -1,5 +1,4 @@
 ﻿import $ from 'jquery';
-import dt from 'datatables.net-bs4';
 
 export default (id) => {
     return {

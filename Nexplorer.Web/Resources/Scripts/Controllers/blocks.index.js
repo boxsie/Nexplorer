@@ -8,92 +8,109 @@ import '../../Style/blocks.index.scss';
 
 export class BlockViewModel {
     constructor(options) {
-        const defaultCriteria = {
-            txType: 'All',
-            minAmount: null,
-            maxAmount: null,
-            heightFrom: null,
-            heightTo: null,
-            utcFrom: null,
-            utcTo: null,
-            orderBy: 0
-        };
-
         this.vm = new Vue({
             el: '#main',
             data: {
-                currentFilter: 'latest',
-                filterCriteria: defaultCriteria,
-                blockTableAjaxUrl: '/blocks/getblocks',
-                blockTableColumns: [
+                txTableAjaxUrl: '/blocks/getblocks',
+                filterCriteria: {
+                    txType: null,
+                    minAmount: null,
+                    maxAmount: null,
+                    heightFrom: null,
+                    heightTo: null,
+                    utcFrom: null,
+                    utcTo: null,
+                    orderBy: 0
+                },
+                filters: [
                     {
-                        title: '<span class="fa fa-calendar-o"></span>',
-                        data: 'timestamp',
-                        width: '16%',
-                        render: (data, type, row) => {
+                        name: 'Latest',
+                        criteria: {}
+                    },
+                    {
+                        name: 'User',
+                        criteria: { txType: '4' }
+                    },
+                    {
+                        name: 'Custom',
+                        isCustom: true
+                    }
+                ],
+                columns: [
+                    {
+                        key: 'timestamp',
+                        class: 'col-5 col-sm-2',
+                        header: '<span class="d-none d-sm-inline fa fa-calendar-o"></span>',
+                        render: (data, row) => {
                             var timestamp = Moment(data).format('DD/MMM/YY HH:mm:ss');
                             return `<span>${timestamp}</span>`;
                         }
                     },
                     {
-                        title: '<span class="fa fa-cube"></span>',
-                        data: 'height',
-                        render: (data, type, row) => {
-                            return `<a href="/blocks/${data}">#${data}</a>`;
+                        key: 'height',
+                        class: 'col-3 col-sm-2 text-right text-sm-left',
+                        header: '<span class="d-none d-sm-inline fa fa-cube"></span>',
+                        render: (data, row) => {
+                            return `<span class="d-sm-none inline-icon fa fa-cube"></span>
+                                    <a href="/blocks/${data}"><span class="d-none d-sm-inline">#</span>${data}</a>`;
                         }
                     },
                     {
-                        title: '<span class="fa fa-hashtag"></span>',
-                        data: 'hash',
-                        render: (data, type, row) => {
-                            return `<a class="d-none d-md-block" href="/blocks/${data}">${this.vm.truncateHash(data, 28)}</a>
-                                            <a class="d-none d-sm-block d-md-none" href="/blocks/${data}">${this.vm.truncateHash(data, 15)}</a>
-                                            <a class="d-sm-none" href="/blocks/${data}">${this.vm.truncateHash(data, 4)}</a>`;
+                        key: 'hash',
+                        class: 'col-4 col-sm-2',
+                        header: '<span class="d-none d-sm-inline fa fa-hashtag"></span>',
+                        render: (data, row) => {
+                            return `<span class="d-sm-none inline-icon fa fa-hashtag"></span>
+                                    <a class="d-none d-md-block" href="/transactions/${data}">${this.vm.truncateHash(data, 10)}</a>
+                                    <a class="d-none d-sm-block d-md-none" href="/transactions/${data}">${this.vm.truncateHash(data, 8)}</a>
+                                    <a class="d-sm-none" href="/transactions/${data}">${this.vm.truncateHash(data, 8)}</a>`;
                         }
                     },
                     {
-                        title: '<span class="fa fa-exchange"></span>',
-                        data: 'channel',
+                        key: 'channel',
                         class: 'text-center',
+                        header: '<span class="fa fa-exchange"></span>',
                         render: (data, type, row) => {
                             switch (data) {
-                                case 0:
-                                    return `<span class="fa fa-bolt tx-type-icon"></span>`;
-                                case 1:
-                                    return `<span class="fa fa-microchip tx-type-icon"></span>`;
-                                case 2:
-                                    return `<span class="fa fa-hashtag tx-type-icon"></span>`;
+                            case 0:
+                                return `<span class="fa fa-bolt tx-type-icon"></span>`;
+                            case 1:
+                                return `<span class="fa fa-microchip tx-type-icon"></span>`;
+                            case 2:
+                                return `<span class="fa fa-hashtag tx-type-icon"></span>`;
                             }
                         }
                     },
                     {
-                        title: '<span class="fa fa-tachometer"></span>',
-                        data: 'difficulty',
+                        key: 'difficulty',
                         class: 'd-none d-sm-table-cell',
+                        header: '<span class="fa fa-tachometer"></span>',
                         render: (data, type, row) => {
                             return `<span>${data.toLocaleString()}</span>`;
                         }
                     },
                     {
-                        title: '<span class="fa fa-hdd-o"></span>',
-                        data: 'size',
+                        key: 'size',
                         class: 'd-none d-sm-table-cell',
+                        header: '<span class="fa fa-hdd-o"></span>',
                         render: (data, type, row) => {
                             return `<span>${this.vm.$layoutHub.parseBytes(data)}</span>`;
                         }
                     },
                     {
-                        title: '<span class="fa fa-compress"></span>',
-                        data: 'transactionCount',
+                        key: 'transactionCount',
                         class: 'in-out-col',
+                        header: '<span class="fa fa-compress"></span>',
                         render: (data, type, row) => {
                             return `<strong>${data ? data.toLocaleString() : 0}</strong>`;
                         }
                     }
-                ]
+                ],
+                currentFilter: 'latest',
+                blockTableAjaxUrl: '/blocks/getblocks'
             },
             components: {
-                blockTable: dataTableVue('first_last_numbers')
+                txTable: dataTableVue
             },
             methods: {
                 reloadData() {

@@ -1,5 +1,4 @@
 ﻿import $ from 'jquery';
-import BootstrapPager from '../Library/bootstrapPager.js';
 
 export class FavouritesIndexViewModel {
     constructor(options) {

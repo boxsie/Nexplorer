@@ -40,7 +40,7 @@ export class TransactionViewModel {
                     {
                         key: 'timestamp',
                         class: 'col-5 col-sm-2',
-                        header: '<span class="fa fa-calendar-o"></span>',
+                        header: '<span class="d-none d-sm-inline fa fa-calendar-o"></span>',
                         render: (data, row) => {
                             var timestamp = Moment(data).format('DD/MMM/YY HH:mm:ss');
                             return `<span>${timestamp}</span>`;
@@ -48,20 +48,22 @@ export class TransactionViewModel {
                     },
                     {
                         key: 'transactionHash',
-                        class: 'col-3 col-sm-2',
-                        header: '<span class="fa fa-hashtag"></span>',
+                        class: 'col-4 col-sm-2',
+                        header: '<span class="d-none d-sm-inline fa fa-hashtag"></span>',
                         render: (data, row) => {
-                            return `<a class="d-none d-md-block" href="/transactions/${data}">${this.vm.truncateHash(data, 10)}</a>
-                                            <a class="d-none d-sm-block d-md-none" href="/transactions/${data}">${this.vm.truncateHash(data, 8)}</a>
-                                            <a class="d-sm-none" href="/transactions/${data}">${this.vm.truncateHash(data, 8)}</a>`;
+                            return `<span class="d-sm-none inline-icon fa fa-hashtag"></span>
+                                    <a class="d-none d-md-block" href="/transactions/${data}">${this.vm.truncateHash(data, 10)}</a>
+                                    <a class="d-none d-sm-block d-md-none" href="/transactions/${data}">${this.vm.truncateHash(data, 8)}</a>
+                                    <a class="d-sm-none" href="/transactions/${data}">${this.vm.truncateHash(data, 8)}</a>`;
                         }
                     },
                     {
                         key: 'blockHeight',
-                        class: 'col-4 col-sm-2',
-                        header: '<span class="fa fa-cube"></span>',
+                        class: 'col-3 col-sm-2 text-right text-sm-left',
+                        header: '<span class="d-none d-sm-inline fa fa-cube"></span>',
                         render: (data, row) => {
-                            return `<a href="/blocks/${data}">#${data}</a>`;
+                            return `<span class="d-sm-none inline-icon fa fa-cube"></span>
+                                    <a href="/blocks/${data}"><span class="d-none d-sm-inline">#</span>${data}</a>`;
                         }
                     },
                     {
@@ -126,7 +128,7 @@ export class TransactionViewModel {
                     window.location.href = `/transactions/${tx.transactionHash}`;
                 },
                 createInOutText(faType, txType) {
-                    return `<span class="fa ${faType} tx-type-icon"></span> <span class="d-sm-none d-md-inline">${txType}</span>`;
+                    return `<span class="fa ${faType} inline-icon"></span> <span class="d-sm-none d-md-inline">${txType}</span>`;
                 }
             },
             created() {

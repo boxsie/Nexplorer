@@ -16,7 +16,8 @@ export default {
             customCriteria: {},
             page: 1,
             pageLength: 10,
-            availableLengths: [10, 30, 50, 100],
+            paginationLength: 7,
+            availableLengths: [10, 25, 50, 100],
             showTable: false,
             defaultFilter: {}
         };
@@ -24,6 +25,42 @@ export default {
     computed: {
         currentFilter() {
             return this.filters[this.filterIndex];
+        },
+        pageCount() {
+            return Math.ceil(this.tableDataCount / this.pageLength);
+        },
+        pageNumbers() {
+            const pages = [];
+            
+            if (this.pageCount <= this.paginationLength) {
+                for (let i = 0; i < this.pageCount; i++) {
+                    pages[i] = i + 1;
+                }
+            } else {
+                const halfway = Math.ceil(this.paginationLength / 2);
+
+                for (let i = 0; i < this.paginationLength; i++) {
+                    if (i === 0) {
+                        pages[i] = 1;
+                    } else if (i === 1) {
+                        pages[i] = this.page > halfway ? '...' : 2;
+                    } else if (i === this.paginationLength - 2) {
+                        pages[i] = this.page < this.pageCount - halfway ? '...' : this.pageCount - 1;
+                    } else if (i === this.paginationLength - 1) {
+                        pages[i] = this.pageCount;
+                    } else {
+                        if (this.page < halfway) {
+                            pages[i] = i + 1;
+                        } else if (this.page > this.pageCount - halfway) {
+                            pages[i] = this.pageCount - (this.paginationLength - (i + 1));
+                        } else {
+                            pages[i] = this.page + (i + 1 - halfway);
+                        }
+                    }
+                }
+            }
+
+            return pages;
         }
     },
     components: {
@@ -32,6 +69,9 @@ export default {
     methods: {
         parseClass(column, classStr) {
             return column.class.includes('col') ? `${classStr} ${column.class}` : `col ${classStr} ${column.class}`;
+        },
+        pageNumberClass(page) {
+            return isNaN(page) || !page ? 'disabled' : page === this.page ? 'active' : 'enabled';
         },
         changeFilter(filterIndex) {
             if (filterIndex >= this.filters.length)
@@ -45,28 +85,38 @@ export default {
             }
         },
         changePage(page) {
-            const lastPage = Math.ceil(this.tableDataCount / this.pageLength);
-
-            if (page === null || page > lastPage) {
-                this.page = lastPage;
-            } else if (page < 1) {
-                this.page = 1;
-            } else {
-                this.page = page;
+            if (isNaN(page) || !page || page === this.page) {
+                return;
             }
 
-            this.dataReload();
+            let newPage = this.page;
+
+            if (page > this.pageCount) {
+                newPage = this.pageCount;
+            } else if (page < 1) {
+                newPage = 1;
+            } else {
+                newPage = page;
+            }
+
+            if (newPage === this.page) {
+                return;
+            }
+
+            this.dataReload(newPage);
         },
         changeLength() {
             this.page = 1;
             this.dataReload();
         },
-        dataReload() {
+        dataReload(newPage) {
+            this.page = newPage ? newPage : 1;
+
             this.currentCriteria = Object.assign({}, this.defaultCriteria, this.filter.isCustom ? this.customCriteria : this.filter.criteria);
 
             const data = {
                 filterCriteria: this.currentCriteria,
-                start: this.page - 1,
+                start: (this.page - 1) * this.pageLength,
                 length: this.pageLength
             };
 
@@ -189,12 +239,15 @@ export default {
                 const filterQueryObj = this.createFilterQueryObject(query);
                 this.customCriteria = Object.assign({}, this.defaultCriteria, filterQueryObj.criteria);
                 this.filterIndex = this.getFilterIndexFromQueryObj(filterQueryObj);
+                console.log(filterQueryObj);
+                this.page = parseInt(filterQueryObj.page);
+                this.pageLength = parseInt(filterQueryObj.length);
             } else {
                 this.filterIndex = 0;
             }
 
             this.filter = this.filters[this.filterIndex];
-            this.dataReload();
+            this.dataReload(this.page);
         }
     },
     created() {
