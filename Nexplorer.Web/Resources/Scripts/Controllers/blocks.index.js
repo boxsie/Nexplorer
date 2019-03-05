@@ -38,8 +38,17 @@ export class BlockViewModel {
                 ],
                 columns: [
                     {
+                        key: 'height',
+                        class: 'col-6 col-sm-2 col-lg-1',
+                        header: '<span class="d-none d-sm-inline fa fa-cube"></span>',
+                        render: (data, row) => {
+                            return `<span class="d-sm-none inline-icon fa fa-cube"></span>
+                                    <a href="/blocks/${data}">${data}</a>`;
+                        }
+                    },
+                    {
                         key: 'timestamp',
-                        class: 'col-5 col-sm-2',
+                        class: 'col-6 col-sm-2',
                         header: '<span class="d-none d-sm-inline fa fa-calendar-o"></span>',
                         render: (data, row) => {
                             var timestamp = Moment(data).format('DD/MMM/YY HH:mm:ss');
@@ -47,62 +56,53 @@ export class BlockViewModel {
                         }
                     },
                     {
-                        key: 'height',
-                        class: 'col-3 col-sm-2 text-right text-sm-left',
-                        header: '<span class="d-none d-sm-inline fa fa-cube"></span>',
-                        render: (data, row) => {
-                            return `<span class="d-sm-none inline-icon fa fa-cube"></span>
-                                    <a href="/blocks/${data}"><span class="d-none d-sm-inline">#</span>${data}</a>`;
-                        }
-                    },
-                    {
                         key: 'hash',
-                        class: 'col-4 col-sm-2',
+                        class: 'col-12 col-sm-3',
                         header: '<span class="d-none d-sm-inline fa fa-hashtag"></span>',
                         render: (data, row) => {
                             return `<span class="d-sm-none inline-icon fa fa-hashtag"></span>
-                                    <a class="d-none d-md-block" href="/transactions/${data}">${this.vm.truncateHash(data, 10)}</a>
-                                    <a class="d-none d-sm-block d-md-none" href="/transactions/${data}">${this.vm.truncateHash(data, 8)}</a>
-                                    <a class="d-sm-none" href="/transactions/${data}">${this.vm.truncateHash(data, 8)}</a>`;
+                                    <a class="d-none d-md-block" href="/transactions/${data}">${this.vm.truncateHash(data, 18)}</a>
+                                    <a class="d-none d-sm-block d-md-none" href="/transactions/${data}">${this.vm.truncateHash(data, 14)}</a>
+                                    <a class="d-sm-none" href="/transactions/${data}">${this.vm.truncateHash(data, 24)}</a>`;
                         }
                     },
                     {
                         key: 'channel',
-                        class: 'text-center',
-                        header: '<span class="fa fa-exchange"></span>',
+                        class: 'col-4 col-sm-2',
+                        header: '<span class="d-none d-sm-inline fa fa-exchange"></span>',
                         render: (data, type, row) => {
                             switch (data) {
-                            case 0:
-                                return `<span class="fa fa-bolt tx-type-icon"></span>`;
+                                case 0:
+                                    return `<span class="fa fa-bolt inline-icon"></span> POS`;
                             case 1:
-                                return `<span class="fa fa-microchip tx-type-icon"></span>`;
+                                    return `<span class="fa fa-microchip inline-icon"></span> Prime`;
                             case 2:
-                                return `<span class="fa fa-hashtag tx-type-icon"></span>`;
+                                    return `<span class="fa fa-hashtag inline-icon"></span> Hash`;
                             }
                         }
                     },
                     {
                         key: 'difficulty',
-                        class: 'd-none d-sm-table-cell',
-                        header: '<span class="fa fa-tachometer"></span>',
+                        class: '',
+                        header: '<span class="d-none d-sm-inline fa fa-tachometer"></span>',
                         render: (data, type, row) => {
-                            return `<span>${data.toLocaleString()}</span>`;
+                            return `<span class="d-sm-none fa fa-tachometer inline-icon"></span> <span>${data.toLocaleString()}</span>`;
                         }
                     },
                     {
                         key: 'size',
-                        class: 'd-none d-sm-table-cell',
-                        header: '<span class="fa fa-hdd-o"></span>',
+                        class: '',
+                        header: '<span class="d-none d-sm-inline fa fa-hdd-o"></span>',
                         render: (data, type, row) => {
-                            return `<span>${this.vm.$layoutHub.parseBytes(data)}</span>`;
+                            return `<span class="d-sm-none fa fa-hdd-o inline-icon"></span> <span>${this.vm.$layoutHub.parseBytes(data)}</span>`;
                         }
                     },
                     {
                         key: 'transactionCount',
                         class: 'in-out-col',
-                        header: '<span class="fa fa-compress"></span>',
+                        header: '<span class="d-none d-sm-inline fa fa-compress"></span>',
                         render: (data, type, row) => {
-                            return `<strong>${data ? data.toLocaleString() : 0}</strong>`;
+                            return `<span class="d-sm-none fa fa-compress inline-icon"></span> <strong>${data ? data.toLocaleString() : 0}</strong>`;
                         }
                     }
                 ],

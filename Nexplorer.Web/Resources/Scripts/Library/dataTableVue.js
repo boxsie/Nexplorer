@@ -23,6 +23,18 @@ export default {
         };
     },
     computed: {
+        dt() {
+            return {
+                tableData: this.tableData,
+                reload: this.dataReload
+            };
+        },
+        dtCriteria() {
+            return {
+                criteria: this.customCriteria,
+                reload: this.dataReload
+            };
+        },
         currentFilter() {
             return this.filters[this.filterIndex];
         },
@@ -67,7 +79,12 @@ export default {
         Preloader: preloaderVue
     },
     methods: {
-        parseClass(column, classStr) {
+        parseRowClass(rowIndex) {
+            const r = (rowIndex + 1) % 2 === 0 ? '' : 'odd-row';
+            return `row dt-row ${r}`;
+
+        },
+        parseColClass(column, classStr, rowIndex) {
             return column.class.includes('col') ? `${classStr} ${column.class}` : `col ${classStr} ${column.class}`;
         },
         pageNumberClass(page) {
@@ -239,7 +256,6 @@ export default {
                 const filterQueryObj = this.createFilterQueryObject(query);
                 this.customCriteria = Object.assign({}, this.defaultCriteria, filterQueryObj.criteria);
                 this.filterIndex = this.getFilterIndexFromQueryObj(filterQueryObj);
-                console.log(filterQueryObj);
                 this.page = parseInt(filterQueryObj.page);
                 this.pageLength = parseInt(filterQueryObj.length);
             } else {

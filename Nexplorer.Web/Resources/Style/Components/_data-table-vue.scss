@@ -31,16 +31,20 @@
     }
 
     .dt-body {
-        padding-top: 0.25rem;
-        padding-bottom: 0.25rem;
+        min-height: 300px;
 
-        &:nth-child(even) {
-            background-color: #f2f2f2
+        .dt-row {
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+
+            &.odd-row {
+                background-color: #f2f2f2
+            }
         }
-    }
 
-    .dt-col, .dt-head {
-        padding: 0.55rem;
+        .dt-col, .dt-head {
+            padding: 0.55rem;
+        }
     }
 
     .dt-controls {

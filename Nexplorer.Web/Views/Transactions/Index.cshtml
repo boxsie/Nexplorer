@@ -51,7 +51,7 @@
     </div>
 
     <tx-table id="txTable" ref="txTable" :ajax-url="txTableAjaxUrl" :filters="filters" :default-criteria="filterCriteria" :columns="columns" v-on:row-click="selectTransaction">
-        <template v-slot:default="slotProps">
+        <template #dt-criteria="dt">
             <form class="custom-filter-form">
                 <div class="row">
                     <div class="col-sm-4">
@@ -59,11 +59,11 @@
                         <br/>
                         <div class="form-group">
                             <label for="amountMin">Min Amount</label>
-                            <input type="number" class="form-control" id="amountMin" v-model="slotProps.criteria.minAmount">
+                            <input type="number" class="form-control" id="amountMin" v-model="dt.dtCriteria.criteria.minAmount">
                         </div>
                         <div class="form-group">
                             <label for="amountMax">Max Amount</label>
-                            <input type="number" class="form-control" id="amountMax" v-model="slotProps.criteria.maxAmount">
+                            <input type="number" class="form-control" id="amountMax" v-model="dt.dtCriteria.criteria.maxAmount">
                         </div>
                     </div>
                     <div class="col-sm-4">
@@ -71,11 +71,11 @@
                         <br/>
                         <div class="form-group">
                             <label for="lastSeenFrom">Min Height</label>
-                            <input type="number" class="form-control" id="lastSeenFrom" v-model="slotProps.criteria.heightFrom">
+                            <input type="number" class="form-control" id="lastSeenFrom" v-model="dt.dtCriteria.criteria.heightFrom">
                         </div>
                         <div class="form-group">
                             <label for="lastSeenTo">Max Height</label>
-                            <input type="number" class="form-control" id="lastSeenTo" v-model="slotProps.criteria.heightTo">
+                            <input type="number" class="form-control" id="lastSeenTo" v-model="dt.dtCriteria.criteria.heightTo">
                         </div>
                     </div>
                     <div class="col-sm-4">
@@ -83,7 +83,7 @@
                         <br/>
                         <div class="form-group">
                             <label for="orderBy">Order By</label>
-                            <select asp-items="Html.GetEnumSelectList<OrderTransactionsBy>()" id="orderBy" class="form-control" v-model="slotProps.criteria.orderBy"></select>
+                            <select asp-items="Html.GetEnumSelectList<OrderTransactionsBy>()" id="orderBy" class="form-control" v-model="dt.dtCriteria.criteria.orderBy"></select>
                         </div>
                         <div class="form-group">
                             @{
@@ -92,7 +92,7 @@
                             }
 
                             <label for="txType">Transaction Type</label>
-                            <select asp-items="selectList" id="txType" class="form-control" v-model="slotProps.criteria.txType"></select>
+                            <select asp-items="selectList" id="txType" class="form-control" v-model="dt.dtCriteria.criteria.txType"></select>
                         </div>
                     </div>
                 </div>
@@ -100,7 +100,7 @@
                     All fields are optional, 1000 results maximum.
                 </small>
                 <br/>
-                <button type="submit" class="btn btn-primary" v-on:click.prevent.stop="reloadData">GO</button>
+                <button type="submit" class="btn btn-primary" v-on:click.prevent.stop="dt.dtCriteria.reload()">GO</button>
             </form>
         </template>
     </tx-table>

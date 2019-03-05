@@ -480,6 +480,27 @@ label {
     .fa {
         font-size: 22px;
         color: $primary;
+        
+        &.inline-icon {
+            font-size: 14px;
+            margin-right: 2px;
+        }
+
+        &.green {
+            color: $good-green;
+        }
+
+        &.red {
+            color: $bad-red;
+        }
+
+        &.stake {
+            color: $stake-yellow;
+        }
+
+        &.mining {
+            color: $mining-orange;
+        }
     }
 
     .inline-fa {

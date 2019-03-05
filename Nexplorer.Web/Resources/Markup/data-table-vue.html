@@ -8,18 +8,22 @@
     </div>
     
     <div class="custom-filter" v-if="currentFilter.isCustom" v-cloak>
-        <slot :criteria="customCriteria"></slot>
+        <slot name="dt-criteria" :dtCriteria="dtCriteria"></slot>
     </div>
     
     <div class="data-table">
-        <preloader v-if="!showTable"></preloader>
+        <div class="dt-body">
+            <preloader v-if="!showTable"></preloader>
+            
+            <slot name="dt" :dt="dt">
+                <div class="row">
+                    <div v-for="c in columns" :class="parseColClass(c, 'dt-head')" v-html="c.header"></div>
+                </div>
 
-        <div class="row">
-            <div v-for="c in columns" :class="parseClass(c, 'dt-head')" v-html="c.header"></div>
-        </div>
-
-        <div class="row dt-body" v-for="(data, i) in tableData">
-            <div v-for="c in columns" :class="parseClass(c, 'dt-col')" v-html="c.render(data[c.key])"></div>
+                <div v-for="(data, i) in tableData" :class="parseRowClass(i)">
+                    <div v-for="c in columns" :class="parseColClass(c, 'dt-col')" v-html="c.render(data[c.key])"></div>
+                </div>
+            </slot>
         </div>
 
         <div class="row dt-controls">
