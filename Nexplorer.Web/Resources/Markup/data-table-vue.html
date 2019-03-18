@@ -1,50 +1,60 @@
-﻿<div style="position: relative;">
-
-    <div class="text-toggle">
-        <span v-for="(filter, i) in filters">
-            <a href="#" v-on:click.prevent.stop="changeFilter(i)" v-bind:class="filterIndex == i ? 'active-link' : ''">{{ filter.name }}</a>
-            <span v-if="i < filters.length - 1" class="toggle-seperator fa fa-ellipsis-v"></span>
-        </span>
-    </div>
+﻿<div class="dt-wrapper">
+    <div class="row">
+        <div class="col text-toggle">
+            <span v-for="(f, i) in dtOptions.filters">
+                <a href="#" v-on:click.prevent.stop="changeFilter(i)" :class="getFilterClass(i)">{{ f.name }}</a>
+                <span v-if="i < dtOptions.filters.length - 1" class="toggle-seperator fa fa-ellipsis-v"></span>
+            </span>
+        </div>
     
-    <div class="custom-filter" v-if="currentFilter.isCustom" v-cloak>
-        <slot name="dt-criteria" :dtCriteria="dtCriteria"></slot>
+        <div :class="filterClass" v-if="showUserFilter" v-cloak>
+            <slot name="dt-criteria" :dtCriteria="dtCriteria"></slot>
+        </div>
     </div>
     
     <div class="data-table">
         <div class="dt-body">
-            <preloader v-if="!showTable"></preloader>
-            
+            <preloader v-if="isLoading"></preloader>
+
             <slot name="dt" :dt="dt">
-                <div class="row">
+                <div :class="headerRowClass">
                     <div v-for="c in columns" :class="parseColClass(c, 'dt-head')" v-html="c.header"></div>
                 </div>
+                
+                <div v-if="tableData.length === 0" class="text-center">
+                    <hr/>
+                    There are no results
+                    <hr/>
+                </div>
 
-                <div v-for="(data, i) in tableData" :class="parseRowClass(i)">
-                    <div v-for="c in columns" :class="parseColClass(c, 'dt-col')" v-html="c.render(data[c.key])"></div>
+                <div v-else v-for="(data, i) in tableData.pageItems" :class="parseRowClass(i)">
+                    <div v-if="dtOptions.showRowIndex" class="index">
+                        <strong>{{ ((criteria.page - 1) * criteria.length) + (i + 1)}}</strong>
+                    </div>
+                    <div v-for="c in columns" :class="parseColClass(c, 'dt-col')" v-html="c.render(data[c.key], data, i)"></div>
                 </div>
             </slot>
         </div>
 
         <div class="row dt-controls">
-            <div class="col-md-3">
+            <div class="col-md-5">
                 <div class="form-group">
-                    <label for="pageLength">Show me</label>
-                    <select id="pageLength" class="form-control" style="width: auto;" v-model="pageLength" v-on:change="changeLength()">
-                        <option v-for="pl in availableLengths" v-bind:value="pl">{{pl}}</option>
+                    <label for="pageLength">Showing </label>
+                    <select id="pageLength" class="form-control" style="width: auto;" v-model="criteria.length" v-on:change="changeLength()">
+                        <option v-for="pl in dtOptions.availableLengths" v-bind:value="pl">{{pl}}</option>
                     </select>
-                    <span class="total-results">of  {{ tableDataCount }}</span>
+                    <span class="total-results">of {{ tableData.totalItems }}</span>
                 </div>
             </div>
-            <div class="col" v-if="tableDataCount > pageLength">
+            <div class="col" v-if="tableData.totalItems > criteria.length">
                 <ul class="paging">
-                    <li class="d-none d-sm-inline"><a href="#" :class="page > 1 ? 'enabled' : 'disabled'" v-on:click.prevent.stop="changePage(page - 1)">Prev</a></li>
+                    <li class="d-none d-sm-inline"><a href="#" :class="criteria.page > 1 ? 'enabled' : 'disabled'" v-on:click.prevent.stop="changePage(criteria.page - 1)">Prev</a></li>
                     
                     <li v-for="pn in pageNumbers">
                         <a href="#" :class="pageNumberClass(pn)" v-on:click.prevent.stop="changePage(pn)">{{pn}}</a>
                     </li>
 
-                    <li class="d-none d-sm-inline"><a href="#" :class="page < pageCount ? 'enabled' : 'disabled'" v-on:click.prevent.stop="changePage(page + 1)">Next</a></li>
+                    <li class="d-none d-sm-inline"><a href="#" :class="criteria.page < pageCount ? 'enabled' : 'disabled'" v-on:click.prevent.stop="changePage(criteria.page + 1)">Next</a></li>
                 </ul>
             </div>
         </div>

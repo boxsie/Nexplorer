@@ -1,4 +1,4 @@
-﻿@import "_variables.scss";
+﻿@import 'Partials/_variables.scss';
 
 #hero {
     -webkit-filter: brightness(.8) saturate(1.2) hue-rotate(266deg);
@@ -6,27 +6,10 @@
 }
 
 #heroText {
-    a {
-        font-size: 18px;
-    }
-
-    .toggle-seperator {
-        margin-left: 10px;
-        margin-right: 10px;
-    }
-
     .block-number {
         font-size: 35px;
         margin-left: 10px;
     }
-}
-
-label {
-    font-weight: 400;
-    margin-right: 10px;
-    margin-top: 10px;
-    position: relative;
-    top: -2px;
 }
 
 @media(min-width: 768px) {

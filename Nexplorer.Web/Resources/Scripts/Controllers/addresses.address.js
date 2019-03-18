@@ -12,20 +12,6 @@ import '../../Style/addresses.address.scss';
 
 export class AddressViewModel {
     constructor(options) {
-        const defaultCriteria = {
-            txType: "All",
-            txInputOutputType: null,
-            minAmount: null,
-            maxAmount: null,
-            heightFrom: null,
-            heightTo: null,
-            utcFrom: null,
-            utcTo: null,
-            addressHashes: [options.addressHash],
-            grouped: true,
-            orderBy: 0
-        };
-
         this.vm = new Vue({
             el: '#main',
             data: {
@@ -41,36 +27,64 @@ export class AddressViewModel {
                 addressOnShowLink: 'Show address',
                 identiconSvg: '',
                 waitingForFavouriteResponse: false,
-                filterCriteria: defaultCriteria,
+                dtOptions: {
+                    ajaxUrl: '/addresses/getaddresstxs',
+                    alwaysCustom: true,
+                    filterClass: 'col-sm-6 no-bg p-0'
+                },
+                filterCriteria: {
+                    txType: "All",
+                    txInputOutputType: null,
+                    minAmount: null,
+                    maxAmount: null,
+                    heightFrom: null,
+                    heightTo: null,
+                    utcFrom: null,
+                    utcTo: null,
+                    addressHashes: [options.addressHash],
+                    grouped: true,
+                    orderBy: 0
+                },
+                filters: [
+                    {
+                        name: 'Sent / Received',
+                        criteria: {}
+                    },
+                    {
+                        name: 'Sent',
+                        criteria: { txInputOutputType: '0' }
+                    },
+                    {
+                        name: 'Received',
+                        criteria: { txInputOutputType: '1' }
+                    }
+                ],
                 ignoreKeys: ['addressHashes'],
                 includeRewards: 0,
-                transactionTableAjaxUrl: '/addresses/getaddresstxs',
-                transactionTableColumns: [
+                columns: [
                     {
-                        title: '<span class="fa fa-calendar-o"></span>',
-                        data: 'timestamp',
-                        width: '5%',
-                        render: (data, type, row) => {
+                        key: 'timestamp',
+                        header: '<span class="d-none d-lg-inline fa fa-calendar-o"></span>',
+                        class: 'col-3 col-lg-1 order-1',
+                        render: (data, row) => {
                             var timestamp = Moment(data).format('DD/MMM/YY');
                             return `<span>${timestamp}</span>`;
                         }
                     },
                     {
-                        title: '<span class="fa fa-cube"></span>',
-                        className: 'block-col d-none d-sm-table-cell',
-                        data: 'blockHeight',
-                        width: '7%',
-                        render: (data, type, row) => {
-                            return `<a href="/blocks/${data}">#${data}</a>`;
+                        key: 'blockHeight',
+                        header: '<span class="d-none d-lg-inline fa fa-cube"></span>',
+                        class: 'col-4 col-lg-1 order-2',
+                        render: (data, row) => {
+                            return `<span class="d-lg-none inline-icon fa fa-cube"></span>
+                                    <a href="/blocks/${data}">${data}</a>`;
                         }
                     },
                     {
-                        title: '<span class="fa fa-hashtag"></span>',
-                        className: '',
-                        data: 'oppositeItems',
-                        width: '55%',
-                        render: (data, type, row) => {
-                            console.log(data);
+                        key: 'oppositeItems',
+                        header: '<span class="d-none d-lg-inline fa fa-hashtag"></span>',
+                        class: 'col-12 col-lg-7 order-12 order-lg-3 address-hashes',
+                        render: (data, row, i) => {
                             if (options.txTypes[row.transactionType] === 'CoinbaseHash') {
                                 return `<span>Coinbase hash reward</span>`;
                             } if (options.txTypes[row.transactionType] === 'CoinbasePrime') {
@@ -79,18 +93,17 @@ export class AddressViewModel {
                                 const rewardOrTx = this.vm.filterCriteria.txInputOutputType === null ? 'reward' : 'transaction';
                                 return `<span>Coinstake ${rewardOrTx}</span>`;
                             } else if (data.length > 0) {
-                                const id = `addTx${row.i}`;
+                                const id = `addTx${i}`;
                                 const collapse = data.length > 2;
 
-                                let txAddressHashes = `<div class="read-more">`;
+                                let txAddressHashes = `<table><tr><td><span class="d-lg-none inline-icon fa fa-hashtag"></span></td><td><div class="ml-1 ml-lg-0 read-more">`;
 
                                 txAddressHashes += collapse ? `<ul class="list collapse" id="${id}">` : `<ul class="list">`;
 
                                 for (let i = 0; i < data.length; i++) {
                                     const hash = data[i].addressHash;
-                                    txAddressHashes += `<li><a class="d-none d-md-block" href="/addresses/${hash}">${hash}</a>
-                                                    <a class="d-none d-sm-block d-md-none" href="/addresses/${hash}">${this.vm.truncateHash(hash, 32)}</a>
-                                                    <a class="d-sm-none" href="/addresses/${hash}">${this.vm.truncateHash(hash, 8)}</a></li>`;
+                                    txAddressHashes += `<li><a class="d-none d-sm-block" href="/addresses/${hash}">${hash}</a>
+                                                    <a class="d-sm-none" href="/addresses/${hash}">${this.vm.truncateHash(hash, 40)}</a></li>`;
                                 }
 
                                 txAddressHashes += '</ul>';
@@ -99,7 +112,7 @@ export class AddressViewModel {
                                     txAddressHashes += `<a class="collapsed expand-link no-row-link" data-toggle="collapse" href="#${id}" aria-expanded="false" aria-controls="${id}">${data.length - 2}</a>`;
                                 }
 
-                                txAddressHashes += '</div>';
+                                txAddressHashes += '</div></td></tr></table>';
 
                                 return txAddressHashes;
                             }
@@ -108,11 +121,10 @@ export class AddressViewModel {
                         }
                     },
                     {
-                        title: '<span class="fa fa-exchange"></span>',
-                        className: 'in-out-col',
-                        data: 'transactionInputOutputType',
-                        width: '5%',
-                        render: (data, type, row) => {
+                        key: 'transactionInputOutputType',
+                        header: '<span class="d-none d-lg-inline fa fa-exchange"></span>',
+                        class: 'col-1 text-center order-4',
+                        render: (data, row) => {
                             var icon = '';
                             
                             if (options.txTypes[row.transactionType] === 'Coinstake') {
@@ -128,15 +140,14 @@ export class AddressViewModel {
                             }
 
                             var txCount = !row.isStakingReward && !row.isMiningReward && data.length > 1 ? `<span>(${data.length})</span>` : ' ';
-                            return `<span class="fa ${icon} tx-type-icon"></span> <span style="font-size: 12px;">${txCount}</span>`;
+                            return `<span class="fa ${icon} inline-icon"></span> <span style="font-size: 12px;">${txCount}</span>`;
                         }
                     },
                     {
-                        title: '<span class="fa fa-paper-plane-o"></span>',
-                        className: 'balance-col',
-                        data: 'amount',
-                        width: '28%',
-                        render: (data, type, row) => {
+                        key: 'amount',
+                        header: '<span class="d-none d-lg-inline fa fa-paper-plane-o"></span>',
+                        class: 'text-right order-5',
+                        render: (data, row) => {
                             var balanceTotal = parseFloat(data.toFixed(4)).toLocaleString();
                             var balanceText = "";
 
@@ -157,7 +168,7 @@ export class AddressViewModel {
                 ]
             },
             components: {
-                TransactionTable: dataTableVue('first_last_numbers'),
+                txTable: dataTableVue,
                 CurrencyHelper: currencyHelper,
                 ActivityChart: activityChart
             },
@@ -207,9 +218,6 @@ export class AddressViewModel {
                 },
                 selectTransaction(tx) {
                     window.location.href = `/transactions/${tx.transactionHash}`;
-                },
-                filterCriteriaUpdate(filterCriteria) {
-                    this.filterCriteria = filterCriteria;
                 }
             },
             mounted() {

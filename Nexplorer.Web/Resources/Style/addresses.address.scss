@@ -1,4 +1,4 @@
-﻿@import "_variables.scss";
+﻿@import 'Partials/_variables.scss';
 
 #hero {
     -webkit-filter: brightness(.8) saturate(1.2) hue-rotate(204deg);
@@ -90,167 +90,15 @@
     }
 }
 
-#addressTx {
-    padding-top: 30px;
-}
-
-#TxInOut, #txIn, #txOut {
-    margin-bottom: 20px;
-}
-
-#sentReceiveButtons {
-    margin: 10px 0;
-    padding-left: 0;
-    padding-right: 0;
-
-    .btn-primary {
-        border: none;
-        border-radius: 0;
-        background-color: $primary;
-        border: 1px solid $primary;
-
-        &.active {
-            background-color: #fff;
-            color: $primary;
-            font-weight: 600;
-            box-shadow: none;
-        }
-
-        &.active:hover {
-            background-color: #fff;
-        }
-
-        &:hover {
-            background-color: darken($primary, 10%);
+.address-hashes {
+    .read-more {
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
         }
     }
 }
-
-#txFilter {
-    .form-group {
-        margin-top: 15px;
-
-        h3 {
-            display: inline;
-        }
-
-        select {
-            display: inline;
-            margin-left: 5px;
-            padding-left: 5px;
-        }
-
-        .reward-radios {
-        }
-
-        label {
-            font-weight: 400;
-            margin-right: 10px;
-            margin-top: 10px;
-            position: relative;
-            top: -2px;
-        }
-    }
-}
-
-#addressTxs {
-    border: none;
-
-    #dataTable {
-        border: none;
-
-        tbody {
-            tr {
-                cursor: pointer;
-
-                &:hover {
-                    background-color: lighten($primary, 37%);
-                }
-            }
-
-            .page-item {
-                padding: 1px;
-
-                &:hover {
-                    border: 1px solid #ddd;
-                }
-            }
-        }
-    }
-
-    .fa {
-        &.tx-type-icon {
-            font-size: 14px;
-        }
-
-        &.green {
-            color: $good-green;
-        }
-
-        &.red {
-            color: $bad-red;
-        }
-
-        &.stake {
-            color: $stake-yellow;
-        }
-
-        &.mining {
-            color: $mining-orange;
-        }
-    }
-
-    select {
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
-
-    .block-col {
-        text-align: center;
-    }
-
-    .in-out-col {
-        text-align: center;
-        vertical-align: middle;
-    }
-
-    .balance-col {
-        text-align: right;
-        vertical-align: middle;
-    }
-
-    .list {
-        margin: 0;
-        padding-left: 0;
-        list-style: none;
-    }
-
-    .expand-link {
-        margin-top: 5px;
-        display: block;
-        font-size: 12px;
-
-        &.collapsed:before {
-            position: relative;
-            content: '+ Show ';
-        }
-
-        &.collapsed:after {
-            position: relative;
-            content: ' more';
-        }
-
-        &:not(.collapsed):before {
-            position: relative;
-            content: '- Show ';
-        }
-
-        &:not(.collapsed):after {
-            position: relative;
-            content: ' less';
-        }
-    }
-}   
 
 @media(min-width: 768px) {
     #heroText {
@@ -304,21 +152,6 @@
 
     #trustKeyOverview {
         text-align: left;
-    }
-
-    #sentReceiveButtons {
-        margin: 10px 0 25px 0;
-        text-align: left;
-    }
-
-    #txFilter {
-        .form-group {
-            margin-top: 5px;
-            
-            select {
-                width: 150px;
-            }
-        }
     }
 }
 

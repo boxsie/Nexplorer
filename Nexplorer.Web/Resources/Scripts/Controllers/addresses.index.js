@@ -12,16 +12,6 @@ import '../../Style/addresses.index.scss';
 
 export class AddressIndexViewModel {
     constructor(options) {
-        const defaultCriteria = {
-            minBalance: null,
-            maxBalance: null,
-            heightFrom: null,
-            heightTo: null,
-            isStaking: false,
-            isNexus: false,
-            orderBy: 0
-        };
-
         this.vm = new Vue({
             el: '#main',
             data: {
@@ -33,44 +23,75 @@ export class AddressIndexViewModel {
                 totalStakedCoins: ' - ',
                 percentageDormant: ' - ',
                 zeroBalance: ' - ',
-                currentFilter: 'all',
-                filterCriteria: defaultCriteria,
-                addressTableAjaxUrl: '/addresses/getaddresses',
-                addressTableColumns: [
+                dtOptions: {
+                    ajaxUrl: '/addresses/getaddresses',
+                    showIndex: true
+                },
+                filterCriteria: {
+                    minBalance: null,
+                    maxBalance: null,
+                    heightFrom: null,
+                    heightTo: null,
+                    isStaking: false,
+                    isNexus: false,
+                    orderBy: 0
+                },
+                filters: [
                     {
-                        title: '',
-                        data: 'i',
-                        render: (data, type, row) => {
-                            return `<strong>${data}</strong>`;
+                        name: 'All',
+                        criteria: {}
+                    },
+                    {
+                        name: 'Recent',
+                        criteria: { orderBy: '2' }
+                    },
+                    {
+                        name: 'Staking',
+                        criteria: { isStaking: true, orderBy: '4' }
+                    },
+                    {
+                        name: 'Nexus',
+                        criteria: { isNexus: true }
+                    },
+                    {
+                        name: 'Custom',
+                        isCustom: true
+                    }
+                ],
+                columns: [
+                    {
+                        key: 'hash',
+                        class: 'col-12 col-md-6 col-lg-7',
+                        header: '<span class="d-none d-md-inline fa fa-hashtag"></span>',
+                        render: (data, row) => {
+                            return `<span class="d-md-none inline-icon fa fa-hashtag"></span>
+                                    <a class="d-none d-sm-inline d-md-none d-lg-inline" href="/addresses/${data}">${data}</a>
+                                    <a class="d-none d-md-inline d-lg-none" href="/addresses/${data}">${this.vm.truncateHash(data, 35)}</a>
+                                    <a class="d-sm-none" href="/addresses/${data}">${this.vm.truncateHash(data, 32)}</a>`;
                         }
                     },
                     {
-                        title: '<span class="fa fa-hashtag"></span>',
-                        data: 'hash',
-                        render: (data, type, row) => {
-                            return `<a class="d-none d-md-block" href="/addresses/${data}">${data}</a>
-                                            <a class="d-none d-sm-block d-md-none" href="/addresses/${data}">${this.vm.truncateHash(data, 32)}</a>
-                                            <a class="d-sm-none" href="/addresses/${data}">${this.vm.truncateHash(data, 4)}</a>`;
+                        key: 'lastBlockSeen',
+                        class: 'col col-md-2',
+                        header: '<span class="d-none d-md-inline fa fa-cube"></span>',
+                        render: (data, row) => {
+                            return `<span class="d-md-none inline-icon fa fa-cube"></span>
+                                    <a href="/blocks/${data}">${data}</a>`;
                         }
                     },
                     {
-                        title: '<span class="fa fa-bolt"></span>',
-                        data: 'interestRate',
-                        render: (data, type, row) => {
-                            return data ? `${data.toFixed(3).toLocaleString()}%` : '';
+                        key: 'interestRate',
+                        class: 'col-3 col-md-1',
+                        header: '<span class="d-none d-md-inline fa fa-bolt"></span>',
+                        render: (data, row) => {
+                            return data ? `<span class="d-md-none inline-icon fa fa-bolt"></span> ${data.toFixed(3).toLocaleString()}%` : '';
                         }
                     },
                     {
-                        title: '<span class="fa fa-cube"></span>',
-                        data: 'lastBlockSeen',
-                        render: (data, type, row) => {
-                            return `<a href="/blocks/${data}">#${data}</a>`;
-                        }
-                    },
-                    {
-                        title: '<span class="fa fa-balance-scale"></span>',
-                        data: 'balance',
-                        render: (data, type, row) => {
+                        key: 'balance',
+                        class: 'text-right',
+                        header: '<span class="d-none d-md-inline fa fa-balance-scale"></span>',
+                        render: (data, row) => {
                             return `<strong>${parseFloat(data.toFixed(2)).toLocaleString()}</strong> <small>NXS</small>`;
                         }
                     }
@@ -135,7 +156,7 @@ export class AddressIndexViewModel {
                 SwiperSlide: swiperVueSlide,
                 NxsDistributionChart: doughnutChart,
                 AddressDistributionChart: doughnutChart,
-                AddressTable: dataTableVue(this.filterCriteria, 'first_last_numbers')
+                AddressTable: dataTableVue
             },
             methods: {
                 updateStats(statDtoJson) {
@@ -153,34 +174,16 @@ export class AddressIndexViewModel {
                     this.percentageDormant = `${((statDto.dormantOverOneYear / statDto.addressCount) * 100).toFixed(3).toLocaleString()} %`;
                     this.zeroBalance = `${((statDto.zeroBalance / statDto.addressCount) * 100).toFixed(3).toLocaleString()} %`;
                 },
-                changeFilter(newFilter) {
-                    this.currentFilter = newFilter;
-                    this.filterCriteria = JSON.parse(JSON.stringify(defaultCriteria));
-
-                    if (this.currentFilter !== 'custom') {
-                        this.reloadData();
-                    }
-                },
-                reloadData() {
-                    this.$refs.addressTable.dataReload(this.filterCriteria, this.currentFilter);
-                },
                 truncateHash(hash, len) {
                     const start = hash.substring(0, len);
                     return start + '...';
                 },
-                filterUpdate(filter) {
-                    if (filter) {
-                        this.currentFilter = filter;
-                    } else {
-                        this.currentFilter = 'all';
-                    }
+                selectAddress(address) {
+                    window.location.href = `/transactions/${address.hash}`;
                 },
-                filterCriteriaUpdate(filterCriteria) {
-                    this.filterCriteria = filterCriteria;
-                }
             },
             created() {
-                var self = this;
+                const self = this;
 
                 this.connection = new HubConnectionBuilder()
                     .configureLogging(LogLevel.Information)

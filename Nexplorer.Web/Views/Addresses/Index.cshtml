@@ -122,85 +122,64 @@
             <span class="fa fa-filter"></span>
         </div>
     </div>
-
-    <div class="text-toggle">
-        <a href="#" v-on:click.prevent.stop="changeFilter('all')" v-bind:class="currentFilter == 'all' ? 'active-link' : ''">All</a>
-        <span class="toggle-seperator fa fa-ellipsis-v"></span>
-        <a href="#" v-on:click.prevent.stop="changeFilter('recent')" v-bind:class="currentFilter == 'recent' ? 'active-link' : ''">Recent</a>
-        <span class="toggle-seperator fa fa-ellipsis-v"></span>
-        <a href="#" v-on:click.prevent.stop="changeFilter('staking')" v-bind:class="currentFilter == 'staking' ? 'active-link' : ''">Staking</a>
-        <span class="toggle-seperator fa fa-ellipsis-v"></span>
-        <a href="#" v-on:click.prevent.stop="changeFilter('nexus')" v-bind:class="currentFilter == 'nexus' ? 'active-link' : ''">Nexus</a>
-        <span class="toggle-seperator fa fa-ellipsis-v"></span>
-        <a href="#" v-on:click.prevent.stop="changeFilter('custom')" v-bind:class="currentFilter == 'custom' ? 'active-link' : ''">Custom</a>
-    </div>
-
-    <div id="customFilter" v-if="currentFilter == 'custom'">
-        <form id="customFilterForm">
-            <div class="row">
-                <div class="col-sm-4">
-                    <h3>BALANCE</h3>
-                    <br />
-                    <div class="form-group">
-                        <label for="balanceMin">Min Balance</label>
-                        <input type="number" class="form-control" id="balanceMin" v-model="filterCriteria.minBalance">
+    <address-table id="blockTable" ref="addressTable" :options="dtOptions" :filters="filters" :default-criteria="filterCriteria" :columns="columns" v-on:row-click="selectAddress">
+        <template #dt-criteria="dt">
+            <form id="customFilterForm">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <h3>BALANCE</h3>
+                        <br />
+                        <div class="form-group">
+                            <label for="balanceMin">Min Balance</label>
+                            <input type="number" class="form-control" id="balanceMin" v-model="dt.dtCriteria.criteria.minBalance" v-on:change="dt.dtCriteria.reload()">
+                        </div>
+                        <div class="form-group">
+                            <label for="balanceMax">Max Balance</label>
+                            <input type="number" class="form-control" id="balanceMax" v-model="dt.dtCriteria.criteria.maxBalance" v-on:change="dt.dtCriteria.reload()">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="balanceMax">Max Balance</label>
-                        <input type="number" class="form-control" id="balanceMax" v-model="filterCriteria.maxBalance">
+                    <div class="col-sm-4">
+                        <h3>LAST BLOCK</h3>
+                        <br />
+                        <div class="form-group">
+                            <label for="lastSeenFrom">Min Height</label>
+                            <input type="number" class="form-control" id="lastSeenFrom" v-model="dt.dtCriteria.criteria.heightFrom" v-on:change="dt.dtCriteria.reload()">
+                        </div>
+                        <div class="form-group">
+                            <label for="lastSeenTo">Max Height</label>
+                            <input type="number" class="form-control" id="lastSeenTo" v-model="dt.dtCriteria.criteria.heightTo" v-on:change="dt.dtCriteria.reload()">
+                        </div>
                     </div>
-                </div>
-                <div class="col-sm-4">
-                    <h3>LAST BLOCK</h3>
-                    <br />
-                    <div class="form-group">
-                        <label for="lastSeenFrom">Min Height</label>
-                        <input type="number" class="form-control" id="lastSeenFrom" v-model="filterCriteria.heightFrom">
-                    </div>
-                    <div class="form-group">
-                        <label for="lastSeenTo">Max Height</label>
-                        <input type="number" class="form-control" id="lastSeenTo" v-model="filterCriteria.heightTo">
-                    </div>
-                </div>
-                <div class="col-sm-4">
-                    <h3>ORDER BY</h3>
-                    <br />
-                    <div class="form-group">
-                        <select asp-items="Html.GetEnumSelectList<OrderAddressesBy>()" class="form-control" v-model="filterCriteria.orderBy"></select>
-                    </div>
-                    <br />
-                    <h3>OPTIONS</h3>
-                    <br />
-                    <div class="form-group">
-                        <label for="isStaking" style="margin-top: 7px;">
-                            <input class="big-checkbox" type="checkbox" value="" id="isStaking" v-model="filterCriteria.isStaking">
-                            Only Staking
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label for="isNexus" style="margin-top: 7px;">
-                            <input class="big-checkbox" type="checkbox" value="" id="isNexus" v-model="filterCriteria.isNexus">
-                            Only Nexus
-                        </label>
+                    <div class="col-sm-4">
+                        <h3>ORDER BY</h3>
+                        <br />
+                        <div class="form-group">
+                            <select asp-items="Html.GetEnumSelectList<OrderAddressesBy>()" class="form-control" v-model="dt.dtCriteria.criteria.orderBy" v-on:change="dt.dtCriteria.reload()"></select>
+                        </div>
+                        <br />
+                        <h3>OPTIONS</h3>
+                        <br />
+                        <div class="form-group">
+                            <label for="isStaking" style="margin-top: 7px;">
+                                <input class="big-checkbox" type="checkbox" value="" id="isStaking" v-model="dt.dtCriteria.criteria.isStaking" v-on:change="dt.dtCriteria.reload()">
+                                Only Staking
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="isNexus" style="margin-top: 7px;">
+                                <input class="big-checkbox" type="checkbox" value="" id="isNexus" v-model="dt.dtCriteria.criteria.isNexus" v-on:change="dt.dtCriteria.reload()">
+                                Only Nexus
+                            </label>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <small class="text-muted" style="display: block;">
-                All fields are optional, 1000 results maximum.
-            </small>
-            <br />
-            <button type="submit" class="btn btn-primary" v-on:click.prevent.stop="reloadData">GO</button>
-        </form>
-    </div>
-
-    <address-table ref="addressTable" class="address-table"
-                   :filter="currentFilter"
-                   :filter-criteria="filterCriteria"
-                   :ajax-url="addressTableAjaxUrl"
-                   :columns="addressTableColumns"
-                   v-on:filter-update="filterUpdate"
-                   v-on:filter-criteria-update="filterCriteriaUpdate"></address-table>
+                <small class="text-muted" style="display: block;">
+                    All fields are optional, 1000 results maximum.
+                </small>
+            </form>
+        </template>
+    </address-table>
 </div>
 
 @section Scripts {

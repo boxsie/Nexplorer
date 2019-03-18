@@ -1,25 +1,12 @@
-﻿@import "../_variables.scss";
+﻿@import '../Partials/_variables.scss';
 
-.custom-filter {
+.dt-wrapper {
+    position: relative;
     margin-top: 20px;
-    padding: 20px;
-    background-color: lighten($primary, 40%);
-    border-radius: 4px;
-
-    .custom-filter-form {
-        .btn {
-            width: 100%;
-            height: 35px;
-            padding: 0;
-            margin-bottom: 10px;
-        }
-    }
 }
 
 .data-table {
     position: relative;
-    padding-top: 15px;
-    padding-bottom: 15px;
     padding-left: 0;
     padding-right: 0;
     margin-left: -15px;
@@ -31,11 +18,29 @@
     }
 
     .dt-body {
-        min-height: 300px;
+        min-height: 150px;
 
         .dt-row {
-            padding-top: 0.25rem;
-            padding-bottom: 0.25rem;
+            padding-top: 8px;
+            padding-bottom: 8px;
+
+            &.row-index {
+                position: relative;
+                padding-left: 30px;
+
+                .index {
+                    position: absolute;
+                    left: 0;
+                    text-align: center;
+                    width: 30px;
+                    top: 49%;
+                    transform: translateY(-50%);
+
+                    strong {
+                        font-size: 12px;
+                    }
+                }
+            }
 
             &.odd-row {
                 background-color: #f2f2f2
@@ -43,7 +48,7 @@
         }
 
         .dt-col, .dt-head {
-            padding: 0.55rem;
+            padding: 5px;
         }
     }
 
@@ -65,7 +70,7 @@
             justify-content: center;
             padding-left: 0;
             list-style: none;
-            border-radius: 0.25rem;
+            border-radius: 4px;
             margin: 2px 0;
             white-space: nowrap;
 
@@ -73,7 +78,7 @@
                 a {
                     position: relative;
                     display: block;
-                    padding: 0.5rem 0.75rem;
+                    padding: 8px 10px;
                     margin-left: -1px;
                     line-height: 1.25;
                     color: $primary;
@@ -123,7 +128,7 @@
         }
 
         .data-table-col, .data-table-head {
-            padding: 0.75rem;
+            padding: 12px;
         }
 
         .dt-controls {

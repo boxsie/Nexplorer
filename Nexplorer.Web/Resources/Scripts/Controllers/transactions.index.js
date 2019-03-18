@@ -11,31 +11,33 @@ export class TransactionViewModel {
         this.vm = new Vue({
             el: '#main',
             data: {
-                txTableAjaxUrl: '/transactions/gettransactions',
-                filterCriteria: {
-                    txType: null,
-                    minAmount: null,
-                    maxAmount: null,
-                    heightFrom: null,
-                    heightTo: null,
-                    utcFrom: null,
-                    utcTo: null,
-                    orderBy: 0
+                dtOptions: {
+                    defaultCriteria: {
+                        txType: null,
+                        minAmount: null,
+                        maxAmount: null,
+                        heightFrom: null,
+                        heightTo: null,
+                        utcFrom: null,
+                        utcTo: null,
+                        orderBy: 0
+                    },
+                    ajaxUrl: '/transactions/gettransactions',
+                    filters: [
+                        {
+                            name: 'Latest',
+                            criteria: {}
+                        },
+                        {
+                            name: 'User',
+                            criteria: { txType: '4' }
+                        },
+                        {
+                            name: 'Custom',
+                            isUserFilter: true
+                        }
+                    ]
                 },
-                filters: [
-                    {
-                        name: 'Latest',
-                        criteria: {}
-                    },
-                    {
-                        name: 'User',
-                        criteria: { txType: '4' }
-                    },
-                    {
-                        name: 'Custom',
-                        isCustom: true
-                    }
-                ],
                 columns: [
                     {
                         key: 'timestamp',
@@ -118,7 +120,7 @@ export class TransactionViewModel {
             },
             methods: {
                 reloadData() {
-                    this.$refs.txTable.dataReload();
+                    this.$refs.txTable.reloadData();
                 },
                 truncateHash(hash, len) {
                     const start = hash.substring(0, len);

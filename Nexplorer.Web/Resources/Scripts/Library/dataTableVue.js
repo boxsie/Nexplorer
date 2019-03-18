@@ -5,21 +5,35 @@ import '../../Style/Components/_data-table-vue.scss';
 
 export default {
     template: require('../../Markup/data-table-vue.html'),
-    props: ['ajaxUrl', 'defaultCriteria', 'columns', 'filters', 'ignoreKeys'],
+    props: ['options', 'columns'],
     data: () => {
         return {
-            tableData: {},
-            tableDataCount: 0,
-            filterIndex: 0,
-            filter: {},
-            currentCriteria: {},
-            customCriteria: {},
-            page: 1,
-            pageLength: 10,
-            paginationLength: 7,
-            availableLengths: [10, 25, 50, 100],
-            showTable: false,
-            defaultFilter: {}
+            dtOptions: {
+                defaultCriteria: {},
+                ajaxUrl: '',
+                localData: [],
+                filters: [],
+                showUserFilter: false,
+                availableLengths: [10, 25, 50, 100],
+                showRowIndex: false,
+                paginationLength: 7
+            },
+            tableData: {
+                pageItems: [],
+                totalItems: 0
+            },
+            defaultCriteria: {
+                page: 1,
+                length: 10
+            },
+            criteria: {},
+            filter: {
+                name: '',
+                isUserFilter: false
+            },
+            isLoading: false,
+            baseUrl: `${window.location.protocol}//${window.location.host}/${window.location.pathname.split('/')
+                .slice(1).join('/')}`
         };
     },
     computed: {
@@ -31,48 +45,62 @@ export default {
         },
         dtCriteria() {
             return {
-                criteria: this.customCriteria,
-                reload: this.dataReload
+                criteria: this.criteria,
+                reload: this.reloadData
             };
         },
-        currentFilter() {
-            return this.filters[this.filterIndex];
-        },
         pageCount() {
-            return Math.ceil(this.tableDataCount / this.pageLength);
+            return Math.ceil(this.tableData.totalItems / this.criteria.length);
         },
         pageNumbers() {
             const pages = [];
-            
-            if (this.pageCount <= this.paginationLength) {
+
+            if (this.pageCount <= this.dtOptions.paginationLength) {
                 for (let i = 0; i < this.pageCount; i++) {
                     pages[i] = i + 1;
                 }
             } else {
-                const halfway = Math.ceil(this.paginationLength / 2);
+                const halfway = Math.ceil(this.dtOptions.paginationLength / 2);
 
-                for (let i = 0; i < this.paginationLength; i++) {
+                for (let i = 0; i < this.dtOptions.paginationLength; i++) {
                     if (i === 0) {
                         pages[i] = 1;
                     } else if (i === 1) {
-                        pages[i] = this.page > halfway ? '...' : 2;
-                    } else if (i === this.paginationLength - 2) {
-                        pages[i] = this.page < this.pageCount - halfway ? '...' : this.pageCount - 1;
-                    } else if (i === this.paginationLength - 1) {
+                        pages[i] = this.criteria.page > halfway ? '...' : 2;
+                    } else if (i === this.dtOptions.paginationLength - 2) {
+                        pages[i] = this.criteria.page < this.pageCount - halfway ? '...' : this.pageCount - 1;
+                    } else if (i === this.dtOptions.paginationLength - 1) {
                         pages[i] = this.pageCount;
                     } else {
-                        if (this.page < halfway) {
+                        if (this.criteria.page < halfway) {
                             pages[i] = i + 1;
-                        } else if (this.page > this.pageCount - halfway) {
-                            pages[i] = this.pageCount - (this.paginationLength - (i + 1));
+                        } else if (this.criteria.page > this.pageCount - halfway) {
+                            pages[i] = this.pageCount - (this.dtOptions.paginationLength - (i + 1));
                         } else {
-                            pages[i] = this.page + (i + 1 - halfway);
+                            pages[i] = this.criteria.page + (i + 1 - halfway);
                         }
                     }
                 }
             }
 
             return pages;
+        },
+        headerRowClass() {
+            const ic = this.dtOptions.showIndex ? 'row-index' : '';
+            return `row dt-row ${ic}`;
+        },
+        filterClass() {
+            const col = this.options.filterClass ? this.options.filterClass : 'col-12';
+            return `custom-filter ${col}`;
+        },
+        hasLocalData() {
+            return this.dtOptions.localData && this.dtOptions.localData.length > 0;
+        },
+        hasFilters() {
+            return this.dtOptions.filters && this.dtOptions.filters.length > 0;
+        },
+        showUserFilter() {
+            return this.dtOptions.showUserFilter || this.filter.isUserFilter;
         }
     },
     components: {
@@ -81,32 +109,40 @@ export default {
     methods: {
         parseRowClass(rowIndex) {
             const r = (rowIndex + 1) % 2 === 0 ? '' : 'odd-row';
-            return `row dt-row ${r}`;
-
+            const ic = this.dtOptions.showRowIndex ? 'row-index' : '';
+            return `row dt-row ${r} ${ic}`;
         },
         parseColClass(column, classStr, rowIndex) {
+            if (!column.class) {
+                return 'col';
+            }
+
             return column.class.includes('col') ? `${classStr} ${column.class}` : `col ${classStr} ${column.class}`;
         },
         pageNumberClass(page) {
-            return isNaN(page) || !page ? 'disabled' : page === this.page ? 'active' : 'enabled';
+            return isNaN(page) || !page ? 'disabled' : page === this.criteria.page ? 'active' : 'enabled';
+        },
+        getFilterClass(i) {
+            return this.dtOptions.filters[i].name === this.filter.name ? 'active-link' : '';
         },
         changeFilter(filterIndex) {
-            if (filterIndex >= this.filters.length)
+            if (!this.hasFilters || this.dtOptions.filters[filterIndex].name === this.filter.name || filterIndex >= this.dtOptions.filters.length) {
                 return;
+            }
 
-            this.filterIndex = filterIndex;
-            this.filter = this.filters[this.filterIndex];
+            this.filter = this.dtOptions.filters[filterIndex];
 
-            if (!this.filter.isCustom) {
-                this.dataReload();
+            if (!this.filter.isUserFilter) {
+                this.criteria = Object.assign({}, this.defaultCriteria, this.filter.criteria);
+                this.reloadData();
             }
         },
         changePage(page) {
-            if (isNaN(page) || !page || page === this.page) {
+            if (isNaN(page) || !page || page === this.criteria.page) {
                 return;
             }
 
-            let newPage = this.page;
+            let newPage = this.criteria.page;
 
             if (page > this.pageCount) {
                 newPage = this.pageCount;
@@ -116,163 +152,134 @@ export default {
                 newPage = page;
             }
 
-            if (newPage === this.page) {
+            if (newPage === this.criteria.page) {
                 return;
             }
 
-            this.dataReload(newPage);
+            this.criteria.page = newPage;
+            this.reloadData();
         },
         changeLength() {
-            this.page = 1;
-            this.dataReload();
+            this.criteria.page = 1;
+            this.reloadData();
         },
-        dataReload(newPage) {
-            this.page = newPage ? newPage : 1;
+        reloadData() {
+            this.isLoading = true;
 
-            this.currentCriteria = Object.assign({}, this.defaultCriteria, this.filter.isCustom ? this.customCriteria : this.filter.criteria);
-
-            const data = {
-                filterCriteria: this.currentCriteria,
-                start: (this.page - 1) * this.pageLength,
-                length: this.pageLength
+            const criteria = {
+                filterCriteria: this.criteria,
+                start: (this.criteria.page - 1) * this.criteria.length,
+                length: this.criteria.length
             };
 
-            this.showTable = false;
-            this.setWindowUrl();
+            if (this.dtOptions.ajaxUrl) {
+                const self = this;
+                $.ajax({
+                    url: this.dtOptions.ajaxUrl,
+                    type: 'POST',
+                    data: criteria,
+                    success: (result) => {
+                        self.tableData.pageItems = result.data;
+                        self.tableData.totalItems = result.recordsFiltered;
+                    }
+                }).always(() => { self.isLoading = false; });
+            } else if (this.hasLocalData) {
+                this.tableData.pageItems = this.dtOptions.localData.slice(criteria.start, criteria.start + criteria.length);
+                this.tableData.totalItems = this.dtOptions.localData.length;
+                this.isLoading = false;
+            }
 
-            const self = this;
+            this.setUrlQuery();
+        },
+        setUrlQuery() {
+            const params = {};
 
-            $.ajax({
-                url: this.ajaxUrl,
-                type: 'POST',
-                data: data,
-                success: (result) => {
-                    self.dataRefresh(result);
-                }
-            });
-        },
-        dataRefresh(result) {
-            this.tableData = result.data;
-            this.tableDataCount = result.recordsFiltered;
-            this.showTable = true;
-        },
-        createFilterQuery(page, length, filter) {
-            const params = {
-                page: page,
-                length: length
-            };
-            
-            for (let key in filter) {
-                if (!filter.hasOwnProperty(key))
+            for (let key in this.criteria) {
+                if (!this.criteria.hasOwnProperty(key))
                     continue;
 
-                const prop = filter[key];
+                const prop = this.criteria[key];
                 const defProp = this.defaultCriteria[key];
-
-                if (prop !== null && !this.isKeyIgnored(key) && prop !== defProp) {
-                    params[key] = filter[key];
+                
+                if (prop && prop !== defProp) {
+                    params[key] = this.criteria[key];
                 }
             }
-
-            return $.param(params);
-        },
-        createFilterQueryObject(query) {
-            const pairs = query.split('&');
-
-            var result = {
-                criteria: {}
-            };
-
-            pairs.forEach((pair) => {
-                pair = pair.split('=');
-
-                var key = pair[0];
-                var val = decodeURIComponent(pair[1] || '');
-
-                if (key === 'page' || key === 'length') {
-                    result[key] = val;
-                } else {
-                    result.criteria[key] = val;
-                }
-            });
-
-            return result;
-        },
-        getFilterIndexFromQueryObj(filterQueryObj) {
-            let filterIndex = -1;
-            let customIndex = -1;
-
-            const filterQueryJson = JSON.stringify(filterQueryObj.criteria);
-
-            for (let i = 0; i < this.filters.length; i++) {
-                const filter = this.filters[i];
-
-                if (filter.isCustom) {
-                    customIndex = i;
-                } else if (JSON.stringify(filter.criteria) === filterQueryJson) {
-                    filterIndex = i;
-                }
-            }
-
-            if (filterIndex === -1) {
-                if (customIndex > -1) {
-                    filterIndex = customIndex;
-                } else {
-                    filterIndex = 0;
-                }
-            }
-
-            return filterIndex;
-        },
-        setWindowUrl() {
-            const newUrl = `${this.getBaseUrl()}?${this.createFilterQuery(this.page, this.pageLength, this.currentCriteria)}`;
+            
+            const p = Object.keys(params).length > 0 ? `?${$.param(params)}` : '';
+            const newUrl = `${this.baseUrl}${p}`;
 
             if (newUrl !== window.location.href) {
                 window.history.pushState('', '', newUrl);
             }
         },
-        getBaseUrl() {
-            return `${window.location.protocol}//${window.location.host}/${window.location.pathname.split('/').slice(1).join('/')}`;
-        },
-        isKeyIgnored(key) {
-            if (!this.ignoreKeys) {
-                return false;
-            }
-
-            for (let i = 0; i < this.ignoreKeys.length; i++) {
-                if (key === this.ignoreKeys[i]) {
-                    return true;
-                }
-            }
-
-            return false;
-        },
-        parseUrlCriteria() {
+        getUrlQuery() {
             const getUrl = document.location.href;
             const querySplit = getUrl.split('?');
             const query = querySplit.length > 1 ? querySplit[1] : '';
+            const result = {};
 
             if (query) {
-                const filterQueryObj = this.createFilterQueryObject(query);
-                this.customCriteria = Object.assign({}, this.defaultCriteria, filterQueryObj.criteria);
-                this.filterIndex = this.getFilterIndexFromQueryObj(filterQueryObj);
-                this.page = parseInt(filterQueryObj.page);
-                this.pageLength = parseInt(filterQueryObj.length);
-            } else {
-                this.filterIndex = 0;
+                const pairs = query.split('&');
+
+                pairs.forEach((pair) => {
+                    var kvp = pair.split('=');
+
+                    var key = kvp[0];
+                    var val = decodeURIComponent(kvp[1] || '');
+
+                    result[key] = key === 'page' || key === 'length' ? parseInt(val) : val;
+                });
             }
 
-            this.filter = this.filters[this.filterIndex];
-            this.dataReload(this.page);
+            return result;
+        },
+        matchQueryToFilter(queryObj) {
+            let matchedFilterIndex = -1;
+
+            if (!this.hasFilters) {
+                return matchedFilterIndex;
+            }
+
+            let userIndex = -1;
+
+            const qo = Object.assign({}, queryObj);
+            delete qo.page;
+            delete qo.length;
+
+            this.dtOptions.filters.forEach((filter, i) => {
+                if (JSON.stringify(filter.criteria) === JSON.stringify(qo)) {
+                    matchedFilterIndex = i;
+                } else if (filter.isUserFilter) {
+                    userIndex = i;
+                }
+            });
+
+            return matchedFilterIndex >= 0 ? matchedFilterIndex : userIndex;
+        },
+        onPageLoad(isPopState) {
+            const qo = this.getUrlQuery();
+
+            if (this.hasFilters) {
+                this.changeFilter(this.matchQueryToFilter(qo));
+            }
+
+            const newCriteria = Object.assign({}, this.defaultCriteria, qo);
+
+            if (JSON.stringify(newCriteria) !== JSON.stringify(this.criteria)) {
+                this.criteria = newCriteria;
+                this.reloadData();
+            }
         }
     },
-    created() {
-        this.currentCriteria = Object.assign({}, this.defaultCriteria);
-        this.customCriteria = Object.assign({}, this.defaultCriteria);
+    mounted() {
+        this.dtOptions = Object.assign({}, this.dtOptions, this.options);
+        this.defaultCriteria = Object.assign({}, this.defaultCriteria, this.dtOptions.defaultCriteria);
+        this.criteria = Object.assign({}, this.criteria, this.defaultCriteria);
+        
+        window.addEventListener('popstate', () => this.onPageLoad(true));
 
-        window.addEventListener('popstate', this.parseUrlCriteria);
-
-        this.parseUrlCriteria();
+        this.onPageLoad();
     }
 };
 

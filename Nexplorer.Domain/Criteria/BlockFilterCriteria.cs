@@ -24,6 +24,9 @@ namespace Nexplorer.Domain.Criteria
         [JsonProperty("utcTo")]
         public DateTime? UtcTo { get; set; }
 
+        [JsonProperty("channel")]
+        public BlockChannels? Channel { get; set; }
+
         [JsonProperty("orderBy")]
         public OrderBlocksBy OrderBy { get; set; }
     }

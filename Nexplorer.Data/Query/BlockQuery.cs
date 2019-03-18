@@ -315,6 +315,13 @@ namespace Nexplorer.Data.Query
                 whereClause.Append($"AND b.[Timestamp] <= @toDate ");
             }
 
+            if (filter.Channel.HasValue)
+            {
+                var channel = filter.Channel.Value;
+                param.Add(nameof(channel), channel);
+                whereClause.Append($"AND b.[Channel] = @channel ");
+            }
+
             return whereClause.ToString();
         }
     }

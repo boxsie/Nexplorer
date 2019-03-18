@@ -51,7 +51,7 @@
 }
 
 <div class="row">
-    <div class="col-sm-4">
+    <div class="col-sm-6 col-md-4 order-1">
         <div class="panel">
             <div class="row">
                 <div class="col-9">
@@ -72,7 +72,7 @@
         </div>
     </div>
 
-    <div class="col-sm-5">
+    <div class="col-sm-12 col-md-5 order-12 order-md-2">
         <div class="panel">
             <div class="row">
                 <div class="col-9">
@@ -83,7 +83,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-sm-4">
+                <div class="col-sm-6 col-md-4">
                     <h3>Received</h3>
                     <p class="val">@Model.Address.ReceivedCount.ToLocaleString()</p>
                     <h3>Sent</h3>
@@ -91,7 +91,7 @@
                     <h3>Total</h3>
                     <p class="val">@((Model.Address.ReceivedCount + Model.Address.SentCount).ToLocaleString())</p>
                 </div>
-                <div class="col-sm-8">
+                <div class="col-sm-6 col-md-8">
                     <h3>Received</h3>
                     <p class="val">@Model.Address.ReceivedAmount.ToLocaleString() <span style="font-size: 10px;">NXS</span></p>
                     <h3>Sent</h3>
@@ -101,7 +101,7 @@
         </div>
     </div>
 
-    <div class="col-sm-3">
+    <div class="col-sm-6 col-md-3 order-3">
         <div class="panel no-pad">
             <div class="row add-pad">
                 <div class="col-6">
@@ -180,23 +180,10 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-sm-5">
-            <div id="sentReceiveButtons" class="form-group">
-                <div class="text-toggle">
-                    <a href="#" v-on:click.prevent.stop="getHistory()"
-                       v-bind:class="filterCriteria.txInputOutputType == null ? 'active-link' : ''">Sent / Rec<span class="hidden-xs">eived</span></a>
-                    <span class="toggle-seperator fa fa-ellipsis-v"></span>
-                    <a href="#" v-on:click.prevent.stop="getHistory(0)"
-                       v-bind:class="filterCriteria.txInputOutputType == 0 ? 'active-link' : ''">Sent</a>
-                    <span class="toggle-seperator fa fa-ellipsis-v"></span>
-                    <a href="#" v-on:click.prevent.stop="getHistory(1)"
-                       v-bind:class="filterCriteria.txInputOutputType == 1 ? 'active-link' : ''">Received</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-7 text-right-sm">
-            <form id="txFilter">
+    <tx-table id="txTable" ref="txTable" :options="dtOptions" :filters="filters" :default-criteria="filterCriteria" 
+              :columns="columns" :ignore-keys="ignoreKeys" v-on:row-click="selectTransaction">
+        <template #dt-criteria="dt">
+            <form id="txFilter" class="offset-sm-4 col-sm-8">
                 <div class="form-group">
                     <h3>ORDER BY </h3>
                     <select asp-items="Html.GetEnumSelectList<OrderTransactionsBy>()" v-on:change="reloadData()" class="form-control" v-model="filterCriteria.orderBy"></select>
@@ -210,22 +197,14 @@
 
                     <select asp-items="selectList" v-on:change="reloadData()" class="form-control" v-model="filterCriteria.txType"></select>
                 </div>
-                <div class="form-group">
-                    <label class="h3">
-                        <input type="checkbox" class="big-checkbox" v-on:change="reloadData()" v-model="filterCriteria.grouped" /> Grouped 
+                <div class="form-group text-right">
+                    <label for="grouped">
+                        <input id="grouped" type="checkbox" class="big-checkbox" v-on:change="reloadData()" v-model="filterCriteria.grouped" /> Grouped
                     </label>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <transaction-table id="addressTxs" ref="txTable"
-                       :filter-criteria="filterCriteria"
-                       :ajax-url="transactionTableAjaxUrl"
-                       :columns="transactionTableColumns"
-                       :ignore-keys="ignoreKeys"
-                       v-on:filter-criteria-update="filterCriteriaUpdate"
-                       v-on:row-click="selectTransaction"></transaction-table>
+        </template>
+    </tx-table>
 </div>
 
 @section Modals {

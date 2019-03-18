@@ -11,9 +11,11 @@ export class BlockViewModel {
         this.vm = new Vue({
             el: '#main',
             data: {
-                txTableAjaxUrl: '/blocks/getblocks',
+                dtOptions: {
+                    ajaxUrl: '/blocks/getblocks'
+                },
                 filterCriteria: {
-                    txType: null,
+                    channel: 'All',
                     minAmount: null,
                     maxAmount: null,
                     heightFrom: null,
@@ -28,8 +30,16 @@ export class BlockViewModel {
                         criteria: {}
                     },
                     {
-                        name: 'User',
-                        criteria: { txType: '4' }
+                        name: 'POS',
+                        criteria: { channel: '0' }
+                    },
+                    {
+                        name: 'Prime',
+                        criteria: { channel: '1' }
+                    },
+                    {
+                        name: 'Hash',
+                        criteria: { channel: '2' }
                     },
                     {
                         name: 'Custom',
@@ -48,7 +58,7 @@ export class BlockViewModel {
                     },
                     {
                         key: 'timestamp',
-                        class: 'col-6 col-sm-2',
+                        class: 'col-6 col-sm-2 text-right text-sm-left',
                         header: '<span class="d-none d-sm-inline fa fa-calendar-o"></span>',
                         render: (data, row) => {
                             var timestamp = Moment(data).format('DD/MMM/YY HH:mm:ss');
@@ -57,18 +67,19 @@ export class BlockViewModel {
                     },
                     {
                         key: 'hash',
-                        class: 'col-12 col-sm-3',
+                        class: 'col-8 col-sm-2 col-lg-5',
                         header: '<span class="d-none d-sm-inline fa fa-hashtag"></span>',
                         render: (data, row) => {
                             return `<span class="d-sm-none inline-icon fa fa-hashtag"></span>
-                                    <a class="d-none d-md-block" href="/transactions/${data}">${this.vm.truncateHash(data, 18)}</a>
-                                    <a class="d-none d-sm-block d-md-none" href="/transactions/${data}">${this.vm.truncateHash(data, 14)}</a>
-                                    <a class="d-sm-none" href="/transactions/${data}">${this.vm.truncateHash(data, 24)}</a>`;
+                                    <a class="d-none d-lg-block" href="/blocks/${row.height}">${this.vm.truncateHash(data, 42)}</a>
+                                    <a class="d-none d-md-block d-lg-none" href="/blocks/${row.height}">${this.vm.truncateHash(data, 10)}</a>
+                                    <a class="d-none d-sm-block d-md-none" href="/blocks/${row.height}">${this.vm.truncateHash(data, 8)}</a>
+                                    <a class="d-sm-none" href="/blocks/${row.height}">${this.vm.truncateHash(data, 20)}</a>`;
                         }
                     },
                     {
                         key: 'channel',
-                        class: 'col-4 col-sm-2',
+                        class: 'col-4 col-sm-2 col-lg-1 text-right text-sm-left',
                         header: '<span class="d-none d-sm-inline fa fa-exchange"></span>',
                         render: (data, type, row) => {
                             switch (data) {
@@ -83,7 +94,7 @@ export class BlockViewModel {
                     },
                     {
                         key: 'difficulty',
-                        class: '',
+                        class: 'col col-lg-1 text-sm-right',
                         header: '<span class="d-none d-sm-inline fa fa-tachometer"></span>',
                         render: (data, type, row) => {
                             return `<span class="d-sm-none fa fa-tachometer inline-icon"></span> <span>${data.toLocaleString()}</span>`;
@@ -91,7 +102,7 @@ export class BlockViewModel {
                     },
                     {
                         key: 'size',
-                        class: '',
+                        class: 'col col-lg-1 text-sm-right',
                         header: '<span class="d-none d-sm-inline fa fa-hdd-o"></span>',
                         render: (data, type, row) => {
                             return `<span class="d-sm-none fa fa-hdd-o inline-icon"></span> <span>${this.vm.$layoutHub.parseBytes(data)}</span>`;
@@ -99,18 +110,16 @@ export class BlockViewModel {
                     },
                     {
                         key: 'transactionCount',
-                        class: 'in-out-col',
+                        class: 'col col-lg-1 text-right',
                         header: '<span class="d-none d-sm-inline fa fa-compress"></span>',
                         render: (data, type, row) => {
                             return `<span class="d-sm-none fa fa-compress inline-icon"></span> <strong>${data ? data.toLocaleString() : 0}</strong>`;
                         }
                     }
-                ],
-                currentFilter: 'latest',
-                blockTableAjaxUrl: '/blocks/getblocks'
+                ]
             },
             components: {
-                txTable: dataTableVue
+                blockTable: dataTableVue
             },
             methods: {
                 reloadData() {
@@ -147,9 +156,7 @@ export class BlockViewModel {
                     .configureLogging(LogLevel.Information)
                     .withUrl('/blockhub').build();
 
-                this.connection.on('newBlockPubSub', (block) => {
-                    this.$refs.blockTable.dataReload();
-                });
+                this.connection.on('newBlockPubSub', (block) => {                });
 
                 this.connection.start();
             }

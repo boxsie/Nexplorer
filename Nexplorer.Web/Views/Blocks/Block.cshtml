@@ -122,46 +122,39 @@
 
 @{ await Html.RenderPartialAsync("_AdvertBanner"); }
 
-<div class="row">
-    <div class="col-12">
-        <div class="panel">
-            <div class="row">
-                <div class="col-9">
-                    <h2>HASHES</h2>
-                </div>
-                <div class="col-3 text-right">
-                    <span class="fa fa-hashtag"></span>
-                </div>
-            </div>
-            <h3>Block</h3>
-            <p class="val" style="word-wrap: break-word; font-size: 14px; margin: 3px 0 8px 0">@Model.Hash</p>
-            <h3>Merkle Root</h3>
-            <p class="val" style="word-wrap: break-word; font-size: 14px; margin-top: 3px;">@Model.MerkleRoot</p>
+<div class="panel">
+    <div class="row">
+        <div class="col-9">
+            <h2>HASHES</h2>
+        </div>
+        <div class="col-3 text-right">
+            <span class="fa fa-hashtag"></span>
         </div>
     </div>
+    <h3>Block</h3>
+    <p class="val" style="word-wrap: break-word; font-size: 14px; margin: 3px 0 8px 0">@Model.Hash</p>
+    <h3>Merkle Root</h3>
+    <p class="val" style="word-wrap: break-word; font-size: 14px; margin-top: 3px;">@Model.MerkleRoot</p>
 </div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="panel">
-            <div class="row">
-                <div class="col-9">
-                    <h2>TRANSACTIONS</h2>
-                </div>
-                <div class="col-3 text-right">
-                    <span class="fa fa-exchange"></span>
-                </div>
-            </div>
-
-            <tx-table ref="txTable" id="txTable"
-                      :filter-criteria="filterCriteria"
-                      :ajax-url="txTableAjaxUrl"
-                      :columns="txTableColumns"
-                      :ignore-keys="ignoreKeys"
-                      v-on:row-click="selectTransaction"
-                      v-on:filter-criteria-update="filterCriteriaUpdate"></tx-table>
+<div class="panel">
+    <div class="row">
+        <div class="col-9">
+            <h2>TRANSACTIONS</h2>
+        </div>
+        <div class="col-3 text-right">
+            <span class="fa fa-exchange"></span>
         </div>
     </div>
+            
+    <tx-table id="txTable" ref="txTable" 
+              :options="dtOptions" 
+              :filters="filters" 
+              :default-criteria="filterCriteria" 
+              :columns="columns" 
+              :ignore-keys="ignoreKeys" 
+              v-on:row-click="selectTransaction">
+    </tx-table>
 </div>
 
 @section Scripts {

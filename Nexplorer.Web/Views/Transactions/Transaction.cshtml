@@ -91,51 +91,43 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="panel">
-            <div class="row">
-                <div class="col-9">
-                    <h2>INPUTS (@Model.Transaction.Inputs.Count.ToString("N0"))</h2>
-                </div>
-                <div class="col-3 text-right">
-                    <span class="fa fa-exchange"></span>
-                </div>
-            </div>
-            
-            @if (Model.Transaction.Inputs.Any())
-            {
-                <tx-table-inputs ref="txTableInputs"
-                                 :columns="columns"
-                                 :txs="inputs"></tx-table-inputs>
-            }
-            else
-            {
-                <div class="text-center">
-                    There are no inputs in this transaction
-                </div>
-            }
+<div class="panel">
+    <div class="row">
+        <div class="col-9">
+            <h2>INPUTS (@Model.Transaction.Inputs.Count.ToString("N0"))</h2>
+        </div>
+        <div class="col-3 text-right">
+            <span class="fa fa-exchange"></span>
         </div>
     </div>
+
+    @if (Model.Transaction.Inputs.Any())
+    {
+        <tx-table-inputs ref="txTableInputs"
+                         :columns="columns"
+                         :options="inputDtOptions"></tx-table-inputs>
+    }
+    else
+    {
+        <div class="text-center">
+            There are no inputs in this transaction
+        </div>
+    }
 </div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="panel">
-            <div class="row">
-                <div class="col-9">
-                    <h2>OUTPUTS (@Model.Transaction.Outputs.Count.ToString("N0"))</h2>
-                </div>
-                <div class="col-3 text-right">
-                    <span class="fa fa-exchange"></span>
-                </div>
-            </div>
-            
-            <tx-table-outputs ref="txTableOutputs"
-                              :columns="columns"
-                              :txs="outputs"></tx-table-outputs>
+<div class="panel">
+    <div class="row">
+        <div class="col-9">
+            <h2>OUTPUTS (@Model.Transaction.Outputs.Count.ToString("N0"))</h2>
+        </div>
+        <div class="col-3 text-right">
+            <span class="fa fa-exchange"></span>
         </div>
     </div>
+            
+    <tx-table-outputs ref="txTableOutputs"
+                      :columns="columns"
+                      :options="outputDtOptions"></tx-table-outputs>
 </div>
 
 @section Scripts {

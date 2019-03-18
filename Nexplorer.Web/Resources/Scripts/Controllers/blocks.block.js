@@ -8,104 +8,89 @@ import '../../Style/blocks.block.scss';
 
 export class BlockViewModel {
     constructor(options) {
-        const defaultCriteria = {
-            txType: 'All',
-            minAmount: null,
-            maxAmount: null,
-            heightFrom: options.height,
-            heightTo: options.height,
-            utcFrom: null,
-            utcTo: null,
-            orderBy: 0
-        };
-
-
         this.vm = new Vue({
             el: '#main',
             data: {
                 confirmations: options.confirmations,
                 showNext: options.showNext,
-                filterCriteria: defaultCriteria,
+                dtOptions: {
+                    ajaxUrl: '/transactions/gettransactions',
+                    filterClass: 'col-sm-6 no-bg p-0'
+                },
+                filterCriteria: {
+                    txType: 'All',
+                    minAmount: null,
+                    maxAmount: null,
+                    heightFrom: options.height,
+                    heightTo: options.height,
+                    utcFrom: null,
+                    utcTo: null,
+                    orderBy: 0
+                },
                 ignoreKeys: ['heightFrom', 'heightTo'],
-                txTableAjaxUrl: '/transactions/gettransactions',
-                txTableColumns: [
+                filters: [],
+                columns: [
                     {
-                        title: '<span class="fa fa-calendar-o"></span>',
-                        data: 'timestamp',
-                        width: '16%',
-                        render: (data, type, row) => {
+                        key: 'timestamp',
+                        class: 'col-5 col-sm-2 text-right text-sm-left order-2 order-sm-2',
+                        header: '<span class="d-none d-sm-inline fa fa-calendar-o"></span>',
+                        render: (data, row) => {
                             var timestamp = Moment(data).format('DD/MMM/YY HH:mm:ss');
                             return `<span>${timestamp}</span>`;
                         }
                     },
                     {
-                        title: '<span class="fa fa-hashtag"></span>',
-                        data: 'transactionHash',
-                        render: (data, type, row) => {
-                            return `<a class="d-none d-md-block" href="/transactions/${data}">${this.vm.truncateHash(data, 15)}</a>
-                                            <a class="d-none d-sm-block d-md-none" href="/transactions/${data}">${this.vm.truncateHash(data, 10)}</a>
-                                            <a class="d-sm-none" href="/transactions/${data}">${this.vm.truncateHash(data, 4)}</a>`;
+                        key: 'transactionHash',
+                        class: 'col-7 col-sm-4 order-1 order-sm-2',
+                        header: '<span class="d-none d-sm-inline fa fa-hashtag"></span>',
+                        render: (data, row) => {
+                            return `<span class="d-sm-none inline-icon fa fa-hashtag"></span>
+                                    <a class="d-none d-md-inline" href="/transactions/${data}">${this.vm.truncateHash(data, 26)}</a>
+                                    <a class="d-md-none" href="/transactions/${data}">${this.vm.truncateHash(data, 20)}</a>`;
                         }
                     },
                     {
-                        title: '<span class="fa fa-exchange"></span>',
-                        data: 'transactionType',
-                        class: 'in-out-col',
-                        render: (data, type, row) => {
+                        key: 'transactionType',
+                        class: 'col-6 col-sm-2 in-out text-left text-sm-center text-md-left order-3',
+                        header: '<span class="d-none d-sm-inline fa fa-exchange"></span>',
+                        render: (data, row) => {
                             switch (data) {
-                            case 0:
-                                return `<span class="fa fa-hashtag tx-type-icon"></span>`;
-                            case 1:
-                                return `<span class="fa fa-microchip tx-type-icon"></span>`;
-                            case 2:
-                            case 3:
-                                return `<span class="fa fa-bolt tx-type-icon"></span>`;
-                            case 4:
-                                return `<span class="fa fa-user tx-type-icon"></span>`;
+                                case 0:
+                                    return this.vm.createInOutText('fa-hashtag', 'Coinbase hash');
+                                case 1:
+                                    return this.vm.createInOutText('fa-microchip', 'Coinbase prime');
+                                case 2:
+                                    return this.vm.createInOutText('fa-bolt', 'Coinstake genesis');
+                                case 3:
+                                    return this.vm.createInOutText('fa-bolt', 'Coinstake');
+                                case 4:
+                                    return this.vm.createInOutText('fa-user', 'User transaction');
                             }
+
+                            return 'Unknown';
                         }
                     },
                     {
-                        title: '',
-                        data: 'transactionType',
-                        class: 'd-none d-sm-table-cell',
-                        render: (data, type, row) => {
-                            switch (data) {
-                            case 0:
-                                return `Coinbase hash reward`;
-                            case 1:
-                                return `Coinbase prime reward`;
-                            case 2:
-                                return `Coinstake reward`;
-                            case 3:
-                                return `Coinstake genesis`;
-                            case 4:
-                                return `User transaction`;
-                            }
-                        }
-                    },
-                    {
-                        title: '<span class="fa fa-compress"></span>',
-                        data: 'transactionInputCount',
-                        class: 'in-out-col',
-                        render: (data, type, row) => {
+                        key: 'transactionInputCount',
+                        class: 'd-none d-sm-block in-out order-4',
+                        header: '<span class="fa fa-compress"></span>',
+                        render: (data, row) => {
                             return `<strong>${data ? data.toLocaleString() : 0}</strong>`;
                         }
                     },
                     {
-                        title: '<span class="fa fa-expand"></span>',
-                        data: 'transactionOutputCount',
-                        class: 'in-out-col',
-                        render: (data, type, row) => {
+                        key: 'transactionOutputCount',
+                        class: 'd-none d-sm-block in-out order-5',
+                        header: '<span class="fa fa-expand"></span>',
+                        render: (data, row) => {
                             return `<strong>${data ? data.toLocaleString() : 0}</strong>`;
                         }
                     },
                     {
-                        title: '<span class="fa fa-balance-scale"></span>',
-                        data: 'amount',
-                        class: 'amount-col',
-                        width: '15%',
-                        render: (data, type, row) => {
+                        key: 'amount',
+                        class: 'col-6 col-sm-2 text-right order-6',
+                        header: '<span class="d-none d-sm-inline fa fa-balance-scale"></span>',
+                        render: (data, row) => {
                             return `<strong>${parseFloat(data.toFixed(2)).toLocaleString()}</strong> <small>NXS</small>`;
                         }
                     }
@@ -117,18 +102,18 @@ export class BlockViewModel {
                 }
             },
             components: {
-                txTable: dataTableVue('first_last_numbers')
+                txTable: dataTableVue
             },
             methods: {
                 selectTransaction(tx) {
                     window.location.href = `/transactions/${tx.transactionHash}`;
                 },
-                filterCriteriaUpdate(filterCriteria) {
-                    this.filterCriteria = filterCriteria;
-                },
                 truncateHash(hash, len) {
                     const start = hash.substring(0, len);
                     return start + '...';
+                },
+                createInOutText(faType, txType) {
+                    return `<span class="fa ${faType} inline-icon"></span> <span class="d-sm-none d-md-inline">${txType}</span>`;
                 }
             },
             created() {
