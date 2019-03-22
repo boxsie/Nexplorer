@@ -122,7 +122,7 @@
             <span class="fa fa-filter"></span>
         </div>
     </div>
-    <address-table id="blockTable" ref="addressTable" :options="dtOptions" :filters="filters" :default-criteria="filterCriteria" :columns="columns" v-on:row-click="selectAddress">
+    <address-table id="blockTable" ref="addressTable" :options="dtOptions" :columns="columns" v-on:row-click="selectAddress">
         <template #dt-criteria="dt">
             <form id="customFilterForm">
                 <div class="row">
