@@ -59,11 +59,11 @@
                         <br/>
                         <div class="form-group">
                             <label for="amountMin">Min Amount</label>
-                            <input type="number" class="form-control" id="amountMin" v-model="dt.dtCriteria.criteria.minAmount" v-on:change="dt.dtCriteria.reload()">
+                            <input type="number" class="form-control" id="amountMin" v-model="dt.dtCriteria.criteria.minAmount" v-on:change="dt.dtCriteria.reload(true)">
                         </div>
                         <div class="form-group">
                             <label for="amountMax">Max Amount</label>
-                            <input type="number" class="form-control" id="amountMax" v-model="dt.dtCriteria.criteria.maxAmount" v-on:change="dt.dtCriteria.reload()">
+                            <input type="number" class="form-control" id="amountMax" v-model="dt.dtCriteria.criteria.maxAmount" v-on:change="dt.dtCriteria.reload(true)">
                         </div>
                     </div>
                     <div class="col-sm-4">
@@ -71,11 +71,11 @@
                         <br/>
                         <div class="form-group">
                             <label for="lastSeenFrom">Min Height</label>
-                            <input type="number" class="form-control" id="lastSeenFrom" v-model="dt.dtCriteria.criteria.heightFrom" v-on:change="dt.dtCriteria.reload()">
+                            <input type="number" class="form-control" id="lastSeenFrom" v-model="dt.dtCriteria.criteria.heightFrom" v-on:change="dt.dtCriteria.reload(true)">
                         </div>
                         <div class="form-group">
                             <label for="lastSeenTo">Max Height</label>
-                            <input type="number" class="form-control" id="lastSeenTo" v-model="dt.dtCriteria.criteria.heightTo" v-on:change="dt.dtCriteria.reload()">
+                            <input type="number" class="form-control" id="lastSeenTo" v-model="dt.dtCriteria.criteria.heightTo" v-on:change="dt.dtCriteria.reload(true)">
                         </div>
                     </div>
                     <div class="col-sm-4">
@@ -83,7 +83,7 @@
                         <br/>
                         <div class="form-group">
                             <label for="orderBy">Order By</label>
-                            <select asp-items="Html.GetEnumSelectList<OrderTransactionsBy>()" id="orderBy" class="form-control" v-model="dt.dtCriteria.criteria.orderBy" v-on:change="dt.dtCriteria.reload()"></select>
+                            <select asp-items="Html.GetEnumSelectList<OrderTransactionsBy>()" id="orderBy" class="form-control" v-model="dt.dtCriteria.criteria.orderBy" v-on:change="dt.dtCriteria.reload(true)"></select>
                         </div>
                         <div class="form-group">
                             @{
@@ -92,7 +92,7 @@
                             }
 
                             <label for="txType">Transaction Type</label>
-                            <select asp-items="selectList" id="txType" class="form-control" v-model="dt.dtCriteria.criteria.txType" v-on:change="dt.dtCriteria.reload()"></select>
+                            <select asp-items="selectList" id="txType" class="form-control" v-model="dt.dtCriteria.criteria.txType" v-on:change="dt.dtCriteria.reload(true)"></select>
                         </div>
                     </div>
                 </div>

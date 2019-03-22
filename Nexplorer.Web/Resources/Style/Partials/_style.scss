@@ -347,3 +347,23 @@ label {
         }
     }
 }
+
+.slide-enter-active {
+    transition-duration: 0.3s;
+    transition-timing-function: ease-in;
+}
+
+.slide-leave-active {
+    transition-duration: 0.3s;
+    transition-timing-function: ease-out;
+}
+
+.slide-enter-to, .slide-leave {
+    max-height: 500px;
+    overflow: hidden;
+}
+
+.slide-enter, .slide-leave-to {
+    overflow: hidden;
+    max-height: 0;
+}

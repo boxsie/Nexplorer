@@ -12,40 +12,40 @@ export class BlockViewModel {
             el: '#main',
             data: {
                 dtOptions: {
-                    ajaxUrl: '/blocks/getblocks'
+                    ajaxUrl: '/blocks/getblocks',
+                    defaultCriteria: {
+                        channel: 'All',
+                        minAmount: null,
+                        maxAmount: null,
+                        heightFrom: null,
+                        heightTo: null,
+                        utcFrom: null,
+                        utcTo: null,
+                        orderBy: 0
+                    },
+                    filters: [
+                        {
+                            name: 'Latest',
+                            criteria: {}
+                        },
+                        {
+                            name: 'POS',
+                            criteria: { channel: '0' }
+                        },
+                        {
+                            name: 'Prime',
+                            criteria: { channel: '1' }
+                        },
+                        {
+                            name: 'Hash',
+                            criteria: { channel: '2' }
+                        },
+                        {
+                            name: 'Custom',
+                            isUserFilter: true
+                        }
+                    ]
                 },
-                filterCriteria: {
-                    channel: 'All',
-                    minAmount: null,
-                    maxAmount: null,
-                    heightFrom: null,
-                    heightTo: null,
-                    utcFrom: null,
-                    utcTo: null,
-                    orderBy: 0
-                },
-                filters: [
-                    {
-                        name: 'Latest',
-                        criteria: {}
-                    },
-                    {
-                        name: 'POS',
-                        criteria: { channel: '0' }
-                    },
-                    {
-                        name: 'Prime',
-                        criteria: { channel: '1' }
-                    },
-                    {
-                        name: 'Hash',
-                        criteria: { channel: '2' }
-                    },
-                    {
-                        name: 'Custom',
-                        isCustom: true
-                    }
-                ],
                 columns: [
                     {
                         key: 'height',
@@ -122,33 +122,12 @@ export class BlockViewModel {
                 blockTable: dataTableVue
             },
             methods: {
-                reloadData() {
-                    this.$refs.blockTable.dataReload();
-                },
                 selectBlock(block) {
                     window.location.href = `/blocks/${block.height}`;
-                },
-                filterUpdate(filter) {
-                    if (filter) {
-                        this.currentFilter = filter;
-                    } else {
-                        this.currentFilter = 'latest';
-                    }
-                },
-                filterCriteriaUpdate(filterCriteria) {
-                    this.filterCriteria = filterCriteria;
                 },
                 truncateHash(hash, len) {
                     const start = hash.substring(0, len);
                     return start + '...';
-                },
-                changeFilter(newFilter) {
-                    this.currentFilter = newFilter;
-                    this.filterCriteria = JSON.parse(JSON.stringify(defaultCriteria));
-
-                    if (this.currentFilter !== 'custom') {
-                        this.reloadData();
-                    }
                 }
             },
             created() {

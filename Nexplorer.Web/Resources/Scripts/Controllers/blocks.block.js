@@ -13,22 +13,22 @@ export class BlockViewModel {
             data: {
                 confirmations: options.confirmations,
                 showNext: options.showNext,
+                txCount: 0,
                 dtOptions: {
                     ajaxUrl: '/transactions/gettransactions',
-                    filterClass: 'col-sm-6 no-bg p-0'
+                    filterClass: 'col-sm-6 no-bg p-0',
+                    defaultCriteria: {
+                        txType: 'All',
+                        minAmount: null,
+                        maxAmount: null,
+                        heightFrom: options.height,
+                        heightTo: options.height,
+                        utcFrom: null,
+                        utcTo: null,
+                        orderBy: 0
+                    },
+                    showUserFilter: true
                 },
-                filterCriteria: {
-                    txType: 'All',
-                    minAmount: null,
-                    maxAmount: null,
-                    heightFrom: options.height,
-                    heightTo: options.height,
-                    utcFrom: null,
-                    utcTo: null,
-                    orderBy: 0
-                },
-                ignoreKeys: ['heightFrom', 'heightTo'],
-                filters: [],
                 columns: [
                     {
                         key: 'timestamp',
@@ -114,6 +114,9 @@ export class BlockViewModel {
                 },
                 createInOutText(faType, txType) {
                     return `<span class="fa ${faType} inline-icon"></span> <span class="d-sm-none d-md-inline">${txType}</span>`;
+                },
+                onDataRefresh(tableData) {
+                    this.txCount = tableData.totalItems;
                 }
             },
             created() {

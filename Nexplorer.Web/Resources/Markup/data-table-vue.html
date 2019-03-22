@@ -21,13 +21,13 @@
                     <div v-for="c in columns" :class="parseColClass(c, 'dt-head')" v-html="c.header"></div>
                 </div>
                 
-                <div v-if="tableData.length === 0" class="text-center">
+                <div v-if="tableData.totalItems === 0" class="text-center">
                     <hr/>
                     There are no results
                     <hr/>
                 </div>
 
-                <div v-else v-for="(data, i) in tableData.pageItems" :class="parseRowClass(i)">
+                <div v-else v-for="(data, i) in tableData.pageItems" :class="parseRowClass(i)" v-on:click="$emit('row-click', data)">
                     <div v-if="dtOptions.showRowIndex" class="index">
                         <strong>{{ ((criteria.page - 1) * criteria.length) + (i + 1)}}</strong>
                     </div>

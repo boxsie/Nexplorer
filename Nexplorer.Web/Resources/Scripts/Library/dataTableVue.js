@@ -16,7 +16,9 @@ export default {
                 showUserFilter: false,
                 availableLengths: [10, 25, 50, 100],
                 showRowIndex: false,
-                paginationLength: 7
+                paginationLength: 7,
+                useQueryString: true,
+                customFilterMatch: null
             },
             tableData: {
                 pageItems: [],
@@ -46,6 +48,7 @@ export default {
         dtCriteria() {
             return {
                 criteria: this.criteria,
+                tableData: this.tableData,
                 reload: this.reloadData
             };
         },
@@ -103,6 +106,11 @@ export default {
             return this.dtOptions.showUserFilter || this.filter.isUserFilter;
         }
     },
+    watch: {
+        criteria() {
+            this.reloadData();
+        }
+    },
     components: {
         Preloader: preloaderVue
     },
@@ -125,17 +133,27 @@ export default {
         getFilterClass(i) {
             return this.dtOptions.filters[i].name === this.filter.name ? 'active-link' : '';
         },
+        rowClick(col, rowData) {
+            this.$emit('row-click', rowData);
+        }, 
         changeFilter(filterIndex) {
-            if (!this.hasFilters || this.dtOptions.filters[filterIndex].name === this.filter.name || filterIndex >= this.dtOptions.filters.length) {
-                return;
+            if (!this.hasFilters || filterIndex < 0 || this.dtOptions.filters[filterIndex].name === this.filter.name || filterIndex >= this.dtOptions.filters.length) {
+                return false;
             }
 
             this.filter = this.dtOptions.filters[filterIndex];
 
             if (!this.filter.isUserFilter) {
-                this.criteria = Object.assign({}, this.defaultCriteria, this.filter.criteria);
-                this.reloadData();
+                if (this.dtOptions.showUserFilter) {
+                    this.criteria = Object.assign({}, this.defaultCriteria, this.criteria, this.filter.criteria);
+                } else {
+                    this.criteria = Object.assign({}, this.defaultCriteria, this.filter.criteria);
+                }
+
+                return true;
             }
+
+            return false;
         },
         changePage(page) {
             if (isNaN(page) || !page || page === this.criteria.page) {
@@ -163,7 +181,11 @@ export default {
             this.criteria.page = 1;
             this.reloadData();
         },
-        reloadData() {
+        reloadData(resetPage) {
+            if (resetPage) {
+                this.criteria.page = 1;
+            }
+
             this.isLoading = true;
 
             const criteria = {
@@ -181,15 +203,19 @@ export default {
                     success: (result) => {
                         self.tableData.pageItems = result.data;
                         self.tableData.totalItems = result.recordsFiltered;
+                        self.$emit('data-refresh', self.tableData);
                     }
                 }).always(() => { self.isLoading = false; });
             } else if (this.hasLocalData) {
                 this.tableData.pageItems = this.dtOptions.localData.slice(criteria.start, criteria.start + criteria.length);
                 this.tableData.totalItems = this.dtOptions.localData.length;
                 this.isLoading = false;
+                this.$emit('data-refresh', self.tableData);
             }
 
-            this.setUrlQuery();
+            if (this.dtOptions.useQueryString) {
+                this.setUrlQuery();
+            }
         },
         setUrlQuery() {
             const params = {};
@@ -241,6 +267,10 @@ export default {
                 return matchedFilterIndex;
             }
 
+            if (this.dtOptions.customFilterMatch) {
+                return this.dtOptions.customFilterMatch(queryObj);
+            }
+
             let userIndex = -1;
 
             const qo = Object.assign({}, queryObj);
@@ -258,16 +288,19 @@ export default {
             return matchedFilterIndex >= 0 ? matchedFilterIndex : userIndex;
         },
         onPageLoad(isPopState) {
-            const qo = this.getUrlQuery();
+            if (this.dtOptions.useQueryString) {
+                const qo = this.getUrlQuery();
 
-            if (this.hasFilters) {
-                this.changeFilter(this.matchQueryToFilter(qo));
-            }
+                if (this.hasFilters) {
+                    this.changeFilter(this.matchQueryToFilter(qo));
+                }
 
-            const newCriteria = Object.assign({}, this.defaultCriteria, qo);
+                const newCriteria = Object.assign({}, this.defaultCriteria, qo);
 
-            if (JSON.stringify(newCriteria) !== JSON.stringify(this.criteria)) {
-                this.criteria = newCriteria;
+                if (!isPopState || JSON.stringify(newCriteria) !== JSON.stringify(this.criteria)) {
+                    this.criteria = newCriteria;
+                }
+            } else {
                 this.reloadData();
             }
         }

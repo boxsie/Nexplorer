@@ -11,8 +11,14 @@ export class TransactionViewModel {
         this.vm = new Vue({
             el: '#main',
             data: {
-                inputDtOptions: {},
-                outputDtOptions: {},
+                inputDtOptions: {
+                    localData: options.inputs,
+                    useQueryString: false
+                },
+                outputDtOptions: {
+                    localData: options.outputs,
+                    useQueryString: false
+                },
                 confirmations: options.confirmations,
                 columns: []
             },
@@ -38,8 +44,10 @@ export class TransactionViewModel {
                         header: '<span class="fa fa-hashtag"></span>',
                         class: 'col-8 col-sm-9',
                         render: (data, row) => {
+                            var cnt = row.count > 1 ? `(${row.count})` : '';
+
                             return `<a class="d-none d-sm-inline" href="/addresses/${data}">${data}</a>
-                                    <a class="d-sm-none" href="/addresses/${data}">${this.truncateHash(data, 30)}</a>`;
+                                    <a class="d-sm-none" href="/addresses/${data}">${this.truncateHash(data, 24)}</a> ${cnt}`;
                         }
                     },
                     {
@@ -63,16 +71,6 @@ export class TransactionViewModel {
                 });
 
                 this.connection.start();
-
-                this.inputDtOptions = {
-                    localData: options.inputs,
-                    useQueryString: false
-                };
-
-                this.outputDtOptions = {
-                    localData: options.outputs,
-                    useQueryString: false
-                };
             }
         });
     }

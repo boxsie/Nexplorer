@@ -135,8 +135,24 @@
     <script language="javascript">
         var vm = new nexplorer.TransactionViewModel({
             confirmations: @Model.Transaction.Confirmations,
-            inputs: @Json.Serialize(Model.Transaction.Inputs),
-            outputs: @Json.Serialize(Model.Transaction.Outputs)
+            inputs: @Json.Serialize(Model.Transaction.Inputs
+                        .GroupBy(x => x.AddressHash)
+                        .Select(x => new
+                        {
+                            AddressHash = x.Key,
+                            Count = x.Count(),
+                            Amount = x.Sum(y => y.Amount)
+                        })
+                        .OrderByDescending(x => x.Amount)),
+            outputs: @Json.Serialize(Model.Transaction.Outputs
+                         .GroupBy(x => x.AddressHash)
+                         .Select(x => new
+                         {
+                             AddressHash = x.Key,
+                             Count = x.Count(),
+                             Amount = x.Sum(y => y.Amount)
+                         })
+                         .OrderByDescending(x => x.Amount))
         });
     </script>
 }

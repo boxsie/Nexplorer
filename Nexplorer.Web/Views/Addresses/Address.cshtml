@@ -180,13 +180,12 @@
         </div>
     </div>
 
-    <tx-table id="txTable" ref="txTable" :options="dtOptions" :filters="filters" :default-criteria="filterCriteria" 
-              :columns="columns" :ignore-keys="ignoreKeys" v-on:row-click="selectTransaction">
+    <tx-table id="txTable" ref="txTable" :options="dtOptions" :columns="columns" v-on:row-click="selectTransaction">
         <template #dt-criteria="dt">
             <form id="txFilter" class="offset-sm-4 col-sm-8">
                 <div class="form-group">
                     <h3>ORDER BY </h3>
-                    <select asp-items="Html.GetEnumSelectList<OrderTransactionsBy>()" v-on:change="reloadData()" class="form-control" v-model="filterCriteria.orderBy"></select>
+                    <select asp-items="Html.GetEnumSelectList<OrderTransactionsBy>()" v-on:change="dt.dtCriteria.reload(true)" class="form-control" v-model="dt.dtCriteria.criteria.orderBy"></select>
                 </div>
                 <div class="form-group">
                     <h3>TX TYPE </h3>
@@ -195,14 +194,104 @@
                         selectList.AddRange(Html.GetEnumSelectList<TransactionType>());
                     }
 
-                    <select asp-items="selectList" v-on:change="reloadData()" class="form-control" v-model="filterCriteria.txType"></select>
+                    <select asp-items="selectList" v-on:change="dt.dtCriteria.reload(true)" class="form-control" v-model="dt.dtCriteria.criteria.txType"></select>
                 </div>
                 <div class="form-group text-right">
                     <label for="grouped">
-                        <input id="grouped" type="checkbox" class="big-checkbox" v-on:change="reloadData()" v-model="filterCriteria.grouped" /> Grouped
+                        <input id="grouped" type="checkbox" class="big-checkbox" v-on:change="dt.dtCriteria.reload(true)" v-model="dt.dtCriteria.criteria.grouped" /> Grouped
                     </label>
                 </div>
             </form>
+        </template>
+        <template #dt="slotProps">
+            <div class="row dt-row">
+                <div class="col-5 col-lg-1 order-1">
+                    <span class="d-none d-lg-inline fa fa-calendar-o"></span>
+                </div>
+                <div class="col-4 col-sm-3 col-lg-1 order-2">
+                    <span class="d-none d-lg-inline fa fa-cube"></span>
+                </div>
+                <div class="col-12 col-lg-7 order-12 order-lg-3 address-hashes">
+                    <span class="d-none d-lg-inline fa fa-hashtag"></span>
+                </div>
+                <div class="col-3 col-sm-1 text-right text-center-sm order-4">
+                    <span class="d-none d-lg-inline fa fa-exchange"></span>
+                </div>
+                <div class="col text-right order-12 order-sm-5">
+                    <span class="d-none d-lg-inline fa fa-paper-plane-o"></span>
+                </div>
+            </div>
+
+            <div v-if="slotProps.dt.tableData.totalItems === 0" class="text-center">
+                <hr />
+                There are no results
+                <hr />
+            </div>
+            
+            <div v-else v-for="(row, i) in slotProps.dt.tableData.pageItems"
+                 :class="(i + 1) % 2 === 0 ? 'row dt-row' : 'row dt-row odd-row'"
+                 v-on:click.stop.prevent="selectTransaction(row)">
+
+                <div class="col-5 col-lg-1 order-1">
+                    {{formatTimestamp(row.timestamp)}}
+                </div>
+                <div class="col-4 col-sm-3 col-lg-1 order-2">
+                    <span class="d-lg-none inline-icon fa fa-cube"></span>
+                    <a :href="`/blocks/${row.blockHeight}`">{{row.blockHeight}}</a>
+                </div>
+                <div class="col-12 col-lg-7 order-12 order-lg-3 address-hashes">
+                    <span v-if="row.transactionType === @((int) TransactionType.CoinbaseHash)">Coinbase hash reward</span>
+                    <span v-else-if="row.transactionType === @((int) TransactionType.CoinbasePrime)">Coinbase prime reward</span>
+                    <span v-else-if="row.transactionType === @((int) TransactionType.Coinstake)">
+                        {{`Coinstake ${dtOptions.defaultCriteria.txInputOutputType === null ? 'reward' : 'transaction'}`}}
+                    </span>
+                    <table v-else class="mt-2 mt-md-0" style="width: 100%;">
+                        <tr>
+                            <td>
+                                <span class="d-lg-none inline-icon fa fa-hashtag"></span>
+                            </td>
+                            <td>
+                                <div class="ml-1 ml-lg-0 read-more">
+                                    <collapsable-list :items="row.oppositeItems" :min-items="2">
+                                        <template #list="slotProps">
+                                            <div class="d-block d-sm-flex" style="width: 100%; justify-content: space-between;">
+                                                <a class="d-none d-sm-inline-block" v-on:click.stop="" :href="`/addresses/${slotProps.item.addressHash}`">
+                                                    {{slotProps.item.addressHash}}
+                                                </a>
+                                                <a class="d-block d-sm-none" v-on:click.stop="" :href="`/addresses/${slotProps.item.hash}`">
+                                                    {{truncateHash(slotProps.item.addressHash, 30)}}
+                                                </a>
+                                                <span class="text-right" style="font-size: 0.8rem;">
+                                                    ({{slotProps.item.amount.toLocaleString()}} <span style="font-size: 0.6rem;">NXS</span>)
+                                                </span>
+                                            </div>
+                                        </template>
+                                    </collapsable-list>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-3 col-sm-1 text-right text-center-sm order-4">
+                    <span v-if="row.transactionType === @((int) TransactionType.CoinbaseHash) || row.transactionType === @((int) TransactionType.CoinbasePrime)"
+                          class="fa fa-cube mining inline-icon"></span>
+                    <span v-else-if="row.transactionType === @((int) TransactionType.Coinstake)"
+                          class="fa fa-bolt stake inline-icon"></span>
+                    <span v-else :class="row.transactionInputOutputType === @((int) TransactionInputOutputType.Input)
+                          ? 'fa fa-arrow-left red inline-icon'
+                          : 'fa fa-arrow-right green inline-icon'"></span>
+                    @*<span v-if="!row.isStakingReward && !row.isMiningReward && row.transactionInputOutputType === @((int) TransactionInputOutputType.Input)" style="font-size: 12px;">
+                        ({{row.transactionInputOutputType.length}})
+                    </span>*@
+                </div>
+                <div class="col text-right order-12 order-sm-5">
+                    <strong>
+                        {{row.transactionInputOutputType === @((int) TransactionInputOutputType.Input) ? '-' : '+'}}
+                        {{parseFloat(row.amount.toFixed(4)).toLocaleString()}}
+                    </strong>
+                    <small>NXS</small>
+                </div>
+            </div>
         </template>
     </tx-table>
 </div>

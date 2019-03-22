@@ -25,39 +25,39 @@ export class AddressIndexViewModel {
                 zeroBalance: ' - ',
                 dtOptions: {
                     ajaxUrl: '/addresses/getaddresses',
-                    showIndex: true
+                    showIndex: true,
+                    defaultCriteria: {
+                        minBalance: null,
+                        maxBalance: null,
+                        heightFrom: null,
+                        heightTo: null,
+                        isStaking: false,
+                        isNexus: false,
+                        orderBy: 0
+                    },
+                    filters: [
+                        {
+                            name: 'All',
+                            criteria: {}
+                        },
+                        {
+                            name: 'Recent',
+                            criteria: { orderBy: '2' }
+                        },
+                        {
+                            name: 'Staking',
+                            criteria: { isStaking: true, orderBy: '4' }
+                        },
+                        {
+                            name: 'Nexus',
+                            criteria: { isNexus: true }
+                        },
+                        {
+                            name: 'Custom',
+                            isUserFilter: true
+                        }
+                    ]
                 },
-                filterCriteria: {
-                    minBalance: null,
-                    maxBalance: null,
-                    heightFrom: null,
-                    heightTo: null,
-                    isStaking: false,
-                    isNexus: false,
-                    orderBy: 0
-                },
-                filters: [
-                    {
-                        name: 'All',
-                        criteria: {}
-                    },
-                    {
-                        name: 'Recent',
-                        criteria: { orderBy: '2' }
-                    },
-                    {
-                        name: 'Staking',
-                        criteria: { isStaking: true, orderBy: '4' }
-                    },
-                    {
-                        name: 'Nexus',
-                        criteria: { isNexus: true }
-                    },
-                    {
-                        name: 'Custom',
-                        isCustom: true
-                    }
-                ],
                 columns: [
                     {
                         key: 'hash',
