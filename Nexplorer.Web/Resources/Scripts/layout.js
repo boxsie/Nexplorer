@@ -98,7 +98,6 @@ export class LayoutViewModel {
 
                     if (searchEl !== target && !searchEl.contains(target)) {
                         this.searchOpen = false;
-                        this.checkForNavExpand();
                     }
 
                     if (userEl !== target && !userEl.contains(target)) {
@@ -109,18 +108,20 @@ export class LayoutViewModel {
                         $(navLinksEl).collapse('hide');
                     }
                 },
-                checkForNavExpand(e) {
+                onScroll(e) {
                     const doc = document.documentElement;
                     const left = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
                     const top = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
                     
                     this.navTop += (this.lastScrollTop - top) * 0.25;
 
-                    if (this.navTop < -this.$refs.nav.clientHeight) {
-                        this.navTop = -this.$refs.nav.clientHeight;
+                    if (top < this.$refs.nav.clientHeight && this.navTop > top) {
+                        this.navTop = -top;
                     } else if (this.navTop > 0) {
                         this.navTop = 0;
-                    }
+                    } else if (this.navTop < -this.$refs.nav.clientHeight) {
+                        this.navTop = -this.$refs.nav.clientHeight;
+                    }  
 
                     this.layoutTop = -this.navTop - this.$refs.nav.clientHeight;
                     this.lastScrollTop = top;
@@ -159,7 +160,7 @@ export class LayoutViewModel {
             },
             created() {
                 window.addEventListener('resize', this.windowResize);
-                window.addEventListener('scroll', this.checkForNavExpand);
+                window.addEventListener('scroll', this.onScroll);
                 document.addEventListener('click', this.documentClick);
                 document.addEventListener('touchstart', this.documentClick);
 
