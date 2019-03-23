@@ -135,7 +135,6 @@ export class LayoutViewModel {
                         }
                     } else {
                         this.xsNav = false;
-                        this.checkForNavExpand();
                     }
                 },
                 parseDifficulty(diff) {
