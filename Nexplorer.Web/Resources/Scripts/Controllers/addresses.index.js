@@ -25,7 +25,7 @@ export class AddressIndexViewModel {
                 zeroBalance: ' - ',
                 dtOptions: {
                     ajaxUrl: '/addresses/getaddresses',
-                    showIndex: true,
+                    showRowIndex: true,
                     defaultCriteria: {
                         minBalance: null,
                         maxBalance: null,

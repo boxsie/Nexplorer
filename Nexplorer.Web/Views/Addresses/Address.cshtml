@@ -258,7 +258,7 @@
                                                 <a class="d-none d-sm-inline-block" v-on:click.stop="" :href="`/addresses/${slotProps.item.addressHash}`">
                                                     {{slotProps.item.addressHash}}
                                                 </a>
-                                                <a class="d-block d-sm-none" v-on:click.stop="" :href="`/addresses/${slotProps.item.hash}`">
+                                                <a class="d-block d-sm-none" v-on:click.stop="" :href="`/addresses/${slotProps.item.addressHash}`">
                                                     {{truncateHash(slotProps.item.addressHash, 30)}}
                                                 </a>
                                                 <span class="text-right" style="font-size: 0.8rem;">
@@ -280,9 +280,6 @@
                     <span v-else :class="row.transactionInputOutputType === @((int) TransactionInputOutputType.Input)
                           ? 'fa fa-arrow-left red inline-icon'
                           : 'fa fa-arrow-right green inline-icon'"></span>
-                    @*<span v-if="!row.isStakingReward && !row.isMiningReward && row.transactionInputOutputType === @((int) TransactionInputOutputType.Input)" style="font-size: 12px;">
-                        ({{row.transactionInputOutputType.length}})
-                    </span>*@
                 </div>
                 <div class="col text-right order-12 order-sm-5">
                     <strong>

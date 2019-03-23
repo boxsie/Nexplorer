@@ -416,7 +416,7 @@ namespace Nexplorer.Data.Query
 	                OFFSET @start ROWS FETCH NEXT @count ROWS ONLY
                 )
 
-                SELECT DISTINCT
+                SELECT
                 t.[TransactionId],
                 t.[TransactionType],
                 t.[BlockHeight],
@@ -468,6 +468,7 @@ namespace Nexplorer.Data.Query
                                     AddressHash = y.AddressHash,
                                     Amount = y.Amount
                                 })
+                                .OrderByDescending(y => y.Amount)
                                 .ToList()
                         })
                         .ToList();
@@ -495,48 +496,6 @@ namespace Nexplorer.Data.Query
                     };
                 }
             }
-        }
-
-        private static IEnumerable<AddressTransactionDto> FilterCacheBlocks(IEnumerable<BlockDto> blocks, AddressTransactionFilterCriteria filter)
-        {
-            var all = blocks.SelectMany(x => x.Transactions
-                .Where(y => (!filter.TxType.HasValue || y.TransactionType == filter.TxType) &&
-                            (!filter.MinAmount.HasValue || y.Amount >= filter.MinAmount) &&
-                            (!filter.MaxAmount.HasValue || y.Amount <= filter.MaxAmount) &&
-                            (!filter.HeightFrom.HasValue || y.BlockHeight >= filter.HeightFrom) &&
-                            (!filter.HeightTo.HasValue || y.BlockHeight <= filter.HeightTo) &&
-                            (!filter.UtcFrom.HasValue || y.Timestamp >= filter.UtcFrom) &&
-                            (!filter.UtcTo.HasValue || y.Timestamp <= filter.UtcTo))
-                .SelectMany(y => y.Inputs.Concat(y.Outputs)
-                    .Select(z => new AddressTransactionDto
-                    {
-                        AddressHash = z.AddressHash,
-                        TransactionInputOutputType = z.TransactionInputOutputType,
-                        BlockHeight = y.BlockHeight,
-                        TransactionHash = y.Hash,
-                        Amount = z.Amount,
-                        Timestamp = y.Timestamp,
-                        TransactionType = y.TransactionType
-                    })))
-                .ToList();
-
-            var filtered = all
-                .Where(x => filter.AddressHashes.Any(y => y == x.AddressHash))
-                .ToList();
-
-            foreach (var addressTx in filtered)
-            {
-                addressTx.OppositeItems = all
-                    .Where(x => x.TransactionHash == addressTx.TransactionHash && x.TransactionInputOutputType != addressTx.TransactionInputOutputType)
-                    .Select(x => new AddressTransactionItemDto
-                    {
-                        AddressHash = x.AddressHash,
-                        Amount = x.Amount
-                    })
-                    .ToList();
-            }
-
-            return filtered;
         }
 
         private static string BuildWhereClause(AddressTransactionFilterCriteria filter, out DynamicParameters param)
