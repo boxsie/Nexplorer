@@ -17,14 +17,18 @@ export class LayoutViewModel {
         Vue.use(layoutHub, options);
 
         this.navVm = new Vue({
-            el: '#navbar',
+            el: '#header',
             data: {
                 isSignedIn: options.isSignedIn,
                 searchOpen: false,
                 userOpen: false,
                 searchFocusDelay: 400,
-                navExpanded: true,
-                xsNav: false
+                navTop: 0,
+                layoutTop: 0,
+                lastScrollTop: 0,
+                xsNav: false,
+                userSettings: options.userSettings,
+                lastPrice: 0
             },
             computed: {
                 userMenuCss() {
@@ -32,79 +36,7 @@ export class LayoutViewModel {
                     const signInOut = this.isSignedIn ? 'signed-in' : '';
 
                     return openClose + ' ' + signInOut;
-                }
-            },
-            methods: {
-                isBreakpoint(alias) {
-                    return $('.device-' + alias).is(':visible');
                 },
-                openSearch() {
-                    this.searchOpen = true;
-                    
-                    setTimeout(() => {
-                        this.$refs.searchTerm.focus();
-                    }, this.searchFocusDelay);
-
-                    if (!this.isBreakpoint('xs')) {
-                        this.navExpanded = true;
-                    }
-                },
-                openUser() {
-                    if (!this.userOpen) {
-                        this.userOpen = true;
-                    } else {
-                        this.userOpen = false;
-                    }
-                },
-                documentClick(e) {
-                    const searchEl = this.$refs.navSearch;
-                    const userEl = this.$refs.userMenu;
-
-                    const target = e.target;
-
-                    if (searchEl !== target && !searchEl.contains(target)) {
-                        this.searchOpen = false;
-                        this.checkForNavExpand();
-                    }
-
-                    if (userEl !== target && !userEl.contains(target)) {
-                        this.userOpen = false;
-                    }
-                },
-                checkForNavExpand() {
-                    if (!this.searchOpen && $(document).scrollTop() > 50) {
-                        this.navExpanded = false;
-                    } else if (!this.navExpanded) {
-                        this.navExpanded = true;
-                    }
-                },
-                windowResize() {
-                    if (this.isBreakpoint('xs')) {
-                        this.xsNav = true;
-
-                        if (this.navExpanded) {
-                            this.navExpanded = false;
-                        }
-                    } else {
-                        this.xsNav = false;
-                        this.checkForNavExpand();
-                    }
-                }
-            },
-            created() {
-                window.addEventListener('resize', this.windowResize);
-                window.addEventListener('scroll', this.checkForNavExpand);
-                document.addEventListener('click', this.documentClick);
-            }
-        });
-
-        this.tickerVm = new Vue({
-            el: '#layout',
-            data: {
-                userSettings: options.userSettings,
-                lastPrice: 0
-            },
-            computed: {
                 height() {
                     this.pulseElement($(this.$refs.tickerHeight));
                     return this.$layoutHub.latestBlock.height ? this.$layoutHub.latestBlock.height.toLocaleString() : ' - ';
@@ -136,6 +68,75 @@ export class LayoutViewModel {
                 }
             },
             methods: {
+                isBreakpoint(alias) {
+                    return $('.device-' + alias).is(':visible');
+                },
+                openSearch() {
+                    this.searchOpen = true;
+                    
+                    setTimeout(() => {
+                        this.$refs.searchTerm.focus();
+                    }, this.searchFocusDelay);
+
+                    if (!this.isBreakpoint('xs')) {
+                        this.navExpanded = true;
+                    }
+                },
+                openUser() {
+                    if (!this.userOpen) {
+                        this.userOpen = true;
+                    } else {
+                        this.userOpen = false;
+                    }
+                },
+                documentClick(e) {
+                    const searchEl = this.$refs.navSearch;
+                    const userEl = this.$refs.userMenu;
+                    const navLinksEl = this.$refs.navbarLinks;
+
+                    const target = e.target;
+
+                    if (searchEl !== target && !searchEl.contains(target)) {
+                        this.searchOpen = false;
+                        this.checkForNavExpand();
+                    }
+
+                    if (userEl !== target && !userEl.contains(target)) {
+                        this.userOpen = false;
+                    }
+
+                    if (navLinksEl !== target && !navLinksEl.contains(target)) {
+                        $(navLinksEl).collapse('hide');
+                    }
+                },
+                checkForNavExpand(e) {
+                    const doc = document.documentElement;
+                    const left = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
+                    const top = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
+                    
+                    this.navTop += (this.lastScrollTop - top) * 0.25;
+
+                    if (this.navTop < -this.$refs.nav.clientHeight) {
+                        this.navTop = -this.$refs.nav.clientHeight;
+                    } else if (this.navTop > 0) {
+                        this.navTop = 0;
+                    }
+
+                    this.layoutTop = -this.navTop - this.$refs.nav.clientHeight;
+                    this.lastScrollTop = top;
+                },
+                windowResize() {
+                    if (this.isBreakpoint('xs')) {
+                        this.xsNav = true;
+
+                        if (this.navExpanded) {
+                            this.navExpanded = false;
+                        }
+                    } else {
+                        this.xsNav = false;
+                        this.checkForNavExpand();
+                    }
+                },
                 parseDifficulty(diff) {
                     return parseFloat(diff.toFixed(8)).toLocaleString(undefined, { 'minimumFractionDigits': 2, 'maximumFractionDigits': 6 });
                 },
@@ -157,6 +158,11 @@ export class LayoutViewModel {
                 }
             },
             created() {
+                window.addEventListener('resize', this.windowResize);
+                window.addEventListener('scroll', this.checkForNavExpand);
+                document.addEventListener('click', this.documentClick);
+                document.addEventListener('touchstart', this.documentClick);
+
                 var self = this;
 
                 $(() => {

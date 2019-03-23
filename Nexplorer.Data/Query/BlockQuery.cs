@@ -31,7 +31,8 @@ namespace Nexplorer.Data.Query
 
         public async Task<int> GetLastHeightAsync()
         {
-            const string sqlQ = @"SELECT MAX(b.[Height]) FROM [dbo].[Block] b";
+            const string sqlQ = @"SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+                                  SELECT MAX(b.[Height]) FROM [dbo].[Block] b";
 
             using (var connection = new SqlConnection(Settings.Connection.GetNexusDbConnectionString()))
             {
@@ -68,6 +69,7 @@ namespace Nexplorer.Data.Query
                 INNER JOIN [dbo].[Address] a ON a.[AddressId] = tIo.[AddressId] ";
 
             var sqlQ = $@"
+                SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
                 SELECT 
 	              *
                 FROM [dbo].[Block] b 
@@ -163,7 +165,8 @@ namespace Nexplorer.Data.Query
                     throw new ArgumentOutOfRangeException();
             }
 
-            var sqlQ = $@"SELECT
+            var sqlQ = $@"SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+                          SELECT
                           b.[Height],
 	                      b.[Hash],
                           b.[Size],

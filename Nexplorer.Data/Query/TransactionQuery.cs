@@ -81,7 +81,8 @@ namespace Nexplorer.Data.Query
                     break;
             }
 
-            var sqlQ = $@"SELECT DISTINCT
+            var sqlQ = $@"SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+                          SELECT DISTINCT
                           t.[TransactionId],
                           t.[Hash] AS TransactionHash,
                           t.[BlockHeight],

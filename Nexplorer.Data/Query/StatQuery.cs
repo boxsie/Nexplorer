@@ -23,7 +23,8 @@ namespace Nexplorer.Data.Query
 
         public async Task<List<ChannelStatDto>> GetChannelStatsAsync()
         {
-            const string sqlQ = @"SELECT 
+            const string sqlQ = @"SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+                                  SELECT 
                                   b.Channel,
                                   COUNT(*) AS Height
                                   FROM Block b

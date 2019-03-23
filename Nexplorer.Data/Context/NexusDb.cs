@@ -34,6 +34,10 @@ namespace Nexplorer.Data.Context
                 .HasIndex(x => x.Timestamp);
             modelBuilder.Entity<Block>()
                 .HasIndex(x => x.Channel);
+            modelBuilder.Entity<Block>()
+                .HasIndex(x => x.Difficulty);
+            modelBuilder.Entity<Block>()
+                .HasIndex(x => x.Size);
 
             modelBuilder.Entity<Transaction>()
                 .HasIndex(x => x.Hash);

@@ -84,7 +84,8 @@ namespace Nexplorer.Data.Query
 
         public async Task<AddressDto> GetAddressAsync(int addressId, string addressHash)
         {
-            const string sqlQ = @"SELECT
+            const string sqlQ = @"SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+                                  SELECT
                                   a.[AddressId],
                                   a.[Hash],
                                   a.[FirstBlockHeight] AS FirstBlockSeen,
@@ -105,7 +106,8 @@ namespace Nexplorer.Data.Query
 
         public async Task<AddressLiteDto> GetAddressLiteAsync(int addressId, string addressHash)
         {
-            const string sqlQ = @"SELECT
+            const string sqlQ = @"SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+                                  SELECT
                                   a.[AddressId],
                                   a.[Hash],
                                   a.[FirstBlockHeight] AS FirstBlockSeen,
@@ -128,7 +130,8 @@ namespace Nexplorer.Data.Query
             var fromHeight = filter.HeightFrom ?? 0;
             var toHeight = filter.HeightTo ?? int.MaxValue;
 
-            var sqlQ = $@"SELECT
+            var sqlQ = $@"SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+                          SELECT
                           SUM(aa.Balance)
                           FROM [dbo].[AddressAggregate] aa
                           WHERE aa.[Balance] >= @min AND aa.[Balance] <= @max AND aa.[LastBlockHeight] >= @fromHeight AND aa.[LastBlockHeight] <= @toHeight;";
@@ -148,7 +151,8 @@ namespace Nexplorer.Data.Query
             var fromHeight = filter.HeightFrom ?? 0;
             var toHeight = filter.HeightTo ?? int.MaxValue;
 
-            var sqlQ = $@"SELECT
+            var sqlQ = $@"SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+                          SELECT
                           COUNT(1)
                           FROM [dbo].[AddressAggregate] aa
                           WHERE aa.[Balance] >= @min AND aa.[Balance] <= @max AND aa.[LastBlockHeight] >= @fromHeight AND aa.[LastBlockHeight] <= @toHeight;";
@@ -216,7 +220,8 @@ namespace Nexplorer.Data.Query
                     break;
             }
 
-            var sqlQ = $@"SELECT
+            var sqlQ = $@"SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+                          SELECT
                           a.[AddressId],
                           a.[Hash],
                           a.[FirstBlockHeight] AS FirstBlockSeen,
@@ -269,7 +274,8 @@ namespace Nexplorer.Data.Query
         {
             var addressId = await GetAddressIdAsync(addressHash);
 
-            const string sqlQ = @"SELECT 
+            const string sqlQ = @"SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+                                  SELECT 
                                   tInOut.[TransactionInputOutputType],
                                   tInOut.[Amount],
                                   t.[Timestamp]
@@ -343,9 +349,10 @@ namespace Nexplorer.Data.Query
 
         public async Task<double> GetAverageBalanceAsync(bool includeZeroBalance)
         {
-            var sqlQ = @"SELECT
-                            AVG(aa.[Balance])
-                            FROM [dbo].[AddressAggregate] aa";
+            var sqlQ = @"SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+                         SELECT
+                         AVG(aa.[Balance])
+                         FROM [dbo].[AddressAggregate] aa";
 
             if (includeZeroBalance)
                 sqlQ += " WHERE aa.[Balance] > 0";
@@ -406,6 +413,7 @@ namespace Nexplorer.Data.Query
             }
 
             var sqlQ = $@"
+                SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
                 SELECT
                 t.[TransactionId],
                 t.[TransactionType],

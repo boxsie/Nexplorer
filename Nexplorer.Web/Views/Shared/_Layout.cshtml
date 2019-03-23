@@ -63,65 +63,150 @@
     @RenderSection("Head", required: false)
 </head>
 <body>
-<div id="navbar">
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-bg">
-        <div ref="navSearch" class="navbar-search" v-bind:class="searchOpen ? 'open' : 'closed'">
-            <form id="navSearchForm" asp-controller="home" asp-action="search" method="post">
-                <div class="nav-search-col nav-search-col-input text-left">
-                    <div class="form-group">
-                        <label for="searchTerm" class="field field-type">Block, Transaction or Address</label>
-                        <input ref="searchTerm" id="searchTerm" name="searchTerm" class="form-control" />
+
+<div id="header">
+    <div id="navbar">
+        <nav ref="nav" v-bind:style="{ top: navTop + 'px' }" class="navbar navbar-expand-lg navbar-dark navbar-bg">
+            <div ref="navSearch" class="navbar-search" v-bind:class="searchOpen ? 'open' : 'closed'">
+                <form id="navSearchForm" asp-controller="home" asp-action="search" method="post">
+                    <div class="nav-search-col nav-search-col-input text-left">
+                        <div class="form-group">
+                            <label for="searchTerm" class="field field-type">Block, Transaction or Address</label>
+                            <input ref="searchTerm" id="searchTerm" name="searchTerm" class="form-control" />
+                        </div>
                     </div>
-                </div>
-                <button type="submit" href="#" class="btn btn-flat nav-search-col">
-                    <span class="search-icon fa fa-search"></span>
+                    <button type="submit" href="#" class="btn btn-flat nav-search-col">
+                        <span class="search-icon fa fa-search"></span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="nav-left">
+                <button class="d-inline-block d-lg-none navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarLinks" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
                 </button>
-            </form>
-        </div>
-        
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarLinks" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
 
-        <a class="navbar-brand" href="/">NEXPLORER</a>
-        
-        <div class="nav-icons">
-            <a class="nav-icon d-sm-none" href="#" v-on:click.stop.prevent="openSearch">
-                <span class="icon fa fa-search"></span>
+                <a class="d-inline-block navbar-brand" href="/">NEXPLORER</a>
+            </div>
+
+            <div class="nav-icons d-md-none">
+                <a class="nav-icon" href="#" v-on:click.stop.prevent="openSearch">
+                    <span class="icon fa fa-search"></span>
+                </a>
+
+                <a class="nav-icon" href="#" v-on:click.stop.prevent="openUser">
+                    <span class="icon fa fa-user"></span>
+                </a>
+            </div>
+
+            <div ref="navbarLinks" id="navbarLinks" class="navbar-collapse collapse">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item @(Html.GetActiveControllerClass("blocks"))">
+                        <a asp-controller="blocks" asp-action="index" class="nav-link">Blocks</a>
+                    </li>
+                    <li class="nav-item @(Html.GetActiveControllerClass("transactions"))">
+                        <a asp-controller="transactions" asp-action="index" class="nav-link">Transactions</a>
+                    </li>
+                    <li class="nav-item @(Html.GetActiveControllerClass("addresses"))">
+                        <a asp-controller="addresses" asp-action="index" class="nav-link">Addresses</a>
+                    </li>
+                    <li class="nav-item @(Html.GetActiveControllerClass("mining"))">
+                        <a asp-controller="mining" asp-action="index" class="nav-link">Mining</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="nav-icons d-none d-md-inline-block">
+                <a class="nav-icon" href="#" v-on:click.stop.prevent="openSearch">
+                    <span class="icon fa fa-search"></span>
+                </a>
+
+                <a class="nav-icon" href="#" v-on:click.stop.prevent="openUser">
+                    <span class="icon fa fa-user" v-bind:class="{ active: userOpen }"></span>
+                </a>
+            </div>
+        </nav>
+
+        @{ await Html.RenderPartialAsync("_AccountMenu", new LoginViewModel()); }
+    </div>
+
+    <div v-bind:style="{ top: layoutTop + 'px' }" id="layout">
+        <table id="tickerTable" class="text-center">
+            <tr>
+                <td title="Chain height">
+                    <a :href="heightUrl">
+                        <div class="val">
+                            <span class="fa fa-link"></span>
+                            <div ref="tickerHeight">
+                                {{ height }}
+                            </div>
+                        </div>
+                    </a>
+                </td>
+                <td title="Bittrex price">
+                    <a asp-controller="home" asp-action="index">
+                        <div class="val">
+                            <span class="fa fa-btc" style="margin-top: -1px;"></span>
+                            <div ref="tickerPrice">{{ price }}</div>
+                        </div>
+                    </a>
+                </td>
+                <td title="Difficulty" class="d-sm-none">
+                    <a asp-controller="mining" asp-action="index">
+                        <div ref="mobileDiffs" class="val">
+                            <div>
+                                <span class="fa fa-bolt" style="margin-top: -1px;"></span>
+                                <div ref="tickerDiffPos">{{ diffPos }}</div>
+                            </div>
+                            <div style="display: none;">
+                                <span class="fa fa-hashtag" style="margin-top: -1px;"></span>
+                                <div ref="tickerDiffHash">{{ diffHash }}</div>
+                            </div>
+                            <div style="display: none;">
+                                <span class="fa fa-microchip"></span>
+                                <div ref="tickerDiffPrime">{{ diffPrime }}</div>
+                            </div>
+                        </div>
+                    </a>
+                </td>
+                <td title="POS difficulty" class="d-none d-sm-table-cell">
+                    <a asp-controller="mining" asp-action="index">
+                        <div class="val">
+                            <span class="fa fa-bolt" style="margin-top: -1px;"></span>
+                            <div ref="tickerDiffPos">{{ diffPos }}</div>
+                        </div>
+                    </a>
+                </td>
+                <td title="Hash difficulty" class="d-none d-sm-table-cell">
+                    <a asp-controller="mining" asp-action="index">
+                        <div class="val">
+                            <span class="fa fa-hashtag" style="margin-top: -1px;"></span>
+                            <div ref="tickerDiffHash">{{ diffHash }}</div>
+                        </div>
+                    </a>
+                </td>
+                <td title="Prime difficulty" class="d-none d-sm-table-cell">
+                    <a asp-controller="mining" asp-action="index">
+                        <div class="val">
+                            <span class="fa fa-microchip"></span>
+                            <div ref="tickerDiffPrime">{{ diffPrime }}</div>
+                        </div>
+                    </a>
+                </td>
+            </tr>
+        </table>
+
+        <div ref="cookieWarning" id="cookieWarning" v-show="!userSettings.dismissedCookiePolicy" v-cloak>
+            <a href="#" v-on:click.prevent.stop="closeCookieWarning">
+                <span class="fa fa-close"></span>
             </a>
 
-            <a class="nav-icon d-sm-none" href="#" v-on:click.stop.prevent="openUser">
-                <span class="icon fa fa-user"></span>
-            </a>
+            <p>
+                <strong>Welcome to Nexplorer.</strong> This site uses cookies to improve your experience and deliver personalised advertising.
+                You can <a target="_blank" href="/cookie#optingOut">opt out</a> at any time or find out more by reading the <a target="_blank" href="/cookie">cookie policy</a>.
+            </p>
         </div>
-
-        <div id="navbarLinks" class="navbar-collapse collapse">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item @(Html.GetActiveControllerClass("blocks"))">
-                    <a asp-controller="blocks" asp-action="index" class="nav-link">Blocks</a>
-                </li>
-                <li class="nav-item @(Html.GetActiveControllerClass("transactions"))">
-                    <a asp-controller="transactions" asp-action="index" class="nav-link">Transactions</a>
-                </li>
-                <li class="nav-item @(Html.GetActiveControllerClass("addresses"))">
-                    <a asp-controller="addresses" asp-action="index" class="nav-link">Addresses</a>
-                </li>
-                <li class="nav-item @(Html.GetActiveControllerClass("mining"))">
-                    <a asp-controller="mining" asp-action="index" class="nav-link">Mining</a>
-                </li>
-            </ul>
-        </div>
-
-        <a class="nav-icon d-none d-sm-block" href="#" v-on:click.stop.prevent="openSearch">
-            <span class="icon fa fa-search"></span>
-        </a>
-
-        <a class="nav-icon d-none d-sm-block" href="#" v-on:click.stop.prevent="openUser">
-            <span class="icon fa fa-user" v-bind:class="{ active: userOpen }"></span>
-        </a>
-    </nav>
-
-    @{ await Html.RenderPartialAsync("_AccountMenu", new LoginViewModel()); }
+    </div>
 </div>
 
 <div id="main">
@@ -156,84 +241,6 @@
         </div>
     </div>
 *@
-
-<div id="layout">
-    <table id="tickerTable" class="text-center">
-        <tr>
-            <td title="Chain height">
-                <a :href="heightUrl">
-                    <div class="val">
-                        <span class="fa fa-link"></span>
-                        <div ref="tickerHeight">
-                            {{ height }}
-                        </div>
-                    </div>
-                </a>
-            </td>
-            <td title="Bittrex price">
-                <a asp-controller="home" asp-action="index">
-                    <div class="val">
-                        <span class="fa fa-btc" style="margin-top: -1px;"></span>
-                        <div ref="tickerPrice">{{ price }}</div>
-                    </div>
-                </a>
-            </td>
-            <td title="Difficulty" class="d-sm-none">
-                <a asp-controller="mining" asp-action="index">
-                    <div ref="mobileDiffs" class="val">
-                        <div>
-                            <span class="fa fa-bolt" style="margin-top: -1px;"></span>
-                            <div ref="tickerDiffPos">{{ diffPos }}</div>
-                        </div>
-                        <div style="display: none;">
-                            <span class="fa fa-hashtag" style="margin-top: -1px;"></span>
-                            <div ref="tickerDiffHash">{{ diffHash }}</div>
-                        </div>
-                        <div style="display: none;">
-                            <span class="fa fa-microchip"></span>
-                            <div ref="tickerDiffPrime">{{ diffPrime }}</div>
-                        </div>
-                    </div>
-                </a>
-            </td>
-            <td title="POS difficulty" class="d-none d-sm-table-cell">
-                <a asp-controller="mining" asp-action="index">
-                    <div class="val">
-                        <span class="fa fa-bolt" style="margin-top: -1px;"></span>
-                        <div ref="tickerDiffPos">{{ diffPos }}</div>
-                    </div>
-                </a>
-            </td>
-            <td title="Hash difficulty" class="d-none d-sm-table-cell">
-                <a asp-controller="mining" asp-action="index">
-                    <div class="val">
-                        <span class="fa fa-hashtag" style="margin-top: -1px;"></span>
-                        <div ref="tickerDiffHash">{{ diffHash }}</div>
-                    </div>
-                </a>
-            </td>
-            <td title="Prime difficulty" class="d-none d-sm-table-cell">
-                <a asp-controller="mining" asp-action="index">
-                    <div class="val">
-                        <span class="fa fa-microchip"></span>
-                        <div ref="tickerDiffPrime">{{ diffPrime }}</div>
-                    </div>
-                </a>
-            </td>
-        </tr>
-    </table>
-
-    <div ref="cookieWarning" id="cookieWarning" v-show="!userSettings.dismissedCookiePolicy" v-cloak>
-        <a href="#" v-on:click.prevent.stop="closeCookieWarning">
-            <span class="fa fa-close"></span>
-        </a>
-
-        <p>
-            <strong>Welcome to Nexplorer.</strong> This site uses cookies to improve your experience and deliver personalised advertising.
-            You can <a target="_blank" href="/cookie#optingOut">opt out</a> at any time or find out more by reading the <a target="_blank" href="/cookie">cookie policy</a>.
-        </p>
-    </div>
-</div>
 
 <footer id="footer">
     <div class="container-fluid">

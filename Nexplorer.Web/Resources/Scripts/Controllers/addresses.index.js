@@ -67,7 +67,7 @@ export class AddressIndexViewModel {
                             return `<span class="d-md-none inline-icon fa fa-hashtag"></span>
                                     <a class="d-none d-sm-inline d-md-none d-lg-inline" href="/addresses/${data}">${data}</a>
                                     <a class="d-none d-md-inline d-lg-none" href="/addresses/${data}">${this.vm.truncateHash(data, 35)}</a>
-                                    <a class="d-sm-none" href="/addresses/${data}">${this.vm.truncateHash(data, 32)}</a>`;
+                                    <a class="d-sm-none" href="/addresses/${data}">${this.vm.truncateHash(data, 28)}</a>`;
                         }
                     },
                     {

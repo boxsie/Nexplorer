@@ -5,6 +5,14 @@
     filter: brightness(.8) saturate(1.2) hue-rotate(266deg);
 }
 
+#heroText {
+    &.jumbotron {
+        h1 {
+            font-size: 2.7rem;
+        }
+    }
+}
+
 .text-toggle {
     margin-top: 20px;
 }
@@ -54,4 +62,11 @@
 
 
 @media(min-width: 768px) {
+    #heroText {
+        &.jumbotron {
+            h1 {
+                font-size: 3rem;
+            }
+        }
+    }
 }

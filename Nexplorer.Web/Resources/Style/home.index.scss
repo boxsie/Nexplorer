@@ -100,11 +100,19 @@
     }
 }
 
+.table td {
+    padding: 0.4rem;
+}
+
 @media(min-width: 768px) {
     #mainSearch {
         margin-top: 30px;
         padding-left: 50px;
         padding-right: 50px;
+    }
+
+    .table td {
+        padding: 0.7rem;
     }
 }
 
