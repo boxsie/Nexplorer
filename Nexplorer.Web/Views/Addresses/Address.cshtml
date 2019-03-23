@@ -180,7 +180,7 @@
         </div>
     </div>
 
-    <tx-table id="txTable" ref="txTable" :options="dtOptions" :columns="columns" v-on:row-click="selectTransaction">
+    <tx-table id="txTable" ref="txTable" :options="dtOptions" v-on:row-click="selectTransaction">
         <template #dt-criteria="dt">
             <form id="txFilter" class="offset-sm-4 col-sm-8">
                 <div class="form-group">
@@ -242,35 +242,39 @@
                 <div class="col-12 col-lg-7 order-12 order-lg-3 address-hashes">
                     <span v-if="row.transactionType === @((int) TransactionType.CoinbaseHash)">Coinbase hash reward</span>
                     <span v-else-if="row.transactionType === @((int) TransactionType.CoinbasePrime)">Coinbase prime reward</span>
-                    <span v-else-if="row.transactionType === @((int) TransactionType.Coinstake)">
+                    <span v-else-if="row.transactionType === @((int) TransactionType.Coinstake) && getRowTxItems(row).length < 2">
                         {{`Coinstake ${dtOptions.defaultCriteria.txInputOutputType === null ? 'reward' : 'transaction'}`}}
                     </span>
-                    <table v-else class="mt-2 mt-md-0" style="width: 100%;">
-                        <tr>
-                            <td>
-                                <span class="d-lg-none inline-icon fa fa-hashtag"></span>
-                            </td>
-                            <td>
-                                <div class="ml-1 ml-lg-0 read-more">
-                                    <collapsable-list :items="row.oppositeItems" :min-items="2">
-                                        <template #list="slotProps">
-                                            <div class="d-block d-sm-flex" style="width: 100%; justify-content: space-between;">
-                                                <a class="d-none d-sm-inline-block" v-on:click.stop="" :href="`/addresses/${slotProps.item.addressHash}`">
-                                                    {{slotProps.item.addressHash}}
-                                                </a>
-                                                <a class="d-block d-sm-none" v-on:click.stop="" :href="`/addresses/${slotProps.item.addressHash}`">
-                                                    {{truncateHash(slotProps.item.addressHash, 30)}}
-                                                </a>
-                                                <span class="text-right" style="font-size: 0.8rem;">
-                                                    ({{slotProps.item.amount.toLocaleString()}} <span style="font-size: 0.6rem;">NXS</span>)
-                                                </span>
-                                            </div>
-                                        </template>
-                                    </collapsable-list>
+                    <div v-else class="mt-2 mt-md-0 ml-1 ml-lg-0 read-more">
+                        <collapsable-list :items="getRowTxItems(row)" :min-items="2">
+                            <template #list="slotProps">
+                                <div class="row">
+                                    <div class="col-7 col-sm-8">
+                                        <span v-if="row.transactionType === @((int) TransactionType.Coinstake) && slotProps.item.addressHash === row.addressHash">
+                                            {{`Coinstake ${dtOptions.defaultCriteria.txInputOutputType === null ? 'reward' : 'transaction'}`}}
+                                        </span>
+                                        <span v-else>
+                                            <a class="d-none d-sm-inline-block" v-on:click.stop="" :href="`/addresses/${slotProps.item.addressHash}`">
+                                                {{slotProps.item.addressHash}}
+                                            </a>
+                                            <a class="d-block d-sm-none" v-on:click.stop="" :href="`/addresses/${slotProps.item.addressHash}`">
+                                                {{truncateHash(slotProps.item.addressHash, 20)}}
+                                            </a>
+                                        </span>
+                                    </div>
+                                    <div class="col-5 col-sm-4 text-right" style="font-size: 0.8rem; padding-top: 2px;">
+                                        <span v-if="row.transactionType === @((int) TransactionType.Coinstake) && slotProps.item.addressHash === row.addressHash">
+                                            ({{calculateRowReward(row).toLocaleString()}}
+                                        </span>
+                                        <span v-else>
+                                            ({{slotProps.item.amount.toLocaleString()}}
+                                        </span>
+                                        <span style="font-size: 0.6rem;">NXS</span>)
+                                    </div>
                                 </div>
-                            </td>
-                        </tr>
-                    </table>
+                            </template>
+                        </collapsable-list>
+                    </div>
                 </div>
                 <div class="col-3 col-sm-1 text-right text-center-sm order-4">
                     <span v-if="row.transactionType === @((int) TransactionType.CoinbaseHash) || row.transactionType === @((int) TransactionType.CoinbasePrime)"
@@ -283,7 +287,6 @@
                 </div>
                 <div class="col text-right order-12 order-sm-5">
                     <strong>
-                        {{row.transactionInputOutputType === @((int) TransactionInputOutputType.Input) ? '-' : '+'}}
                         {{parseFloat(row.amount.toFixed(4)).toLocaleString()}}
                     </strong>
                     <small>NXS</small>

@@ -18,6 +18,8 @@
 
             <slot name="dt" :dt="dt">
                 <div :class="headerRowClass">
+                    <div v-if="dtOptions.showRowIndex" class="index ml-4">
+                    </div>
                     <div v-for="c in columns" :class="parseColClass(c, 'dt-head')" v-html="c.header"></div>
                 </div>
                 

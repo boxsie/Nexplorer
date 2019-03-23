@@ -128,6 +128,24 @@ export class AddressViewModel {
                 },
                 selectTransaction(tx) {
                     window.location.href = `/transactions/${tx.transactionHash}`;
+                },
+                getRowTxItems(row) {
+                    return row.transactionItems.filter((item) => {
+                        return item.transactionInputOutputType !== row.transactionInputOutputType;
+                    });
+                },
+                calculateRowReward(row) {
+                    let diff = 0;
+
+                    for (let i = 0; i < row.transactionItems.length; i++) {
+                        const ti = row.transactionItems[i];
+
+                        if (row.addressHash !== ti.addressHash) {
+                            diff += ti.amount;
+                        }
+                    }
+
+                    return row.amount - diff;
                 }
             },
             mounted() {

@@ -406,16 +406,6 @@ namespace Nexplorer.Data.Query
             }
 
             var sqlQ = $@"
-                ;WITH cte AS(
-	                SELECT 
-		            t.TransactionId
-	                {from} 
-                    WHERE 1 = 1 
-                    {where} 
-	                {sqlOrderBy}
-	                OFFSET @start ROWS FETCH NEXT @count ROWS ONLY
-                )
-
                 SELECT
                 t.[TransactionId],
                 t.[TransactionType],
@@ -423,12 +413,20 @@ namespace Nexplorer.Data.Query
                 t.[Timestamp],
                 t.[Hash] AS TransactionHash,
                 a.[Hash] AS AddressHash,
-                tInOut.[TransactionInputOutputType],
-                tInOut.[Amount] AS Amount 
+                {(filter.Grouped 
+                    ? @"CASE WHEN SUM(CASE WHEN tInOut.[TransactionInputOutputType] = 0 THEN -tInOut.[Amount] ELSE tInOut.[Amount] END) < 0 THEN 0 ELSE 1 END "
+                    : "tInOut.[TransactionInputOutputType] ")} 
+                AS TransactionInputOutputType,
+                {(filter.Grouped
+                    ? @"SUM(CASE WHEN tInOut.[TransactionInputOutputType] = 0 THEN -tInOut.[Amount] ELSE tInOut.[Amount] END) " 
+                    : "CASE WHEN tInOut.[TransactionInputOutputType] = 0 THEN -tInOut.[Amount] ELSE tInOut.[Amount] END ")} 
+                AS Amount 
                 {from}
-                INNER JOIN cte ON cte.[TransactionId] = t.[TransactionId]
                 WHERE 1 = 1 
-                {sqlOrderBy}, tInOut.[TransactionInputOutputType] DESC ";
+                {where}
+                {(filter.Grouped ? "GROUP BY t.[TransactionId], t.[BlockHeight], t.[Timestamp], t.[Hash], a.[Hash], t.[TransactionType] " : "" )}
+                {sqlOrderBy}, TransactionInputOutputType DESC
+	            OFFSET @start ROWS FETCH NEXT @count ROWS ONLY";
 
             var sqlC = $@"
                 SELECT 
@@ -437,7 +435,19 @@ namespace Nexplorer.Data.Query
                       1 AS Cnt
                       {from}
                       WHERE 1 = 1 
-                      {where}) AS resultCount;";
+                      {where}
+                      {(filter.Grouped ? "GROUP BY t.[TransactionId]" : "")}) AS resultCount;";
+
+            var sqlT = $@"
+                SELECT
+                tInOut.[TransactionId],
+                tInOut.[TransactionInputOutputId],
+                tInOut.[TransactionInputOutputType],
+                tInOut.[Amount] AS Amount,
+                a.[Hash]
+                FROM [dbo].[TransactionInputOutput] tInOut
+                INNER JOIN [dbo].[Address] a ON a.[AddressId] = tInOut.[AddressId]
+                WHERE tInOut.[TransactionId] IN @txIds";
 
             using (var sqlCon = await DbConnectionFactory.GetNexusDbConnectionAsync())
             {
@@ -445,56 +455,57 @@ namespace Nexplorer.Data.Query
                 param.Add(nameof(start), start);
                 param.Add(nameof(maxResults), maxResults ?? int.MaxValue);
 
+                List<TransactionLineItemDto> txItems;
+                int resultCount;
+
                 using (var multi = await sqlCon.QueryMultipleAsync(string.Concat(sqlQ, sqlC), param))
                 {
-                    var r = (await multi.ReadAsync()).ToList();
-
-                    var addTxs = r
-                        .Where(x => filter.AddressHashes.Any(y => y == x.AddressHash))
-                        .Select(x => new AddressTransactionDto
-                        {
-                            AddressHash = x.AddressHash,
-                            BlockHeight = x.BlockHeight,
-                            TransactionHash = x.TransactionHash,
-                            Amount = x.Amount,
-                            Timestamp = x.Timestamp,
-                            TransactionType = (TransactionType)x.TransactionType,
-                            TransactionId = x.TransactionId,
-                            TransactionInputOutputType = (TransactionInputOutputType)x.TransactionInputOutputType,
-                            OppositeItems = r
-                                .Where(y => y.TransactionId == x.TransactionId && y.TransactionInputOutputType != x.TransactionInputOutputType)
-                                .Select(y => new AddressTransactionItemDto
-                                {
-                                    AddressHash = y.AddressHash,
-                                    Amount = y.Amount
-                                })
-                                .OrderByDescending(y => y.Amount)
-                                .ToList()
-                        })
-                        .ToList();
-
-                    // Change coinstake top up txs to user txs
-                    foreach (var addTxDto in addTxs)
-                    {
-                        if (addTxDto.TransactionType == TransactionType.Coinstake
-                            && addTxDto.TransactionInputOutputType == TransactionInputOutputType.Input
-                            && addTxDto.OppositeItems.All(x => x.AddressHash != addTxDto.AddressHash))
-                        {
-                            addTxDto.TransactionType = TransactionType.User;
-                        }
-                    }
-
-                    if (filter.Grouped)
-                        addTxs = GroupTransactions(addTxs);
-
-                    return new FilterResult<AddressTransactionDto>
-                    {
-                        Results = OrderBy(addTxs, filter.OrderBy, count),
-                        ResultCount = countResults
-                            ? (int) (await multi.ReadAsync<int>()).FirstOrDefault()
-                            : -1
-                    };
+                    txItems = (await multi.ReadAsync<TransactionLineItemDto>()).ToList();
+                    resultCount = countResults
+                        ? (int) (await multi.ReadAsync<int>()).FirstOrDefault()
+                        : -1;
                 }
+
+                var txIds = txItems.Select(x => x.TransactionId).Distinct();
+                var txsResult = await sqlCon.QueryAsync(sqlT, new {txIds});
+
+                var txs = txsResult.GroupBy(x => x.TransactionId)
+                    .ToDictionary(x => (int)x.Key, y => y
+                        .Select(z => new AddressTransactionItemDto
+                        {
+                            TransactionInputOutputId = z.TransactionInputOutputId,
+                            TransactionInputOutputType = (TransactionInputOutputType)z.TransactionInputOutputType,
+                            Amount = z.Amount,
+                            AddressHash = z.Hash
+                        }));
+                
+                var addressTxs = txItems
+                    .Where(x => filter.AddressHashes.Any(y => y == x.AddressHash))
+                    .Select(x => new AddressTransactionDto
+                    {
+                        AddressHash = x.AddressHash,
+                        BlockHeight = x.BlockHeight,
+                        TransactionHash = x.TransactionHash,
+                        Amount = x.Amount,
+                        Timestamp = x.Timestamp,
+                        TransactionType = (TransactionType)x.TransactionType,
+                        TransactionId = x.TransactionId,
+                        TransactionInputOutputType = x.TransactionInputOutputType,
+                        TransactionItems = txs[x.TransactionId]
+                            .Where(y => y.TransactionInputOutputId != x.TransactionInputOutputId)
+                            .OrderByDescending(y => y.Amount)
+                            .ToList()
+                    }).ToList();
+
+                //if (filter.Grouped)
+                //    addressTxs = GroupTransactions(addressTxs);
+
+                return new FilterResult<AddressTransactionDto>
+                {
+                    Results = OrderBy(addressTxs, filter.OrderBy, count),
+                    ResultCount = resultCount
+                };
+                
             }
         }
 
@@ -676,48 +687,17 @@ namespace Nexplorer.Data.Query
             }
         }
 
-        private static List<AddressTransactionDto> GroupTransactions(IEnumerable<AddressTransactionDto> addTxs)
+        private static List<AddressTransactionDto> GroupTransactions(List<AddressTransactionDto> addTxs)
         {
-            return addTxs.GroupBy(x => x.TransactionHash).Select(x =>
+            return addTxs.GroupBy(x => x.TransactionId).Select(x =>
             {
                 var first = x.First();
-                var outTx = x.FirstOrDefault(y =>
-                    y.TransactionInputOutputType == TransactionInputOutputType.Output);
 
-                switch (first.TransactionType)
+                return new AddressTransactionDto
                 {
-                    case TransactionType.Coinstake:
-                        first = outTx ?? throw new NullReferenceException(
-                                    "Coinstake transactions must have an in and out");
 
-                        first.Amount = outTx.Amount - outTx.OppositeItems.Sum(z => z.Amount);
-                        break;
-                    case TransactionType.User:
-                        var inTx = x.FirstOrDefault(y =>
-                            y.TransactionInputOutputType == TransactionInputOutputType.Input);
-
-                        // This transaction is returning change to the sending address
-                        if (inTx != null && outTx != null)
-                        {
-                            first = inTx;
-                            first.Amount = inTx.Amount - outTx.Amount;
-                        }
-                        else
-                            first.Amount = x.Sum(y => y.Amount);
-
-                        first.OppositeItems = first.OppositeItems.GroupBy(y => y.AddressHash).Select(y =>
-                                new AddressTransactionItemDto
-                                {
-                                    AddressHash = y.Key,
-                                    Amount = y.Sum(z => z.Amount)
-                                })
-                            .ToList();
-                        break;
-                }
-
-                return first;
-            })
-                .ToList();
+                };
+            }).ToList();
         }
 
         public static readonly Dictionary<NexusAddressPools, List<string>> NexusAddresses =
