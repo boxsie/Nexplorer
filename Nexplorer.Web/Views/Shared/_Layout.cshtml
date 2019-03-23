@@ -84,14 +84,16 @@
         </button>
 
         <a class="navbar-brand" href="/">NEXPLORER</a>
+        
+        <div class="nav-icons">
+            <a class="nav-icon d-sm-none" href="#" v-on:click.stop.prevent="openSearch">
+                <span class="icon fa fa-search"></span>
+            </a>
 
-        <a class="nav-icon d-sm-none" href="#" v-on:click.stop.prevent="openSearch">
-            <span class="icon fa fa-search"></span>
-        </a>
-
-        <a class="nav-icon d-sm-none" href="#" v-on:click.stop.prevent="openUser">
-            <span class="icon fa fa-user"></span>
-        </a>
+            <a class="nav-icon d-sm-none" href="#" v-on:click.stop.prevent="openUser">
+                <span class="icon fa fa-user"></span>
+            </a>
+        </div>
 
         <div id="navbarLinks" class="navbar-collapse collapse">
             <ul class="navbar-nav mr-auto">

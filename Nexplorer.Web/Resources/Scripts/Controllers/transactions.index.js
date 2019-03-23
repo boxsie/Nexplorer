@@ -41,7 +41,7 @@ export class TransactionViewModel {
                 columns: [
                     {
                         key: 'timestamp',
-                        class: 'col-5 col-sm-2',
+                        class: 'col-4 col-sm-2',
                         header: '<span class="d-none d-sm-inline fa fa-calendar-o"></span>',
                         render: (data, row) => {
                             var timestamp = Moment(data).format('DD/MMM/YY HH:mm:ss');
@@ -61,7 +61,7 @@ export class TransactionViewModel {
                     },
                     {
                         key: 'blockHeight',
-                        class: 'col-3 col-sm-2 text-right text-sm-left',
+                        class: 'col-4 col-sm-2 text-right text-sm-left',
                         header: '<span class="d-none d-sm-inline fa fa-cube"></span>',
                         render: (data, row) => {
                             return `<span class="d-sm-none inline-icon fa fa-cube"></span>

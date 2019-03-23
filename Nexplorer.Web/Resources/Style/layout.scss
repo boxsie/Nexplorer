@@ -8,9 +8,13 @@
 
 
 #navbar {
+    .navbar {
+        padding: 0;
+    }
+
     .navbar-bg {
         position: fixed;
-        z-index: 3;
+        z-index: 4;
         left: 0;
         right: 0;
         height: $nav-height-full;
@@ -18,19 +22,27 @@
         background-color: $primary;
     }
 
-    .nav-icon {
-        padding-left: 15px;
-        padding-right: 15px;
+    .navbar-toggler {
+        margin-left: 15px;
+    }
 
-        span {
-            &:hover, &.active {
-                color: darken($nav-primary, 10%);
+    .nav-icons {
+        margin-right: 15px;
+
+        .nav-icon {
+            padding-left: 5px;
+            padding-right: 5px;
+
+            span {
+                &:hover, &.active {
+                    color: darken($nav-primary, 10%);
+                }
             }
-        }
 
-        .icon {
-            font-size: 26px;
-            color: $nav-primary;
+            .icon {
+                font-size: 26px;
+                color: $nav-primary;
+            }
         }
     }
 
@@ -45,14 +57,15 @@
 
     .navbar-search {
         position: absolute;
-        z-index: 101;
+        z-index: 5;
         height: $search-height-xs;
         background-color: $search-bg;
         width: 100%;
-        height: $search-height-xs;
+        height: $search-height-xs + 10px;
         transition: top $search-open-speed;
         text-align: center;
         top: -($search-height-full + 10px);
+        padding-bottom: 5px;
 
         &.open {
             top: 0;
@@ -107,6 +120,11 @@
     }
 
     #navbarLinks {
+        padding: 4px;
+        border-radius: 4px;
+        background-color: $primary;
+        box-shadow: 11px 14px 36px -20px rgba(0,0,0,0.75);
+
         li {
             a {
                 padding-left: 10px;
@@ -128,11 +146,11 @@
     }
 
     #userMenu {
-        z-index: 2;
-        position: absolute;
+        z-index: 3;
+        position: fixed;
         left: 15px;
         right: 15px;
-        padding: 10px 20px 0 20px;
+        padding: 20px 20px 0 20px;
         background-color: $nav-primary;
         border-bottom-right-radius: 4px;
         border-bottom-left-radius: 4px;
@@ -441,6 +459,11 @@
 
 @media(min-width: 768px) {
     #navbar {
+        .nav-icon {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
         .navbar-search {
             height: $search-height-full;
 
