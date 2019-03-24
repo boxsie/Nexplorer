@@ -22,6 +22,7 @@ module.exports = {
         'addresses.address': controllerScriptsPath + 'addresses.address.js',
         'network.index': controllerScriptsPath + 'network.index.js',
         'mining.index': controllerScriptsPath + 'mining.index.js',
+        'staking.index': controllerScriptsPath + 'staking.index.js',
         'favourites.index': controllerScriptsPath + 'favourites.index.js',
         'manage.enableauthenticator': controllerScriptsPath + 'manage.enableauthenticator.js'
     },

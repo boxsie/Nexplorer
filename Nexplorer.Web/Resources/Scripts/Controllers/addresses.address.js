@@ -130,7 +130,7 @@ export class AddressViewModel {
                     window.location.href = `/transactions/${tx.transactionHash}`;
                 },
                 getRowTxItems(row) {
-                    return row.transactionItems.filter((item) => {
+                    return  row.transactionItems.filter((item) => {
                         return item.transactionInputOutputType !== row.transactionInputOutputType;
                     });
                 },
@@ -146,6 +146,10 @@ export class AddressViewModel {
                     }
 
                     return row.amount - diff;
+                },
+                checkForCoinstakeTopupTx(row) {
+                    const rowItems = this.getRowTxItems(row);
+                    return rowItems.length < 2 && rowItems[0].addressHash === row.addressHash;
                 }
             },
             mounted() {

@@ -24,8 +24,8 @@ export class LayoutViewModel {
                 userOpen: false,
                 searchFocusDelay: 400,
                 navTop: 0,
-                layoutTop: 0,
-                lastScrollTop: 0,
+                layoutTop: 40,
+                lastScrollTop: null,
                 xsNav: false,
                 userSettings: options.userSettings,
                 lastPrice: 0
@@ -109,6 +109,10 @@ export class LayoutViewModel {
                     }
                 },
                 onScroll(e) {
+                    if (!this.$refs.nav.clientHeight) {
+                        return;
+                    }
+
                     const doc = document.documentElement;
                     const left = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
                     const top = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
@@ -121,9 +125,9 @@ export class LayoutViewModel {
                         this.navTop = 0;
                     } else if (this.navTop < -this.$refs.nav.clientHeight) {
                         this.navTop = -this.$refs.nav.clientHeight;
-                    }  
+                    }
 
-                    this.layoutTop = -this.navTop - this.$refs.nav.clientHeight;
+                    this.layoutTop = this.navTop + this.$refs.nav.clientHeight;
                     this.lastScrollTop = top;
                 },
                 windowResize() {
@@ -162,8 +166,8 @@ export class LayoutViewModel {
                 window.addEventListener('scroll', this.onScroll);
                 document.addEventListener('click', this.documentClick);
                 document.addEventListener('touchstart', this.documentClick);
-
-                var self = this;
+                
+                const self = this;
 
                 $(() => {
                     var diffs = $(this.$refs.mobileDiffs).children();

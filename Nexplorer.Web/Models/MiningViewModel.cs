@@ -3,6 +3,11 @@ using Nexplorer.Domain.Dtos;
 
 namespace Nexplorer.Web.Models
 {
+    public class StakingViewModel
+    {
+        
+    }
+
     public class MiningViewModel
     {
         public Dictionary<string, List<ChannelStatDto>> ChannelStats { get; set; }

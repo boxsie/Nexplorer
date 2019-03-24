@@ -242,7 +242,7 @@
                 <div class="col-12 col-lg-7 order-12 order-lg-3 address-hashes">
                     <span v-if="row.transactionType === @((int) TransactionType.CoinbaseHash)">Coinbase hash reward</span>
                     <span v-else-if="row.transactionType === @((int) TransactionType.CoinbasePrime)">Coinbase prime reward</span>
-                    <span v-else-if="row.transactionType === @((int) TransactionType.Coinstake) && getRowTxItems(row).length < 2">
+                    <span v-else-if="row.transactionType === @((int) TransactionType.Coinstake) && checkForCoinstakeTopupTx(row)">
                         {{`Coinstake ${dtOptions.defaultCriteria.txInputOutputType === null ? 'reward' : 'transaction'}`}}
                     </span>
                     <div v-else class="mt-2 mt-md-0 ml-1 ml-lg-0 read-more">

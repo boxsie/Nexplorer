@@ -1,11 +1,11 @@
 {
+  "mining.index": {
+    "js": "../js/mining.index.js",
+    "css": "../css/mining.index.css"
+  },
   "addresses.address": {
     "js": "../js/addresses.address.js",
     "css": "../css/addresses.address.css"
-  },
-  "addresses.index": {
-    "js": "../js/addresses.index.js",
-    "css": "../css/addresses.index.css"
   },
   "admin.index": {
     "js": "../js/admin.index.js",
@@ -33,9 +33,9 @@
   "manage.enableauthenticator": {
     "js": "../js/manage.enableauthenticator.js"
   },
-  "mining.index": {
-    "js": "../js/mining.index.js",
-    "css": "../css/mining.index.css"
+  "addresses.index": {
+    "js": "../js/addresses.index.js",
+    "css": "../css/addresses.index.css"
   },
   "network.index": {
     "js": "../js/network.index.js",
@@ -43,6 +43,10 @@
   },
   "runtime": {
     "js": "../js/runtime.js"
+  },
+  "staking.index": {
+    "js": "../js/staking.index.js",
+    "css": "../css/staking.index.css"
   },
   "transactions.index": {
     "js": "../js/transactions.index.js",

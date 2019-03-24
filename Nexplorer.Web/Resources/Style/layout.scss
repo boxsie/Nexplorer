@@ -239,7 +239,7 @@
     text-shadow: 1px 3px 6px rgba(10, 10, 10, 0.8);
 
     #heroHeader {
-        padding-top: 40px;
+        padding-top: 70px;
         padding-left: 0;
         padding-right: 0;
     }
@@ -340,6 +340,7 @@
         width: 100%;
         margin: 4px auto;
         max-width: $container-max-width + 40px;
+        top: $nav-height;
 
         td {
             width: 20%;
