@@ -1,11 +1,11 @@
 {
+  "addresses.index": {
+    "js": "../js/addresses.index.js",
+    "css": "../css/addresses.index.css"
+  },
   "mining.index": {
     "js": "../js/mining.index.js",
     "css": "../css/mining.index.css"
-  },
-  "addresses.address": {
-    "js": "../js/addresses.address.js",
-    "css": "../css/addresses.address.css"
   },
   "admin.index": {
     "js": "../js/admin.index.js",
@@ -33,9 +33,9 @@
   "manage.enableauthenticator": {
     "js": "../js/manage.enableauthenticator.js"
   },
-  "addresses.index": {
-    "js": "../js/addresses.index.js",
-    "css": "../css/addresses.index.css"
+  "addresses.address": {
+    "js": "../js/addresses.address.js",
+    "css": "../css/addresses.address.css"
   },
   "network.index": {
     "js": "../js/network.index.js",
