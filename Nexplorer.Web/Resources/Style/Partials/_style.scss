@@ -161,6 +161,7 @@ label {
     position: relative;
     z-index: 2;
     border-top: 8px solid $nav-secondary;
+    margin-top: $layout-bar-height;
 }
 
 .main-body {

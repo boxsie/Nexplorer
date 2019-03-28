@@ -24,7 +24,9 @@ export class LayoutViewModel {
                 userOpen: false,
                 searchFocusDelay: 400,
                 navTop: 0,
-                layoutTop: 40,
+                layoutTop: 0,
+                mainBodyTop: 0,
+                layoutHeight: 40,
                 lastScrollTop: null,
                 xsNav: false,
                 userSettings: options.userSettings,
@@ -39,32 +41,53 @@ export class LayoutViewModel {
                 },
                 height() {
                     this.pulseElement($(this.$refs.tickerHeight));
-                    return this.$layoutHub.latestBlock.height ? this.$layoutHub.latestBlock.height.toLocaleString() : ' - ';
+
+                    if (!this.$layoutHub.latestBlock || !this.$layoutHub.latestBlock.height) {
+                        return ' - ';
+                    }
+
+                    return this.$layoutHub.latestBlock.height.toLocaleString();
                 },
                 heightUrl() {
+                    if (!this.$layoutHub.latestBlock || !this.$layoutHub.latestBlock.height) {
+                        return '';
+                    }
+
                     return this.$layoutHub.latestBlock.height ? `/blocks/${this.$layoutHub.latestBlock.height}` : '';
                 },
                 price() {
-                    if (this.$layoutHub.latestPrice.last && this.$layoutHub.latestPrice.last !== this.lastPrice) {
-                        this.lastPrice = this.$layoutHub.latestPrice.last;
-                        this.pulseElement($(this.$refs.tickerPrice));
-
-                        return this.$layoutHub.latestPrice.last.toFixed(8);
+                    if (!this.$layoutHub.latestPrice || !this.$layoutHub.latestPrice.last || this.$layoutHub.latestPrice.last === this.lastPrice) {
+                        return this.lastPrice ? this.lastPrice : ' - ';
                     }
 
-                    return this.lastPrice ? this.lastPrice : ' - ';
+                    this.lastPrice = this.$layoutHub.latestPrice.last;
+                    this.pulseElement($(this.$refs.tickerPrice));
+
+                    return this.$layoutHub.latestPrice.last.toFixed(8);
                 },
                 diffPos() {
+                    if (!this.$layoutHub.latestDiffs || !this.$layoutHub.latestDiffs.pos) {
+                        return ' - ';
+                    }
+
                     this.pulseElement($(this.$refs.tickerDiffPos));
-                    return this.$layoutHub.latestDiffs.pos ? this.parseDifficulty(this.$layoutHub.latestDiffs.pos) : ' - ';
+                    return this.parseDifficulty(this.$layoutHub.latestDiffs.pos);
                 },
                 diffHash() {
+                    if (!this.$layoutHub.latestDiffs || !this.$layoutHub.latestDiffs.hash) {
+                        return ' - ';
+                    }
+
                     this.pulseElement($(this.$refs.tickerDiffHash));
-                    return this.$layoutHub.latestDiffs.hash ? this.parseDifficulty(this.$layoutHub.latestDiffs.hash) : ' - ';
+                    return this.parseDifficulty(this.$layoutHub.latestDiffs.hash);
                 },
                 diffPrime() {
+                    if (!this.$layoutHub.latestDiffs || !this.$layoutHub.latestDiffs.prime) {
+                        return ' - ';
+                    }
+
                     this.pulseElement($(this.$refs.tickerDiffPrime));
-                    return this.$layoutHub.latestDiffs.prime ? this.parseDifficulty(this.$layoutHub.latestDiffs.prime) : ' - ';
+                    return this.parseDifficulty(this.$layoutHub.latestDiffs.prime);
                 }
             },
             methods: {
@@ -127,7 +150,12 @@ export class LayoutViewModel {
                         this.navTop = -this.$refs.nav.clientHeight;
                     }
 
-                    this.layoutTop = this.navTop + this.$refs.nav.clientHeight;
+                    if (top < this.mainBodyTop) {
+                        this.layoutTop = this.mainBodyTop - top;
+                    } else {
+                        this.layoutTop = -(this.navTop + this.$refs.nav.clientHeight);
+                    }
+
                     this.lastScrollTop = top;
                 },
                 windowResize() {
@@ -139,6 +167,13 @@ export class LayoutViewModel {
                         }
                     } else {
                         this.xsNav = false;
+                    }
+
+                    const top = $('#mainBody').offset().top - this.layoutHeight;
+
+                    if (top !== this.mainBodyTop) {
+                        this.mainBodyTop = top;
+                        this.onScroll();
                     }
                 },
                 parseDifficulty(diff) {
