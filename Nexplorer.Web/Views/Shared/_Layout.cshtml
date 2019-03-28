@@ -66,7 +66,7 @@
 
 <div id="header">
     <div id="navbar">
-        <nav ref="nav" v-bind:style="{ top: navTop + 'px' }" class="navbar navbar-expand-lg navbar-dark navbar-bg">
+        <nav ref="nav" v-bind:style="{ top: $layoutHub.navTop + 'px' }" class="navbar navbar-expand-lg navbar-dark navbar-bg">
             <div ref="navSearch" class="navbar-search" v-bind:class="searchOpen ? 'open' : 'closed'">
                 <form id="navSearchForm" asp-controller="home" asp-action="search" method="post">
                     <div class="nav-search-col nav-search-col-input text-left">
@@ -129,16 +129,31 @@
 
         @{ await Html.RenderPartialAsync("_AccountMenu", new LoginViewModel()); }
     </div>
+    
+    <div ref="cookieWarning" id="cookieWarning" v-show="!userSettings.dismissedCookiePolicy" v-cloak>
+        <a href="#" v-on:click.prevent.stop="closeCookieWarning">
+            <span class="fa fa-close"></span>
+        </a>
 
-    <div v-bind:style="{ top: layoutTop + 'px' }" id="layout">
+        <p>
+            <strong>Welcome to Nexplorer.</strong> This site uses cookies to improve your experience and deliver personalised advertising.
+            You can <a target="_blank" href="/cookie#optingOut">opt out</a> at any time or find out more by reading the <a target="_blank" href="/cookie">cookie policy</a>.
+        </p>
+    </div>
+</div>
+
+<div id="main">
+    @RenderSection("Header", false)
+
+    <div v-bind:style="{ top: $layoutHub.layoutTop + 'px' }" id="layout" :class="$layoutHub.layoutClass" v-cloak>
         <table id="tickerTable" class="text-center">
             <tr>
                 <td title="Chain height">
-                    <a :href="heightUrl">
+                    <a :href="$layoutHub.heightUrl">
                         <div class="val">
                             <span class="fa fa-link"></span>
                             <div ref="tickerHeight">
-                                {{ height }}
+                                {{ $layoutHub.height }}
                             </div>
                         </div>
                     </a>
@@ -147,7 +162,7 @@
                     <a asp-controller="home" asp-action="index">
                         <div class="val">
                             <span class="fa fa-btc" style="margin-top: -1px;"></span>
-                            <div ref="tickerPrice">{{ price }}</div>
+                            <div ref="tickerPrice">{{ $layoutHub.price }}</div>
                         </div>
                     </a>
                 </td>
@@ -156,15 +171,15 @@
                         <div ref="mobileDiffs" class="val">
                             <div>
                                 <span class="fa fa-bolt" style="margin-top: -1px;"></span>
-                                <div ref="tickerDiffPos">{{ diffPos }}</div>
+                                <div ref="tickerDiffPos">{{ $layoutHub.diffPos }}</div>
                             </div>
                             <div style="display: none;">
                                 <span class="fa fa-hashtag" style="margin-top: -1px;"></span>
-                                <div ref="tickerDiffHash">{{ diffHash }}</div>
+                                <div ref="tickerDiffHash">{{ $layoutHub.diffHash }}</div>
                             </div>
                             <div style="display: none;">
                                 <span class="fa fa-microchip"></span>
-                                <div ref="tickerDiffPrime">{{ diffPrime }}</div>
+                                <div ref="tickerDiffPrime">{{ $layoutHub.diffPrime }}</div>
                             </div>
                         </div>
                     </a>
@@ -173,7 +188,7 @@
                     <a asp-controller="mining" asp-action="index">
                         <div class="val">
                             <span class="fa fa-bolt" style="margin-top: -1px;"></span>
-                            <div ref="tickerDiffPos">{{ diffPos }}</div>
+                            <div ref="tickerDiffPos">{{ $layoutHub.diffPos }}</div>
                         </div>
                     </a>
                 </td>
@@ -181,7 +196,7 @@
                     <a asp-controller="mining" asp-action="index">
                         <div class="val">
                             <span class="fa fa-hashtag" style="margin-top: -1px;"></span>
-                            <div ref="tickerDiffHash">{{ diffHash }}</div>
+                            <div ref="tickerDiffHash">{{ $layoutHub.diffHash }}</div>
                         </div>
                     </a>
                 </td>
@@ -189,28 +204,13 @@
                     <a asp-controller="mining" asp-action="index">
                         <div class="val">
                             <span class="fa fa-microchip"></span>
-                            <div ref="tickerDiffPrime">{{ diffPrime }}</div>
+                            <div ref="tickerDiffPrime">{{ $layoutHub.diffPrime }}</div>
                         </div>
                     </a>
                 </td>
             </tr>
         </table>
-
-        <div ref="cookieWarning" id="cookieWarning" v-show="!userSettings.dismissedCookiePolicy" v-cloak>
-            <a href="#" v-on:click.prevent.stop="closeCookieWarning">
-                <span class="fa fa-close"></span>
-            </a>
-
-            <p>
-                <strong>Welcome to Nexplorer.</strong> This site uses cookies to improve your experience and deliver personalised advertising.
-                You can <a target="_blank" href="/cookie#optingOut">opt out</a> at any time or find out more by reading the <a target="_blank" href="/cookie">cookie policy</a>.
-            </p>
-        </div>
     </div>
-</div>
-
-<div id="main">
-    @RenderSection("Header", false)
 
     <div class="container-fluid bg">
         <div id="mainBody" class="main-body">
@@ -306,6 +306,7 @@
         txTypes: @Json.Serialize((Enum.GetValues(typeof(TransactionType))
                      .Cast<TransactionType>()
                      .Select(x => x.GetAttribute<DisplayAttribute>().Name))),
+        navHeight: 40
     });
 </script>
 
