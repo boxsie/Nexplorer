@@ -1,3 +1,5 @@
+using System;
+
 namespace Nexplorer.Web.Models
 {
     public class ErrorViewModel

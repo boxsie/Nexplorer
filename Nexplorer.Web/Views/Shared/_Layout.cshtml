@@ -1,320 +1,77 @@
-﻿@using System.ComponentModel.DataAnnotations
-@using Nexplorer.Domain.Enums
-@using Nexplorer.Web.Extensions
-@using Nexplorer.Web.Models.AccountViewModels
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
-    <meta http-equiv="content-language" content="en-gb" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="Description" content="A block explorer for Nexus (NXS).">
-    <meta name="Keywords" content="Nexus, Cryptocurrency, Block, Explorer, Blockchain, Transaction, Address">
+    <title>@ViewData["Title"] - Nexplorer.Web</title>
 
-    <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/manifest.json">
-    <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
-    <meta name="theme-color" content="#ffffff">
-
-    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet">
-    
-    @if (ViewBag.VendorCss != null)
-    {
-        <link rel="stylesheet" href="@ViewBag.VendorCss" />
-    }
-    
-    <link rel="stylesheet" href="@ViewBag.LayoutCss" />
-
-    <title>@ViewData["Title"] | Nexplorer - A Nexus Block Explorer</title>
-
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-110464552-1"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-
-        function gtag() { dataLayer.push(arguments); }
-
-        gtag('js', new Date());
-
-        gtag('config', 'UA-110464552-1');
-    </script>
-    @*<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-    <script>
-        (adsbygoogle = window.adsbygoogle || []).push({
-            google_ad_client: "ca-pub-6209150577224148",
-            enable_page_level_ads: true
-        });
-    </script>*@
-
-    @RenderSection("Head", required: false)
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute"
+              crossorigin="anonymous"
+              integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"/>
+    </environment>
+    <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
-
-<div id="header">
-    <div id="navbar">
-        <nav ref="nav" v-bind:style="{ top: navTop + 'px' }" class="navbar navbar-expand-lg navbar-dark navbar-bg">
-            <div ref="navSearch" class="navbar-search" v-bind:class="searchOpen ? 'open' : 'closed'">
-                <form id="navSearchForm" asp-controller="home" asp-action="search" method="post">
-                    <div class="nav-search-col nav-search-col-input text-left">
-                        <div class="form-group">
-                            <label for="searchTerm" class="field field-type">Block, Transaction or Address</label>
-                            <input ref="searchTerm" id="searchTerm" name="searchTerm" class="form-control" />
-                        </div>
-                    </div>
-                    <button type="submit" href="#" class="btn btn-flat nav-search-col">
-                        <span class="search-icon fa fa-search"></span>
-                    </button>
-                </form>
-            </div>
-
-            <div class="nav-left">
-                <button class="d-inline-block d-lg-none navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarLinks" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Nexplorer.Web</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-
-                <a class="d-inline-block navbar-brand" href="/">NEXPLORER</a>
-            </div>
-
-            <div class="nav-icons d-md-none">
-                <a class="nav-icon" href="#" v-on:click.stop.prevent="openSearch">
-                    <span class="icon fa fa-search"></span>
-                </a>
-
-                <a class="nav-icon" href="#" v-on:click.stop.prevent="openUser">
-                    <span class="icon fa fa-user"></span>
-                </a>
-            </div>
-
-            <div ref="navbarLinks" id="navbarLinks" class="navbar-collapse collapse">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item @(Html.GetActiveControllerClass("blocks"))">
-                        <a asp-controller="blocks" asp-action="index" class="nav-link">Blocks</a>
-                    </li>
-                    <li class="nav-item @(Html.GetActiveControllerClass("transactions"))">
-                        <a asp-controller="transactions" asp-action="index" class="nav-link">Transactions</a>
-                    </li>
-                    <li class="nav-item @(Html.GetActiveControllerClass("addresses"))">
-                        <a asp-controller="addresses" asp-action="index" class="nav-link">Addresses</a>
-                    </li>
-                    <li class="nav-item @(Html.GetActiveControllerClass("mining"))">
-                        <a asp-controller="mining" asp-action="index" class="nav-link">Mining</a>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="nav-icons d-none d-md-inline-block">
-                <a class="nav-icon" href="#" v-on:click.stop.prevent="openSearch">
-                    <span class="icon fa fa-search"></span>
-                </a>
-
-                <a class="nav-icon" href="#" v-on:click.stop.prevent="openUser">
-                    <span class="icon fa fa-user" v-bind:class="{ active: userOpen }"></span>
-                </a>
+                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </nav>
-
-        @{ await Html.RenderPartialAsync("_AccountMenu", new LoginViewModel()); }
-    </div>
-
-    <div v-bind:style="{ top: layoutTop + 'px' }" id="layout">
-        <table id="tickerTable" class="text-center">
-            <tr>
-                <td title="Chain height">
-                    <a :href="heightUrl">
-                        <div class="val">
-                            <span class="fa fa-link"></span>
-                            <div ref="tickerHeight">
-                                {{ height }}
-                            </div>
-                        </div>
-                    </a>
-                </td>
-                <td title="Bittrex price">
-                    <a asp-controller="home" asp-action="index">
-                        <div class="val">
-                            <span class="fa fa-btc" style="margin-top: -1px;"></span>
-                            <div ref="tickerPrice">{{ price }}</div>
-                        </div>
-                    </a>
-                </td>
-                <td title="Difficulty" class="d-sm-none">
-                    <a asp-controller="mining" asp-action="index">
-                        <div ref="mobileDiffs" class="val">
-                            <div>
-                                <span class="fa fa-bolt" style="margin-top: -1px;"></span>
-                                <div ref="tickerDiffPos">{{ diffPos }}</div>
-                            </div>
-                            <div style="display: none;">
-                                <span class="fa fa-hashtag" style="margin-top: -1px;"></span>
-                                <div ref="tickerDiffHash">{{ diffHash }}</div>
-                            </div>
-                            <div style="display: none;">
-                                <span class="fa fa-microchip"></span>
-                                <div ref="tickerDiffPrime">{{ diffPrime }}</div>
-                            </div>
-                        </div>
-                    </a>
-                </td>
-                <td title="POS difficulty" class="d-none d-sm-table-cell">
-                    <a asp-controller="mining" asp-action="index">
-                        <div class="val">
-                            <span class="fa fa-bolt" style="margin-top: -1px;"></span>
-                            <div ref="tickerDiffPos">{{ diffPos }}</div>
-                        </div>
-                    </a>
-                </td>
-                <td title="Hash difficulty" class="d-none d-sm-table-cell">
-                    <a asp-controller="mining" asp-action="index">
-                        <div class="val">
-                            <span class="fa fa-hashtag" style="margin-top: -1px;"></span>
-                            <div ref="tickerDiffHash">{{ diffHash }}</div>
-                        </div>
-                    </a>
-                </td>
-                <td title="Prime difficulty" class="d-none d-sm-table-cell">
-                    <a asp-controller="mining" asp-action="index">
-                        <div class="val">
-                            <span class="fa fa-microchip"></span>
-                            <div ref="tickerDiffPrime">{{ diffPrime }}</div>
-                        </div>
-                    </a>
-                </td>
-            </tr>
-        </table>
-
-        <div ref="cookieWarning" id="cookieWarning" v-show="!userSettings.dismissedCookiePolicy" v-cloak>
-            <a href="#" v-on:click.prevent.stop="closeCookieWarning">
-                <span class="fa fa-close"></span>
-            </a>
-
-            <p>
-                <strong>Welcome to Nexplorer.</strong> This site uses cookies to improve your experience and deliver personalised advertising.
-                You can <a target="_blank" href="/cookie#optingOut">opt out</a> at any time or find out more by reading the <a target="_blank" href="/cookie">cookie policy</a>.
-            </p>
-        </div>
-    </div>
-</div>
-
-<div id="main">
-    @RenderSection("Header", false)
-
-    <div class="container-fluid bg">
-        <div id="mainBody" class="main-body">
+    </header>
+    <div class="container">
+        <partial name="_CookieConsentPartial" />
+        <main role="main" class="pb-3">
             @RenderBody()
-        </div>
+        </main>
     </div>
 
-    @RenderSection("Modals", false)
-</div>
-
-@*
-    <div class="container-fluid bg">
-        <div class="row text-center" style="max-width: 1050px; margin: 0 auto 30px 0;">
-            @if (!User.Identity.IsAuthenticated)
-            {
-                <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-                <!-- Bottom -->
-                <ins class="adsbygoogle"
-                     style="display: block; margin-bottom: 30px;"
-                     data-ad-client="ca-pub-6209150577224148"
-                     data-ad-slot="8047084634"
-                     data-ad-format="auto"
-                     data-full-width-responsive="true"></ins>
-                <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
-            }
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2019 - Nexplorer.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
-    </div>
-*@
+    </footer>
 
-<footer id="footer">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-sm-3">
-                <h4>NEXPLORER</h4>
-                <ul>
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/blocks">Blocks</a></li>
-                    <li><a href="/transactions">Transactions</a></li>
-                    <li><a href="/addresses">Addresses</a></li>
-                    <li><a href="/swagger" target="_blank">API</a></li>
-                    <li><a href="https://github.com/boxsie/Nexplorer" target="_blank">GitHub</a></li>
-                </ul>
-            </div>
-            <div class="col-sm-3">
-                <h4>NEXUS</h4>
-                <ul>
-                    <li><a href="https://nexusearth.com/" target="_blank">nexusearth.com</a></li>
-                    <li><a href="https://nxsorbitalscan.com/" target="_blank">nxsorbitalscan.com</a></li>
-                    <li><a href="https://coinmarketcap.com/currencies/nexus/" target="_blank">coinmarketcap.com</a></li>
-                    <li><a href="https://bittrex.com/Market/Index?MarketName=BTC-NXS" target="_blank">bittrex.com</a></li>
-                    <li><a href="https://www.binance.com/trade.html?symbol=NXS_BTC" target="_blank">binance.com</a></li>
-                    <li style="margin-top: 20px;">
-                        <a href="https://nexusearth.com/slack" target="_blank"><span class="fa fa-slack"></span></a>
-                        <a href="https://t.me/NexusEarth" target="_blank"><span class="fa fa-telegram"></span></a>
-                        <a href="https://www.reddit.com/r/nexusearth/" target="_blank"><span class="fa fa-reddit-alien"></span></a>
-                    </li>
-                </ul>
-            </div>
-            <div class="col-sm-3">
-                <h4>CONTACT</h4>
-                <ul>
-                    <li><a href="mailto:dan@nexplorer.io"><span class="fa fa-envelope-o sm"></span>dan@@nexplorer.io</a></li>
-                    <li><a href="slack://user?team=T1WRQ7GBH&id=U77JZRUM8"><span class="fa fa-slack sm" style="margin-left: 1px;"></span>danielsan</a></li>
-                </ul>
-            </div>
-            <div class="col-sm-3">
-                <h4>TIPS</h4>
-                <ul>
-                    <li>Nexus<br/><a class="coin-add break-word" href="/addresses/2SMUiDJGhRxZy8WEoT8pbkPKMpKe4sAjzSiSE2hotHsR13Nuo1R">2SMUiDJGhRxZy8WEoT8pbkPKMpKe4sAjzSiSE2hotHsR13Nuo1R</a></li>
-                    <li>Bitcoin<br/><a class="coin-add break-word" href="https://blockchain.info/address/3DvdeZNZKrebJ6maXjVbmkfBZF8rA2rbjz" target="_blank">3DvdeZNZKrebJ6maXjVbmkfBZF8rA2rbjz</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <p class="text-center copy-text">
-        <a href="/cookie" target="_blank" style="font-size: 12px;">COOKIE POLICY</a>
-        <br/>
-        @ViewBag.NodeVersion <span class="fa fa-hand-peace-o" style="font-size: 16px; margin: 0 5px;"></span> NEXPLORER @DateTime.Now.Year
-        <br/>
-    </p>
-</footer>
+    <environment include="Development">
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery"
+                crossorigin="anonymous"
+                integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=">
+        </script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"
+                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
+                crossorigin="anonymous"
+                integrity="sha384-xrRywqdh3PHs8keKZN+8zzc5TX0GRTLCcmivcbNJWm2rs5C8PRhcEn3czEjhAO9o">
+        </script>
+    </environment>
+    <script src="~/js/site.js" asp-append-version="true"></script>
 
-<script language="javascript" src="@ViewBag.RuntimeJs"></script>
-<script language="javascript" src="@ViewBag.VendorJs"></script>
-<script language="javascript" src="@ViewBag.LayoutJs"></script>
-<script language="javascript">
-    var layoutVm = new nexplorer.LayoutViewModel({
-        isSignedIn: @Json.Serialize(User.Identity.IsAuthenticated),
-        userSettings: @Json.Serialize(ViewBag.UserSettings),
-        blockChannels: @Json.Serialize(Enum.GetNames(typeof(BlockChannels))),
-        txTypes: @Json.Serialize((Enum.GetValues(typeof(TransactionType))
-                     .Cast<TransactionType>()
-                     .Select(x => x.GetAttribute<DisplayAttribute>().Name))),
-    });
-</script>
-
-@RenderSection("Scripts", false)
-
-<div class="device-xs d-block d-sm-none"></div>
-<div class="device-sm d-none d-sm-block d-md-none"></div>
-<div class="device-md d-none d-md-block d-lg-none"></div>
-<div class="device-lg d-none d-lg-block d-xl-none"></div>
-<div class="device-xl d-none d-xl-block"></div>
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

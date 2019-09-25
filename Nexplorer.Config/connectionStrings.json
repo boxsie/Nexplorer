@@ -1,8 +1,0 @@
-﻿{
-  "ConnectionStrings": {
-    "Redis": "localhost:6379,password=moop,allowAdmin=true",
-    "NexusDb": "Server=localhost;Database=nexusdb;User Id=moop;Password=moop;",
-    "NexplorerDb": "Server=localhost;Database=nexplorerdb;User Id=moop;Password=moop;",
-    "Nexus": "localhost:9336;Username=moop;Password=moop"
-  }
-}

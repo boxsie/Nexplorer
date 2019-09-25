@@ -1,0 +1,11 @@
+E:\Git\nexplorer\Nexplorer\Nexplorer.Nexus\bin\Debug\netcoreapp2.2\Nexplorer.Nexus.deps.json
+E:\Git\nexplorer\Nexplorer\Nexplorer.Nexus\bin\Debug\netcoreapp2.2\Nexplorer.Nexus.runtimeconfig.json
+E:\Git\nexplorer\Nexplorer\Nexplorer.Nexus\bin\Debug\netcoreapp2.2\Nexplorer.Nexus.runtimeconfig.dev.json
+E:\Git\nexplorer\Nexplorer\Nexplorer.Nexus\bin\Debug\netcoreapp2.2\Nexplorer.Nexus.dll
+E:\Git\nexplorer\Nexplorer\Nexplorer.Nexus\obj\Debug\netcoreapp2.2\Nexplorer.Nexus.csprojAssemblyReference.cache
+E:\Git\nexplorer\Nexplorer\Nexplorer.Nexus\obj\Debug\netcoreapp2.2\Nexplorer.Nexus.csproj.CoreCompileInputs.cache
+E:\Git\nexplorer\Nexplorer\Nexplorer.Nexus\obj\Debug\netcoreapp2.2\Nexplorer.Nexus.AssemblyInfoInputs.cache
+E:\Git\nexplorer\Nexplorer\Nexplorer.Nexus\obj\Debug\netcoreapp2.2\Nexplorer.Nexus.AssemblyInfo.cs
+E:\Git\nexplorer\Nexplorer\Nexplorer.Nexus\bin\Debug\netcoreapp2.2\Nexplorer.Nexus.pdb
+E:\Git\nexplorer\Nexplorer\Nexplorer.Nexus\obj\Debug\netcoreapp2.2\Nexplorer.Nexus.dll
+E:\Git\nexplorer\Nexplorer\Nexplorer.Nexus\obj\Debug\netcoreapp2.2\Nexplorer.Nexus.pdb
