@@ -1,0 +1,11 @@
+E:\Git\Nexplorer\Nexplorer.Data\bin\Debug\netcoreapp3.0\Nexplorer.Data.deps.json
+E:\Git\Nexplorer\Nexplorer.Data\bin\Debug\netcoreapp3.0\Nexplorer.Data.dll
+E:\Git\Nexplorer\Nexplorer.Data\bin\Debug\netcoreapp3.0\Nexplorer.Data.pdb
+E:\Git\Nexplorer\Nexplorer.Data\bin\Debug\netcoreapp3.0\Nexplorer.Nexus.dll
+E:\Git\Nexplorer\Nexplorer.Data\bin\Debug\netcoreapp3.0\Nexplorer.Nexus.pdb
+E:\Git\Nexplorer\Nexplorer.Data\obj\Debug\netcoreapp3.0\Nexplorer.Data.csprojAssemblyReference.cache
+E:\Git\Nexplorer\Nexplorer.Data\obj\Debug\netcoreapp3.0\Nexplorer.Data.AssemblyInfoInputs.cache
+E:\Git\Nexplorer\Nexplorer.Data\obj\Debug\netcoreapp3.0\Nexplorer.Data.AssemblyInfo.cs
+E:\Git\Nexplorer\Nexplorer.Data\obj\Debug\netcoreapp3.0\Nexplorer.Data.csproj.CopyComplete
+E:\Git\Nexplorer\Nexplorer.Data\obj\Debug\netcoreapp3.0\Nexplorer.Data.dll
+E:\Git\Nexplorer\Nexplorer.Data\obj\Debug\netcoreapp3.0\Nexplorer.Data.pdb

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\Git\\nexplorer\\Nexplorer\\Nexplorer.Web\\Nexplorer.Web.csproj": {}
+    "E:\\Git\\Nexplorer\\Nexplorer.Web\\Nexplorer.Web.csproj": {}
   },
   "projects": {
-    "E:\\Git\\nexplorer\\Nexplorer\\Nexplorer.Web\\Nexplorer.Web.csproj": {
+    "E:\\Git\\Nexplorer\\Nexplorer.Web\\Nexplorer.Web.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\Git\\nexplorer\\Nexplorer\\Nexplorer.Web\\Nexplorer.Web.csproj",
+        "projectUniqueName": "E:\\Git\\Nexplorer\\Nexplorer.Web\\Nexplorer.Web.csproj",
         "projectName": "Nexplorer.Web",
-        "projectPath": "E:\\Git\\nexplorer\\Nexplorer\\Nexplorer.Web\\Nexplorer.Web.csproj",
+        "projectPath": "E:\\Git\\Nexplorer\\Nexplorer.Web\\Nexplorer.Web.csproj",
         "packagesPath": "C:\\Users\\Dan\\.nuget\\packages\\",
-        "outputPath": "E:\\Git\\nexplorer\\Nexplorer\\Nexplorer.Web\\obj\\",
+        "outputPath": "E:\\Git\\Nexplorer\\Nexplorer.Web\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -21,14 +21,14 @@
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "netcoreapp2.2"
+          "netcoreapp3.0"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "netcoreapp2.2": {
+          "netcoreapp3.0": {
             "projectReferences": {}
           }
         },
@@ -39,31 +39,26 @@
         }
       },
       "frameworks": {
-        "netcoreapp2.2": {
-          "dependencies": {
-            "Microsoft.AspNetCore.App": {
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[2.2.0, )",
-              "autoReferenced": true
-            },
-            "Microsoft.AspNetCore.Razor.Design": {
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[2.2.0, )"
-            },
-            "Microsoft.NETCore.App": {
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[2.2.0, )",
-              "autoReferenced": true
-            }
-          },
+        "netcoreapp3.0": {
           "imports": [
-            "net461"
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
           ],
           "assetTargetFallback": true,
-          "warn": true
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.0.100\\RuntimeIdentifierGraph.json"
         }
       }
     }

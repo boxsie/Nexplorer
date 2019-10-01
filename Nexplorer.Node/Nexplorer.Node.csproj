@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Nexplorer.Core\Nexplorer.Core.csproj" />
+    <ProjectReference Include="..\Nexplorer.Nexus\Nexplorer.Nexus.csproj" />
+  </ItemGroup>
+
+</Project>

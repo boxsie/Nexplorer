@@ -13,8 +13,8 @@
         public string PrevHash { get; set; }
         public string PubKey { get; set; }
         public string Signature { get; set; }
-        public string[] Inputs { get; set; }
-        public string[] Outputs { get; set; }
+        public InputOutput[] Inputs { get; set; }
+        public InputOutput[] Outputs { get; set; }
         public Operation Operation { get; set; }
     }
 }

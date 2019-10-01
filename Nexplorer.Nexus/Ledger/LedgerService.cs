@@ -5,141 +5,116 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Nexplorer.Nexus.Enums;
 using Nexplorer.Nexus.Ledger.Models;
-using Nexplorer.Nexus.Nexus;
 
 namespace Nexplorer.Nexus.Ledger
 {
-    public interface ILedgerService
-    {
-        Task<int> GetHeightAsync(CancellationToken token = default);
-
-        Task<string> GetBlockHashAsync(int height, CancellationToken token = default, bool logOutput = true);
-
-        Task<Block> GetBlockAsync(string hash, TxVerbosity txVerbosity = TxVerbosity.PubKeySign,
-            CancellationToken token = default, bool logOutput = true);
-
-        Task<Block> GetBlockAsync(int height, TxVerbosity txVerbosity = TxVerbosity.PubKeySign,
-            CancellationToken token = default, bool logOutput = true);
-
-        Task<IEnumerable<Block>> GetBlocksAsync(string hash, int count,
-            TxVerbosity txVerbosity = TxVerbosity.PubKeySign, CancellationToken token = default,
-            bool logOutput = true);
-
-        Task<IEnumerable<Block>> GetBlocksAsync(int height, int count,
-            TxVerbosity txVerbosity = TxVerbosity.PubKeySign, CancellationToken token = default,
-            bool logOutput = true);
-
-        Task<Transaction> GetTransactionAsync(string hash, TxVerbosity txVerbosity = TxVerbosity.PubKeySign,
-            CancellationToken token = default, bool logOutput = true);
-
-        Task<MiningInfo> GetMiningInfoAsync(CancellationToken token = default);
-    }
-
-    public class LedgerService : NexusService, ILedgerService
+    public class LedgerService : ILedgerService
     {
         private const int GetBlocksDefaultCount = 10;
+        private readonly INexusConnection _nxs;
+        private readonly ILogger<LedgerService> _logger;
 
-        public LedgerService(NexusNode node, ILogger<NexusService> log) : base(node, log) { }
+        public LedgerService(INexusConnection nxs, ILogger<LedgerService> logger)
+        {
+            _nxs = nxs;
+            _logger = logger;
+        }
 
-        public async Task<int> GetHeightAsync(CancellationToken token = default)
+        public async Task<int?> GetHeightAsync(CancellationToken token = default)
         {
             var info = await GetMiningInfoAsync(token);
 
             if (info == null)
-                throw new InvalidOperationException("Get blockchain height failed");
+                _logger.LogError("Get blockchain height failed");
 
-            return info.Blocks;
+            return info?.Blocks;
         }
 
-        public async Task<string> GetBlockHashAsync(int height, CancellationToken token = default,
-            bool logOutput = true)
+        public async Task<string> GetBlockHashAsync(int height, CancellationToken token = default)
         {
             token.ThrowIfCancellationRequested();
 
             if (height <= 0)
-                throw new ArgumentException("Height must be greater than 0");
+                _logger.LogError("Height must be greater than 0");
 
             var request = new NexusRequest(new Dictionary<string, string> {{"height", height.ToString()}});
 
-            var block = await GetAsync<Block>("ledger/blockhash", request, token, logOutput);
+            var block = await _nxs.GetAsync<Block>("ledger/blockhash", request, token);
 
             if (string.IsNullOrWhiteSpace(block?.Hash))
-                throw new InvalidOperationException($"Get block hash {height} failed");
+                _logger.LogError($"Get block hash {height} failed");
 
-            return block.Hash;
+            return block?.Hash;
         }
 
-        public async Task<Block> GetBlockAsync(string hash, TxVerbosity txVerbosity = TxVerbosity.PubKeySign,
-            CancellationToken token = default, bool logOutput = true)
+        public async Task<Block> GetBlockAsync(string hash, TxVerbosity txVerbosity = TxVerbosity.PubKeySign, CancellationToken token = default)
         {
             token.ThrowIfCancellationRequested();
 
             if (string.IsNullOrWhiteSpace(hash))
                 throw new ArgumentException("Hash must have a value");
 
-            var block = await GetBlockAsync((object) hash, txVerbosity, token, logOutput);
+            var block = await GetBlockAsync((object) hash, txVerbosity, token);
 
             if (string.IsNullOrWhiteSpace(block?.Hash))
-                throw new InvalidOperationException($"Get block {hash} failed");
+                _logger.LogError($"Get block {hash} failed");
 
             return block;
         }
 
-        public async Task<Block> GetBlockAsync(int height, TxVerbosity txVerbosity = TxVerbosity.PubKeySign,
-            CancellationToken token = default, bool logOutput = true)
+        public async Task<Block> GetBlockAsync(int height, TxVerbosity txVerbosity = TxVerbosity.PubKeySign, CancellationToken token = default)
         {
             token.ThrowIfCancellationRequested();
 
             if (height <= 0)
-                throw new ArgumentException("Height must be greater than 0");
+                _logger.LogError("Height must be greater than 0");
 
-            var block = await GetBlockAsync((object) height, txVerbosity, token, logOutput);
+            var block = await GetBlockAsync((object) height, txVerbosity, token);
 
             if (string.IsNullOrWhiteSpace(block?.Hash))
-                throw new InvalidOperationException($"Get block {height} failed");
+                _logger.LogError($"Get block {height} failed");
 
             return block;
         }
 
         public async Task<IEnumerable<Block>> GetBlocksAsync(string hash, int count = GetBlocksDefaultCount,
-            TxVerbosity txVerbosity = TxVerbosity.PubKeySign, CancellationToken token = default, bool logOutput = true)
+            TxVerbosity txVerbosity = TxVerbosity.PubKeySign, CancellationToken token = default)
         {
             token.ThrowIfCancellationRequested();
 
             if (string.IsNullOrWhiteSpace(hash))
-                throw new ArgumentException("Hash must have a value");
+                _logger.LogError("Hash must have a value");
 
-            var blocks = await GetBlocks(hash, count, txVerbosity, token, logOutput);
+            var blocks = await GetBlocks(hash, count, txVerbosity, token);
 
             if (blocks == null)
-                throw new InvalidOperationException($"Get {count} blocks from {hash} failed");
+                _logger.LogError($"Get {count} blocks from {hash} failed");
 
             return blocks;
         }
 
-        public async Task<IEnumerable<Block>> GetBlocksAsync(int height, int count = GetBlocksDefaultCount,
-            TxVerbosity txVerbosity = TxVerbosity.PubKeySign, CancellationToken token = default, bool logOutput = true)
+        public async Task<IEnumerable<Block>> GetBlocksAsync(int height, int count = GetBlocksDefaultCount, 
+            TxVerbosity txVerbosity = TxVerbosity.PubKeySign, CancellationToken token = default)
         {
             token.ThrowIfCancellationRequested();
 
             if (height <= 0)
-                throw new ArgumentException("Height must be greater than 0");
+                _logger.LogError("Height must be greater than 0");
 
-            var blocks = await GetBlocks(height, count, txVerbosity, token, logOutput);
+            var blocks = await GetBlocks(height, count, txVerbosity, token);
 
             if (blocks == null)
-                throw new InvalidOperationException($"Get {count} blocks from {height} failed");
+                _logger.LogError($"Get {count} blocks from {height} failed");
 
             return blocks;
         }
 
-        public async Task<Transaction> GetTransactionAsync(string hash,
-            TxVerbosity txVerbosity = TxVerbosity.PubKeySign, CancellationToken token = default, bool logOutput = true)
+        public async Task<Transaction> GetTransactionAsync(string hash, TxVerbosity txVerbosity = TxVerbosity.PubKeySign, CancellationToken token = default)
         {
             token.ThrowIfCancellationRequested();
 
             if (string.IsNullOrWhiteSpace(hash))
-                throw new ArgumentException("Hash must have a value");
+                _logger.LogError("Hash must have a value");
 
             var request = new NexusRequest(new Dictionary<string, string>
             {
@@ -147,10 +122,10 @@ namespace Nexplorer.Nexus.Ledger
                 {"verbose", ((int) txVerbosity).ToString()}
             });
 
-            var tx = await GetAsync<Transaction>("ledger/get/transaction", request, token, logOutput);
+            var tx = await _nxs.GetAsync<Transaction>("ledger/get/transaction", request, token);
 
             if (string.IsNullOrWhiteSpace(tx?.Hash))
-                throw new InvalidOperationException($"Get tx {hash} failed");
+                _logger.LogError($"Get tx {hash} failed");
 
             return tx;
         }
@@ -159,16 +134,15 @@ namespace Nexplorer.Nexus.Ledger
         {
             token.ThrowIfCancellationRequested();
 
-            var info = await GetAsync<MiningInfo>("ledger/get/mininginfo", null, token);
+            var info = await _nxs.GetAsync<MiningInfo>("ledger/get/mininginfo", null, token);
 
             if (info == null)
-                throw new InvalidOperationException($"Get mining info failed");
+                _logger.LogError("Get mining info failed");
 
             return info;
         }
 
-        private async Task<Block> GetBlockAsync(object retVal, TxVerbosity txVerbosity, CancellationToken token,
-            bool logOutput)
+        private async Task<Block> GetBlockAsync(object retVal, TxVerbosity txVerbosity, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -183,11 +157,10 @@ namespace Nexplorer.Nexus.Ledger
                 {"verbose", ((int) txVerbosity).ToString()}
             });
 
-            return await GetAsync<Block>("ledger/get/block", request, token, logOutput);
+            return await _nxs.GetAsync<Block>("ledger/get/block", request, token);
         }
 
-        private async Task<IEnumerable<Block>> GetBlocks(object retVal, int count, TxVerbosity txVerbosity,
-            CancellationToken token, bool logOutput)
+        private async Task<IEnumerable<Block>> GetBlocks(object retVal, int count, TxVerbosity txVerbosity, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -203,7 +176,7 @@ namespace Nexplorer.Nexus.Ledger
                 {"count", count.ToString()}
             });
 
-            return await GetAsync<IEnumerable<Block>>("ledger/list/blocks", request, token, logOutput);
+            return await _nxs.GetAsync<IEnumerable<Block>>("ledger/list/blocks", request, token);
         }
     }
 }

@@ -12,8 +12,8 @@
         public double PrimeValue { get; set; }
         public double HashValue { get; set; }
         public int PooledTx { get; set; }
-        public int PrimesPerSecond { get; set; }
-        public int HashPerSecond { get; set; }
+        public double PrimesPerSecond { get; set; }
+        public double HashPerSecond { get; set; }
         public int TotalConnections { get; set; }
     }
 }

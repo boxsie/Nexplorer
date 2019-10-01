@@ -1,0 +1,8 @@
+bin/*
+obj/*
+out/*
+.vscode/*
+.vs/*
+Nexplorer.Web/*
+Nexplorer.Data/*
+Nexplorer.Connect/*

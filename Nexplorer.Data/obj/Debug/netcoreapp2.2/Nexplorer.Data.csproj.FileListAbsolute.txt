@@ -1,0 +1,5 @@
+E:\Git\Nexplorer\Nexplorer.Data\bin\Debug\netcoreapp2.2\Nexplorer.Data.deps.json
+E:\Git\Nexplorer\Nexplorer.Data\bin\Debug\netcoreapp2.2\Nexplorer.Data.dll
+E:\Git\Nexplorer\Nexplorer.Data\obj\Debug\netcoreapp2.2\Nexplorer.Data.csproj.CoreCompileInputs.cache
+E:\Git\Nexplorer\Nexplorer.Data\obj\Debug\netcoreapp2.2\Nexplorer.Data.AssemblyInfoInputs.cache
+E:\Git\Nexplorer\Nexplorer.Data\obj\Debug\netcoreapp2.2\Nexplorer.Data.AssemblyInfo.cs
