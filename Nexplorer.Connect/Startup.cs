@@ -15,7 +15,8 @@ namespace Nexplorer.Connect
             services.AddDataServices(appSettings.NexusDbSettings);
 
             services.AddSingleton<IHubFactory, HubFactory>();
-            services.AddSingleton<IHostedService, NexplorerHubService>();
+            services.AddSingleton<IHostedService, NexusSyncService>();
+            services.AddSingleton<INexusHubService, NexusHubService>();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Numerics;
 
 namespace Nexplorer.Nexus.Ledger.Models
 {
@@ -12,7 +13,7 @@ namespace Nexplorer.Nexus.Ledger.Models
         public int Version { get; set; }
         public string MerkleRoot { get; set; }
         public string Time { get; set; }
-        public long Nonce { get; set; }
+        public string Nonce { get; set; }
         public string Bits { get; set; }
         public double Difficulty { get; set; }
         public double Mint { get; set; }

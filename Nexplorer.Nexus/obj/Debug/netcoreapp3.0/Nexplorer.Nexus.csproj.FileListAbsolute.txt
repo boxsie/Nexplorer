@@ -5,3 +5,4 @@ E:\Git\Nexplorer\Nexplorer.Nexus\obj\Debug\netcoreapp3.0\Nexplorer.Nexus.Assembl
 E:\Git\Nexplorer\Nexplorer.Nexus\obj\Debug\netcoreapp3.0\Nexplorer.Nexus.AssemblyInfo.cs
 E:\Git\Nexplorer\Nexplorer.Nexus\obj\Debug\netcoreapp3.0\Nexplorer.Nexus.dll
 E:\Git\Nexplorer\Nexplorer.Nexus\obj\Debug\netcoreapp3.0\Nexplorer.Nexus.pdb
+E:\Git\Nexplorer\Nexplorer.Nexus\obj\Debug\netcoreapp3.0\Nexplorer.Nexus.csprojAssemblyReference.cache

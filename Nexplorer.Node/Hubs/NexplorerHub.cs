@@ -26,10 +26,14 @@ namespace Nexplorer.Node.Hubs
             await base.OnConnectedAsync();
         }
         
-        public async Task GetHeight()
+        public async Task<int?> GetHeight()
         {
-            var height = (await _ledgerService.GetMiningInfoAsync()).Blocks;
-            await Clients.Caller.PublishNewHeight(height);
+            return (await _ledgerService.GetMiningInfoAsync()).Blocks;
+        }
+
+        public Task<Block> GetBlock(int height)
+        {
+            return _ledgerService.GetBlockAsync(height);
         }
 
         public Task<IEnumerable<Block>> GetBlocks(int start, int count)

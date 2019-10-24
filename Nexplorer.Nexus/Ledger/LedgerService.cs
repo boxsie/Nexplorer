@@ -169,11 +169,17 @@ namespace Nexplorer.Nexus.Ledger
             var key = useHash ? "hash" : "height";
             var val = retVal.ToString();
 
+            if (count > 1000)
+            {
+                count = 1000;
+                _logger.LogWarning("Maximum block count is 1000");
+            }
+
             var request = new NexusRequest(new Dictionary<string, string>
             {
                 {key, val},
                 {"verbose", ((int) txVerbosity).ToString()},
-                {"count", count.ToString()}
+                {"limit", count.ToString()}
             });
 
             return await _nxs.GetAsync<IEnumerable<Block>>("ledger/list/blocks", request, token);

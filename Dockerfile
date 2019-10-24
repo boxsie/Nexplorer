@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN git clone https://github.com/Nexusoft/LLL-TAO.git
 RUN cd /LLL-TAO \
-	&& git checkout merging && make -f makefile.cli
+	&& git checkout testnet && make -f makefile.cli
 
 RUN mkdir /Nexplorer
 COPY / /Nexplorer

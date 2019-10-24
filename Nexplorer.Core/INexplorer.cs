@@ -8,5 +8,6 @@ namespace Nexplorer.Core
     {
         Task PublishNewHeight(int height);
         Task ReceiveBlocks(IEnumerable<Block> blocks);
+        Task ReceiveBlock(Block block);
     }
 }

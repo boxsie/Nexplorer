@@ -576,7 +576,7 @@
           "System.Security.Principal.Windows": "4.6.0"
         }
       },
-      "MongoDB.Bson/2.9.1": {
+      "MongoDB.Bson/2.9.2": {
         "dependencies": {
           "NETStandard.Library": "1.6.1",
           "System.Collections.NonGeneric": "4.0.1",
@@ -587,30 +587,30 @@
         },
         "runtime": {
           "lib/netstandard1.5/MongoDB.Bson.dll": {
-            "assemblyVersion": "2.9.1.0",
-            "fileVersion": "2.9.1.0"
+            "assemblyVersion": "2.9.2.0",
+            "fileVersion": "2.9.2.0"
           }
         }
       },
-      "MongoDB.Driver/2.9.1": {
+      "MongoDB.Driver/2.9.2": {
         "dependencies": {
-          "MongoDB.Bson": "2.9.1",
-          "MongoDB.Driver.Core": "2.9.1",
+          "MongoDB.Bson": "2.9.2",
+          "MongoDB.Driver.Core": "2.9.2",
           "NETStandard.Library": "1.6.1",
           "System.ComponentModel.TypeConverter": "4.1.0",
           "System.Linq.Queryable": "4.0.1"
         },
         "runtime": {
           "lib/netstandard1.5/MongoDB.Driver.dll": {
-            "assemblyVersion": "2.9.1.0",
-            "fileVersion": "2.9.1.0"
+            "assemblyVersion": "2.9.2.0",
+            "fileVersion": "2.9.2.0"
           }
         }
       },
-      "MongoDB.Driver.Core/2.9.1": {
+      "MongoDB.Driver.Core/2.9.2": {
         "dependencies": {
           "DnsClient": "1.2.0",
-          "MongoDB.Bson": "2.9.1",
+          "MongoDB.Bson": "2.9.2",
           "NETStandard.Library": "1.6.1",
           "SharpCompress": "0.23.0",
           "System.Collections.Specialized": "4.0.1",
@@ -623,8 +623,8 @@
         },
         "runtime": {
           "lib/netstandard1.5/MongoDB.Driver.Core.dll": {
-            "assemblyVersion": "2.9.1.0",
-            "fileVersion": "2.9.1.0"
+            "assemblyVersion": "2.9.2.0",
+            "fileVersion": "2.9.2.0"
           }
         }
       },
@@ -1589,7 +1589,7 @@
       },
       "Nexplorer.Data/1.0.0": {
         "dependencies": {
-          "MongoDB.Driver": "2.9.1",
+          "MongoDB.Driver": "2.9.2",
           "Nexplorer.Nexus": "1.0.0"
         },
         "runtime": {
@@ -1951,26 +1951,26 @@
       "path": "microsoft.win32.registry/4.6.0",
       "hashPath": "microsoft.win32.registry.4.6.0.nupkg.sha512"
     },
-    "MongoDB.Bson/2.9.1": {
+    "MongoDB.Bson/2.9.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-rNktW0kVLMqu7ypT3R15z/alN5FYrHeZOoDnRbup0uwbx/wsvYfMT6+wpGlp25CGqjG9dA3dqweogVeGhU8WEA==",
-      "path": "mongodb.bson/2.9.1",
-      "hashPath": "mongodb.bson.2.9.1.nupkg.sha512"
+      "sha512": "sha512-XZaqjCLyDJZnfcvy6Aefp2pfanKI/ArrT4tNqXAIAjsU4krZHXLj2shPDfg1NBS5ez0wFMV17aBUUJv43TF3ww==",
+      "path": "mongodb.bson/2.9.2",
+      "hashPath": "mongodb.bson.2.9.2.nupkg.sha512"
     },
-    "MongoDB.Driver/2.9.1": {
+    "MongoDB.Driver/2.9.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-iDJVTDgi4QZnLJ01Gpiv9UVSO7a+2/dD7DTC33YpKvBpQdeWX4la6z0UfApgP4dAZ1ctdsUmT3zHHh1v8KH+2g==",
-      "path": "mongodb.driver/2.9.1",
-      "hashPath": "mongodb.driver.2.9.1.nupkg.sha512"
+      "sha512": "sha512-On2uj3x0EXUIJCogdkJHrTF17rsDolyrdeXGJw+alse2R11WRa657noz44fyYX/00wPpbjHBx15Qqig8mAYvHQ==",
+      "path": "mongodb.driver/2.9.2",
+      "hashPath": "mongodb.driver.2.9.2.nupkg.sha512"
     },
-    "MongoDB.Driver.Core/2.9.1": {
+    "MongoDB.Driver.Core/2.9.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ns0rmDypEsUvRW7M/PW5wqdKoTJjeXKiGSwx0IJM1Rv2XJE6aqTRoI81sINqpABwcNhI6ZbXnkUuNAlwtYPITg==",
-      "path": "mongodb.driver.core/2.9.1",
-      "hashPath": "mongodb.driver.core.2.9.1.nupkg.sha512"
+      "sha512": "sha512-ZyQVrrsmh0eLKxFZpQybboZwrnQJc526aksqG8umNfIy2UHqSa1/C8FpWi9/zEeaxjx9gvaFmc5dg6CouC1gXQ==",
+      "path": "mongodb.driver.core/2.9.2",
+      "hashPath": "mongodb.driver.core.2.9.2.nupkg.sha512"
     },
     "NETStandard.Library/1.6.1": {
       "type": "package",
