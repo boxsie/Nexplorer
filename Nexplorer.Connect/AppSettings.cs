@@ -1,4 +1,5 @@
-﻿using Nexplorer.Data;
+﻿using Nexplorer.Connect.Hub;
+using Nexplorer.Data;
 
 namespace Nexplorer.Connect
 {

@@ -8,7 +8,7 @@ namespace Nexplorer.Nexus
         bool Available { get; }
 
         Task RefreshAsync();
-        Task<T> GetAsync<T>(string path, NexusRequest request, CancellationToken token = default);
-        Task<T> PostAsync<T>(string path, NexusRequest request, CancellationToken token = default);
+        Task<NexusResponse<T>> GetAsync<T>(string path, NexusRequest request, CancellationToken token = default);
+        Task<NexusResponse<T>> PostAsync<T>(string path, NexusRequest request, CancellationToken token = default);
     }
 }

@@ -6,6 +6,6 @@ namespace Nexplorer.Nexus.Tokens
 {
     public interface ITokenService
     {
-        Task<TokenInfo> GetTokenInfo(Token token, CancellationToken cToken = default);
+        Task<NexusResponse<TokenInfo>> GetTokenInfo(Token token, CancellationToken cToken = default);
     }
 }

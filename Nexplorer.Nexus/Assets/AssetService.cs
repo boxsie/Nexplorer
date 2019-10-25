@@ -18,7 +18,7 @@ namespace Nexplorer.Nexus.Assets
             _logger = logger;
         }
 
-        public async Task<AssetInfo> GetAssetAsync(Asset asset, CancellationToken token = default)
+        public async Task<NexusResponse<AssetInfo>> GetAssetAsync(Asset asset, CancellationToken token = default)
         {
             token.ThrowIfCancellationRequested();
 
@@ -29,15 +29,16 @@ namespace Nexplorer.Nexus.Assets
 
             var request = new NexusRequest(new Dictionary<string, string> {{key, val}});
 
-            var assetInfo = await _nxs.PostAsync<AssetInfo>("assets/get", request, token);
+            var msg = await _nxs.PostAsync<AssetInfo>("assets/get", request, token);
 
-            if (assetInfo == null)
+            if (msg.HasError)
                 _logger.LogError($"{key} retrieval failed");
 
-            return assetInfo;
+            return msg;
         }
 
-        public async Task<IEnumerable<AssetInfo>> GetAssetHistoryAsync(Asset asset, CancellationToken token = default)
+        public async Task<NexusResponse<IEnumerable<AssetInfo>>> GetAssetHistoryAsync(Asset asset,
+            CancellationToken token = default)
         {
             token.ThrowIfCancellationRequested();
 
@@ -48,12 +49,12 @@ namespace Nexplorer.Nexus.Assets
             
             var request = new NexusRequest(new Dictionary<string, string> { { key, val } });
 
-            var assetHistory = await _nxs.PostAsync<IEnumerable<AssetInfo>>("assets/history", request, token);
+            var msg = await _nxs.PostAsync<IEnumerable<AssetInfo>>("assets/history", request, token);
 
-            if (assetHistory == null)
+            if (msg.HasError)
                 _logger.LogError($"Get asset {val} history failed");
 
-            return assetHistory;
+            return msg;
         }
     }
 }

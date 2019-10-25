@@ -14,27 +14,28 @@ namespace Nexplorer.Node.Services
         private readonly ILedgerService _ledgerService;
         private readonly IHubContext<NexplorerHub, INexplorer> _nexplorerHub;
         private readonly Globals _globals;
-        private readonly ILogger<NewBlockService> _logger;
 
         public NewBlockService(ILedgerService ledgerService, IHubContext<NexplorerHub, INexplorer> nexplorerHub, 
-            Globals globals, ILogger<NewBlockService> logger) : base(TimeSpan.FromSeconds(10))
+            Globals globals, ILogger<NewBlockService> logger) 
+            : base(TimeSpan.FromSeconds(10), logger)
         {
             _ledgerService = ledgerService;
             _nexplorerHub = nexplorerHub;
             _globals = globals;
-            _logger = logger;
         }
 
         public override async Task Execute()
         {
-            var height = await _ledgerService.GetHeightAsync();
+            var msg = await _ledgerService.GetHeightAsync();
 
-            if (!height.HasValue)
+            if (msg.HasError)
                 return;
+
+            var height = msg.Result;
 
             if (_globals.LastKnownHeight == 0)
             {
-                _globals.LastKnownHeight = height.Value;
+                _globals.LastKnownHeight = height;
                 return;
             }
 
@@ -42,7 +43,7 @@ namespace Nexplorer.Node.Services
             {
                 _globals.LastKnownHeight++;
 
-                _logger.LogInformation($"New block found - publishing height {_globals.LastKnownHeight:N0}");
+                Logger.LogInformation($"New block found - publishing height {_globals.LastKnownHeight:N0}");
 
                 await _nexplorerHub.Clients.All.PublishNewHeight(_globals.LastKnownHeight);
             }

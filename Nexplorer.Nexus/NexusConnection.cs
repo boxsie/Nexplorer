@@ -25,35 +25,31 @@ namespace Nexplorer.Nexus
             Available = false;
         }
 
-        public async Task<T> GetAsync<T>(string path, NexusRequest request, CancellationToken token = default)
+        public async Task<NexusResponse<T>> GetAsync<T>(string path, NexusRequest request, CancellationToken token = default)
         {
-            if (!CheckAvailability(path))
-                return default;
-
             var response = await _client.GetAsync<T>(path, request, token);
 
-            return ParseResponse(response) 
-                ? response.Result 
-                : default;
+            if (!response.CanConnect)
+                SetUnavailable();
+
+            return response;
         }
 
-        public async Task<T> PostAsync<T>(string path, NexusRequest request, CancellationToken token = default)
+        public async Task<NexusResponse<T>> PostAsync<T>(string path, NexusRequest request, CancellationToken token = default)
         {
-            if (!CheckAvailability(path))
-                return default;
-
             var response = await _client.PostAsync<T>(path, request, token);
 
-            return ParseResponse(response)
-                ? response.Result
-                : default;
+            if (!response.CanConnect)
+                SetUnavailable();
+
+            return response;
         }
 
         public async Task RefreshAsync()
         {
             var info = await GetInfoAsync();
 
-            if (info == null)
+            if (!info.CanConnect)
             {
                 SetUnavailable();
                 return;
@@ -61,29 +57,11 @@ namespace Nexplorer.Nexus
 
             var peers = await GetPeersAsync();
 
-            if (peers != null) 
-                Peers = peers.ToArray();
+            if (!peers.HasError) 
+                Peers = peers.Result.ToArray();
 
-            Info = info;
+            Info = info.Result;
             Available = true;
-        }
-
-        private bool CheckAvailability(string path)
-        {
-            if (Available) 
-                return true;
-            
-            _logger.LogError($"{path} request failed - Nexus node is not available at this time");
-            return false;
-        }
-
-        private bool ParseResponse<T>(NexusResponse<T> response)
-        {
-            if (response.CanConnect) 
-                return response.Error == null && !response.IsNodeError;
-            
-            SetUnavailable();
-            return false;
         }
 
         private void SetUnavailable()
@@ -92,34 +70,34 @@ namespace Nexplorer.Nexus
             _logger.LogError($"Nexus endpoint '{_client.NexusEndpoint.Name}' cannot be reached");
         }
 
-        private async Task<NodeInfo> GetInfoAsync()
+        private async Task<NexusResponse<NodeInfo>> GetInfoAsync()
         {
             var info = await _client.GetAsync<NodeInfo>("system/get/info", null);
 
-            if (info == null)
+            if (info.HasError)
                 _logger.LogError("Get node info failed");
 
-            return info?.Result;
+            return info;
         }
 
-        private async Task<IEnumerable<Peer>> GetPeersAsync()
+        private async Task<NexusResponse<IEnumerable<Peer>>> GetPeersAsync()
         {
             var peers = await _client.GetAsync<IEnumerable<Peer>>("system/list/peers", null);
 
-            if (peers == null)
+            if (peers.HasError)
                 _logger.LogError("Get node peers failed");
 
-            return peers?.Result;
+            return peers;
         }
 
-        private async Task<IEnumerable<LispEid>> GetLispEidsAsync()
+        private async Task<NexusResponse<IEnumerable<LispEid>>> GetLispEidsAsync()
         {
             var eids = await _client.GetAsync<IEnumerable<LispEid>>("system/list/lisp-eids", null);
 
-            if (eids == null)
+            if (eids.HasError)
                 _logger.LogError("Get lisp eids info failed");
 
-            return eids?.Result;
+            return eids;
         }
     }
 }

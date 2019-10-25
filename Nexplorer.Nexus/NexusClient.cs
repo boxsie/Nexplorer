@@ -111,7 +111,7 @@ namespace Nexplorer.Nexus
 
                 _log.LogError(e.StackTrace);
 
-                return new NexusResponse<T> { CanConnect = false };
+                return new NexusResponse<T> { CanConnect = false, Error = new NexusError { Message = e.Message } };
             }
 
             try
@@ -128,6 +128,7 @@ namespace Nexplorer.Nexus
 
                 _log.LogError($"{logHeader} FAILED");
                 _log.LogError($"{logHeader} {response.StatusCode} {(result.Error != null ? $"From Nexus->'{result.Error.Code} - {result.Error.Message}'" : responseJson)}");
+                result.IsNodeError = true;
 
                 return result;
             }
@@ -139,7 +140,7 @@ namespace Nexplorer.Nexus
                     _log.LogError(e.InnerException.Message);
                 _log.LogError(e.StackTrace);
 
-                return new NexusResponse<T> { IsNodeError = true };
+                return new NexusResponse<T> { IsNodeError = true, Error = new NexusError { Message = e.Message }};
             }
         }
 

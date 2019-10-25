@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Nexplorer.Nexus;
 
 namespace Nexplorer.Core
@@ -8,7 +9,7 @@ namespace Nexplorer.Core
     {
         private readonly INexusConnection _connection;
 
-        public HealthCheckService(INexusConnection connection) : base(TimeSpan.FromSeconds(30))
+        public HealthCheckService(INexusConnection connection, ILogger<HealthCheckService> logger) : base(TimeSpan.FromSeconds(30), logger)
         {
             _connection = connection;
         }

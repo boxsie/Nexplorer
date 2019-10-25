@@ -2,17 +2,22 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Nexplorer.Core
 {
     public abstract class ScheduledService : IHostedService
     {
+        protected readonly ILogger<ScheduledService> Logger;
+
         private readonly TimeSpan _interval;
         private Timer _timer;
 
-        protected ScheduledService(TimeSpan interval)
+        protected ScheduledService(TimeSpan interval, ILogger<ScheduledService> logger)
         {
             _interval = interval;
+
+            Logger = logger;
         }
 
         public abstract Task Execute();
@@ -41,7 +46,8 @@ namespace Nexplorer.Core
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Logger.LogError(e.Message);
+                _timer.Change(_interval, TimeSpan.Zero);
             }
         }
     }

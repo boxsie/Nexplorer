@@ -19,7 +19,7 @@ namespace Nexplorer.Nexus.Tokens
             _logger = logger;
         }
 
-        public async Task<TokenInfo> GetTokenInfo(Token token, CancellationToken cToken = default)
+        public async Task<NexusResponse<TokenInfo>> GetTokenInfo(Token token, CancellationToken cToken = default)
         {
             cToken.ThrowIfCancellationRequested();
 
@@ -34,12 +34,12 @@ namespace Nexplorer.Nexus.Tokens
                 {"type", token.Type}
             });
 
-            var tokenInfo = await _nxs.PostAsync<TokenInfo>("tokens/get", request, cToken);
+            var msg = await _nxs.PostAsync<TokenInfo>("tokens/get", request, cToken);
 
-            if (tokenInfo == null)
+            if (msg.HasError)
                 _logger.LogError($"{token.Name} get failed");
 
-            return tokenInfo;
+            return msg;
         }
     }
 }

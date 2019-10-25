@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Nexplorer.Core;
+using Nexplorer.Nexus;
 using Nexplorer.Nexus.Ledger;
 using Nexplorer.Nexus.Ledger.Models;
 
@@ -21,22 +22,26 @@ namespace Nexplorer.Node.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            var height = (await _ledgerService.GetMiningInfoAsync()).Blocks;
-            await Clients.Caller.PublishNewHeight(height);
-            await base.OnConnectedAsync();
+            var msg = await _ledgerService.GetMiningInfoAsync();
+
+            if (!msg.HasError)
+            {
+                await Clients.Caller.PublishNewHeight(msg.Result.Blocks);
+                await base.OnConnectedAsync();
+            }
         }
         
-        public async Task<int?> GetHeight()
+        public Task<NexusResponse<int>> GetHeight()
         {
-            return (await _ledgerService.GetMiningInfoAsync()).Blocks;
+            return _ledgerService.GetHeightAsync();
         }
 
-        public Task<Block> GetBlock(int height)
+        public Task<NexusResponse<Block>> GetBlock(int height)
         {
             return _ledgerService.GetBlockAsync(height);
         }
 
-        public Task<IEnumerable<Block>> GetBlocks(int start, int count)
+        public Task<NexusResponse<IEnumerable<Block>>> GetBlocks(int start, int count)
         {
             return _ledgerService.GetBlocksAsync(start, count);
         }

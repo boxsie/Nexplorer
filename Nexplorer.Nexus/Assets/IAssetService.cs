@@ -7,7 +7,7 @@ namespace Nexplorer.Nexus.Assets
 {
     public interface IAssetService
     {
-        Task<AssetInfo> GetAssetAsync(Asset asset, CancellationToken token = default);
-        Task<IEnumerable<AssetInfo>> GetAssetHistoryAsync(Asset asset, CancellationToken token = default);
+        Task<NexusResponse<AssetInfo>> GetAssetAsync(Asset asset, CancellationToken token = default);
+        Task<NexusResponse<IEnumerable<AssetInfo>>> GetAssetHistoryAsync(Asset asset, CancellationToken token = default);
     }
 }
