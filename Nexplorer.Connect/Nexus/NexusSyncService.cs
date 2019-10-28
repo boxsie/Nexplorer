@@ -86,6 +86,8 @@ namespace Nexplorer.Connect.Nexus
                 lastNodeHeight = await _hubService.GetHeightAsync(_token);
 
                 Logger.LogInformation($"Nexus node height:{lastNodeHeight} | Nexplorer DB height:{lastDbHeight}");
+
+                await Task.Delay(TimeSpan.FromSeconds(1), _token);
             }
 
             _catchingUp = false;

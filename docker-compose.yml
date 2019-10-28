@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  dotnexus:
+    image: dotnexus
+    build:
+      context: .
+      dockerfile: Dockerfile.dotnexus
+    ports:
+     - "5001:80"
+    networks:
+      - proxynet
+  tao-api:
+    image: tritium
+    build:
+      context: .
+      dockerfile: Dockerfile.tao
+    hostname: "tritium"
+    ports:
+     - "8080"
+     - "9090"
+    privileged: true
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./tao-api:/root/.TAO
+    networks:
+      - proxynet
+
+networks:
+  proxynet:
+    driver: bridge
