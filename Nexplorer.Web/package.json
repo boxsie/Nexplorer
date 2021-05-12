@@ -57,7 +57,7 @@
     "sass-loader": "^7.0.3",
     "slick-carousel": "^1.8.1",
     "style-loader": "^0.21.0",
-    "swiper": "^4.4.6",
+    "swiper": "^6.5.1",
     "tether": "^1.4.5",
     "tslib": "^1.9.3",
     "uglifyjs-webpack-plugin": "^1.2.5",
